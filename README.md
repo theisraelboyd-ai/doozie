@@ -71,6 +71,12 @@ node build.mjs
 
 This writes `docs/index.html`, a single file with no outside dependencies. It can be opened straight from disk or served by GitHub Pages (Settings → Pages → Deploy from branch → `main` / `docs`).
 
+## Performance
+
+- **Graphics** (button or **V**): *Fancy* (shadows, bloom, depth of field, real lantern lights), *Simple* (no post effects or shadows), *Low* (lower resolution, no fog banks) for weak laptops and phones.
+- **N** shows an FPS counter (or add `?fps` to the address): frames per second, worst frame and draw calls.
+- Still scenery is merged into a few big chunks per area when a track loads, and tree batches are split by area so off-screen woods are skipped.
+
 ## Roadmap
 
 1. ✅ Core knockout loop, keyboard and mouse rockets, Fancy graphics

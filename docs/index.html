@@ -4341,7 +4341,7 @@ const settings = {
   skill: 0, // 0 easy, 1 normal, 2 hard
   water: 'deadly', // deadly | bouncy
   gunner: true, // mouse rocket launcher player
-  gfx: 'fancy', // fancy | simple
+  gfx: 'fancy', // fancy | simple | low
   cam: 'cinematic', // cinematic | classic | calm
   weapons: true, // item crates and weapons
   creatures: 'own', // off | own (each creature roams its home track) | anywhere
@@ -4353,6 +4353,9 @@ const CAM_STYLES = ['cinematic', 'classic', 'calm'];
 const CAM_NAMES = { cinematic: 'Cinematic', classic: 'Classic', calm: 'Calm' };
 const IS_TOUCH = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
 const CREATURE_NAMES_UI = { off: 'Off', own: 'Own track', anywhere: 'Anywhere' };
+
+const GFX_ORDER = ['low', 'simple', 'fancy'], GFX_NAMES = { low: 'Low', simple: 'Simple', fancy: 'Fancy' };
+function nextGfx() { settings.gfx = GFX_ORDER[(GFX_ORDER.indexOf(settings.gfx) + 1) % 3]; }
 
 // ===== src/02-renderer-scene.js =====
 // ---------- Renderer / scene ----------
@@ -4547,7 +4550,77 @@ function buildTrack(id) {
   const kit = KITS[def.theme] || KITS.harbour;
   kit(def);
   startLine();
+  mergeStatic(trackGroup);
   if (typeof applyGfx === 'function' && typeof composer !== 'undefined' && composer) applyGfx();
+}
+
+// ---------- Merge still scenery ----------
+// Hundreds of separate boxes, trunks and stones cost one draw call each. Once a track is built,
+// meshes that never move are baked together by look (same colour, finish, shadows) and by area
+// (so off-screen chunks are still skipped). Mark anything that animates with userData.dynamic
+// (on the mesh or a parent group) and any material that animates with material.userData.keep.
+const MERGE_CELL = 70;
+function matKey(m) {
+  if (m.userData.keep || m.map || m.normalMap || m.emissiveMap || m.type !== 'MeshStandardMaterial') return m.uuid;
+  return [m.color.getHex(), m.emissive.getHex(), m.emissiveIntensity, m.roughness, m.metalness, m.flatShading, m.vertexColors, m.side, m.fog].join('|');
+}
+function mergeStatic(root) {
+  root.updateMatrixWorld(true);
+  const groups = new Map(), victims = [];
+  root.traverse(o => {
+    if (!o.isMesh || o.isInstancedMesh || Array.isArray(o.material) || o.material.transparent) return;
+    for (let a = o; a && a !== root; a = a.parent) if (a.userData.dynamic) return;
+    const g = o.geometry; if (!g.attributes.position || g.morphAttributes.position) return;
+    const attrs = Object.keys(g.attributes).sort().join(',');
+    g.computeBoundingSphere();
+    const c = g.boundingSphere.center.clone().applyMatrix4(o.matrixWorld);
+    const key = [matKey(o.material), attrs, o.castShadow, o.receiveShadow, Math.floor(c.x / MERGE_CELL), Math.floor(c.z / MERGE_CELL)].join('#');
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(o);
+  });
+  const inv = new T.Matrix4().copy(root.matrixWorld).invert(), mtx = new T.Matrix4();
+  for (const list of groups.values()) {
+    if (list.length < 2) continue;
+    const parts = list.map(o => { let g = o.geometry.clone(); g = g.index ? g.toNonIndexed() : g; return g.applyMatrix4(mtx.multiplyMatrices(inv, o.matrixWorld)); });
+    const names = Object.keys(parts[0].attributes), total = parts.reduce((n, g) => n + g.attributes.position.count, 0);
+    const merged = new T.BufferGeometry();
+    for (const name of names) {
+      const size = parts[0].attributes[name].itemSize, arr = new Float32Array(total * size);
+      let off = 0; for (const g of parts) { arr.set(g.attributes[name].array, off); off += g.attributes[name].array.length; }
+      merged.setAttribute(name, new T.BufferAttribute(arr, size));
+    }
+    merged.computeBoundingSphere(); merged.computeBoundingBox();
+    parts.forEach(g => g.dispose());
+    const m = new T.Mesh(merged, list[0].material); m.castShadow = list[0].castShadow; m.receiveShadow = list[0].receiveShadow;
+    root.add(m);
+    for (const o of list) victims.push(o);
+  }
+  for (const o of victims) {
+    o.parent.remove(o);
+    if (o.geometry !== boxGeo) o.geometry.dispose();
+  }
+  // Big instanced batches (trees, bushes, gravestones) are split into chunks by area so the ones
+  // behind the camera are skipped instead of the whole forest being drawn every frame.
+  const big = [];
+  root.traverse(o => { if (o.isInstancedMesh && o.count > 120 && !o.userData.dynamic) big.push(o); });
+  const m4 = new T.Matrix4(), pos = new T.Vector3(), col = new T.Color();
+  for (const im of big) {
+    const cells = new Map();
+    for (let k = 0; k < im.count; k++) {
+      im.getMatrixAt(k, m4); pos.setFromMatrixPosition(m4);
+      const key = Math.floor(pos.x / MERGE_CELL) + ',' + Math.floor(pos.z / MERGE_CELL);
+      if (!cells.has(key)) cells.set(key, []);
+      cells.get(key).push(k);
+    }
+    for (const ids of cells.values()) {
+      const c = new T.InstancedMesh(im.geometry, im.material, ids.length);
+      ids.forEach((k, n) => { im.getMatrixAt(k, m4); c.setMatrixAt(n, m4); if (im.instanceColor) { im.getColorAt(k, col); c.setColorAt(n, col); } });
+      c.castShadow = im.castShadow; c.receiveShadow = im.receiveShadow; c.computeBoundingSphere();
+      im.parent.add(c);
+    }
+    im.parent.remove(im);
+  }
+  return victims.length;
 }
 
 // ---------- Theme kits ----------
@@ -4599,7 +4672,7 @@ KITS.harbour = function (def) {
       box(x, 20.5, z + 6, 1.4, 1.4, 26, c);
     } else {
       const b = box(x, -0.9, z, 4, 1.4, 10, rnd() < 0.5 ? 0xffffff : 0xd84315, rnd() * Math.PI);
-      bobbers.push({ m: b, ph: rnd() * 6, y: -0.9 });
+      b.userData.dynamic = true; bobbers.push({ m: b, ph: rnd() * 6, y: -0.9 });
     }
   }
   for (let i = 0; i < N; i += 14) if (NARROW[i] > 0.9) for (const s of [-1, 1]) {
@@ -4669,7 +4742,7 @@ KITS.forest = function (def) {
   const fi = Math.floor(N * 0.33), fx = P[fi].x - NRM[fi].x * (ROAD_W + 3.5), fz = P[fi].z - NRM[fi].z * (ROAD_W + 3.5);
   clear.push([fx, fz, 4]);
   const fire = new T.Mesh(new T.ConeGeometry(0.6, 1.4, 6), new T.MeshStandardMaterial({ color: 0xff9800, emissive: 0xff6d00, emissiveIntensity: 3 }));
-  fire.position.set(fx, 0.7, fz); addTo(fire);
+  fire.position.set(fx, 0.7, fz); fire.userData.dynamic = true; addTo(fire);
   const fireLight = new T.PointLight(0xff8f3a, 40, 16, 2); fireLight.position.set(fx, 1.6, fz); addTo(fireLight);
   for (let k = 0; k < 5; k++) { const st = new T.Mesh(new T.DodecahedronGeometry(0.35), rockM); st.position.set(fx + Math.cos(k * 1.26) * 1.1, 0.2, fz + Math.sin(k * 1.26) * 1.1); addTo(st); }
   // logs and boulders on the verge
@@ -4730,7 +4803,7 @@ KITS.forest = function (def) {
     const i = Math.floor(rnd() * N), lat = (rnd() - 0.5) * 60, p = trackPoint(i, lat);
     const m = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ map: fogTex, transparent: true, opacity: 0.3 + rnd() * 0.25, depthWrite: false, fog: false }));
     const sz = 40 + rnd() * 50; m.scale.set(sz, sz * 0.7, 1); m.rotation.x = -Math.PI / 2; m.rotation.z = rnd() * 6;
-    m.position.set(p.x, 3 + rnd() * 7, p.z); addTo(m);
+    m.position.set(p.x, 3 + rnd() * 7, p.z); m.userData.detail = true; addTo(m);
     banks.push({ m, vx: (rnd() - 0.5) * 2.5, vz: (rnd() - 0.5) * 2.5, ph: rnd() * 6, base: m.material.opacity });
   }
   themeTick = (dt, t) => {
@@ -4774,7 +4847,7 @@ KITS.haunted = function (def) {
   const darkWood = new T.MeshStandardMaterial({ color: 0x241d19, roughness: 1 });
   const flicker = [];  // glowing windows that flicker
   const lanterns = []; // { glow sprite, light, ph }
-  const glowTex = softTexture(255, 190, 110);
+  const glowTex = softTexture(255, 190, 110), poolTex = softTexture(255, 170, 90);
 
   // ----- abandoned houses -----
   function house(x, z, yaw, w = 8, d = 6) {
@@ -4788,7 +4861,7 @@ KITS.haunted = function (def) {
     for (const wx of [-w * 0.3, w * 0.3]) {
       const lit = rnd() < 0.5;
       const win = part(new T.BoxGeometry(1.3, 1.1, 0.1), new T.MeshStandardMaterial({ color: lit ? 0x99ffdd : 0x090909, emissive: lit ? 0x55ffcc : 0x000000, emissiveIntensity: lit ? 1.2 : 0 }), wx, 2.8, d / 2 + 0.02);
-      if (lit) flicker.push({ m: win.material, ph: rnd() * 10 });
+      if (lit) { win.material.userData.keep = true; flicker.push({ m: win.material, ph: rnd() * 10 }); }
       const board = part(new T.BoxGeometry(1.6, 0.18, 0.08), darkWood, wx, 2.8, d / 2 + 0.08); board.rotation.z = (rnd() - 0.5) * 1.2;
     }
     for (const px of [-w * 0.45, w * 0.45]) part(new T.BoxGeometry(0.25, 2.6, 0.25), darkWood, px, 1.3, d / 2 + 1.2);
@@ -4814,7 +4887,7 @@ KITS.haunted = function (def) {
       part(new T.BoxGeometry(4, 11, 4), stone, 0, 5.5, -6);
       part(new T.ConeGeometry(3, 6, 4), darkWood, 0, 14, -6).rotation.y = Math.PI / 4;
       const rose = part(new T.CircleGeometry(1.4, 16), new T.MeshStandardMaterial({ color: 0xb388ff, emissive: 0x7c4dff, emissiveIntensity: 1.6 }), 0, 7, -8.05);
-      rose.rotation.y = Math.PI; flicker.push({ m: rose.material, ph: 2 });
+      rose.rotation.y = Math.PI; rose.material.userData.keep = true; flicker.push({ m: rose.material, ph: 2 });
       const crossV = part(new T.BoxGeometry(0.3, 2, 0.3), stone, 0, 18, -6), crossH = part(new T.BoxGeometry(1.2, 0.3, 0.3), stone, 0, 18.4, -6);
       // gravestones and crosses in rows towards the road
       const graveM = new T.MeshStandardMaterial({ color: 0x6b6b70, roughness: 1, flatShading: true });
@@ -4841,7 +4914,11 @@ KITS.haunted = function (def) {
     const glow = new T.Sprite(new T.SpriteMaterial({ map: glowTex, color: 0xffb060, transparent: true, opacity: 0.85, blending: T.AdditiveBlending, depthWrite: false }));
     glow.position.set(q.x, 2.9, q.z); glow.scale.setScalar(4.5); addTo(glow);
     let light = null;
-    if (n % 2 === 0 && lights < 10) { light = new T.PointLight(0xffa860, 70, 26, 2); light.position.set(q.x, 3.2, q.z); addTo(light); lights++; }
+    // a soft pool of light on the ground: nearly free, and all Simple/Low mode gets
+    const pool = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ map: poolTex, color: 0xff9a40, transparent: true, opacity: 0.55, blending: T.AdditiveBlending, depthWrite: false }));
+    pool.rotation.x = -Math.PI / 2; pool.position.set(q.x, 0.09, q.z); pool.scale.setScalar(13); pool.userData.lightPool = true; addTo(pool);
+    // real lights cost every pixel on screen, so only Fancy gets them
+    if (n % 2 === 0 && lights < 8) { light = new T.PointLight(0xffa860, 70, 26, 2); light.position.set(q.x, 3.2, q.z); light.userData.fancyOnly = true; addTo(light); lights++; }
     lanterns.push({ glow, light, ph: rnd() * 20 });
     clear.push([p.x, p.z, 2]);
   }
@@ -4922,7 +4999,7 @@ KITS.haunted = function (def) {
     const i = Math.floor(rnd() * N), p = trackPoint(i, (rnd() - 0.5) * 60);
     const m = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ map: fogTex, transparent: true, opacity: 0.25 + rnd() * 0.2, depthWrite: false, fog: false }));
     const sz = 35 + rnd() * 45; m.scale.set(sz, sz * 0.7, 1); m.rotation.x = -Math.PI / 2; m.rotation.z = rnd() * 6;
-    m.position.set(p.x, 1.5 + rnd() * 5, p.z); addTo(m);
+    m.position.set(p.x, 1.5 + rnd() * 5, p.z); m.userData.detail = true; addTo(m);
     banks.push({ m, vx: (rnd() - 0.5) * 2, vz: (rnd() - 0.5) * 2, ph: rnd() * 6, base: m.material.opacity });
   }
 
@@ -4931,7 +5008,7 @@ KITS.haunted = function (def) {
   const eyeMat = new T.MeshBasicMaterial({ color: 0x050505 });
   const ghosts = [];
   for (let k = 0; k < 12; k++) {
-    const g = new T.Group();
+    const g = new T.Group(); g.userData.dynamic = true;
     const head = new T.Mesh(new T.SphereGeometry(0.85, 14, 10), ghostMat); head.position.y = 2.2; g.add(head);
     const body = new T.Mesh(new T.ConeGeometry(1.0, 2.4, 14, 1, true), ghostMat); body.position.y = 1.1; body.rotation.x = Math.PI; g.add(body);
     for (const ex of [-0.3, 0.3]) { const e = new T.Mesh(new T.SphereGeometry(0.14, 8, 6), eyeMat); e.position.set(ex, 2.35, 0.72); g.add(e); }
@@ -5562,7 +5639,7 @@ function buildMenu() {
   document.getElementById('optWater').textContent = settings.water === 'deadly' ? 'Fall = out' : 'Bouncy';
   document.getElementById('optTrack').textContent = settings.track === 'random' ? 'Random' : (TRACKS.find(t => t.id === settings.track) || TRACKS[0]).name;
   document.getElementById('optGun').textContent = settings.gunner ? 'On' : 'Off';
-  document.getElementById('optGfx').textContent = settings.gfx === 'fancy' ? 'Fancy' : 'Simple';
+  document.getElementById('optGfx').textContent = GFX_NAMES[settings.gfx];
   document.getElementById('optAuto').textContent = settings.autoGas ? 'On' : 'Off';
   document.getElementById('optCam').textContent = CAM_NAMES[settings.cam];
   document.getElementById('optWeapons').textContent = settings.weapons ? 'On' : 'Off';
@@ -5571,7 +5648,7 @@ function buildMenu() {
 document.getElementById('btnTarget').onclick = () => { const o = [3, 5, 8, 10]; settings.target = o[(o.indexOf(settings.target) + 1) % o.length]; buildMenu(); };
 document.getElementById('btnSkill').onclick = () => { settings.skill = (settings.skill + 1) % 3; buildMenu(); };
 document.getElementById('btnWater').onclick = () => { settings.water = settings.water === 'deadly' ? 'bouncy' : 'deadly'; buildMenu(); };
-document.getElementById('btnGfx').onclick = () => { settings.gfx = settings.gfx === 'fancy' ? 'simple' : 'fancy'; applyGfx(); buildMenu(); };
+document.getElementById('btnGfx').onclick = () => { nextGfx(); applyGfx(); buildMenu(); };
 document.getElementById('btnGun').onclick = () => { settings.gunner = !settings.gunner; buildMenu(); };
 function cycleTrack() {
   const ids = [...TRACKS.map(t => t.id), 'random'];
@@ -5607,7 +5684,8 @@ function onKey(code) {
   if (state === 'race' && code === 'KeyB') { if (spawnBigfoot()) toast('<b>BIGFOOT</b> summoned!'); return; }
   if (state === 'race' && code === 'KeyZ') { if (spawnGhost()) toast('The <b>Ghost car</b> is coming…'); return; }
   if (code === 'KeyC') { cycleCam(); toast(`Camera: <b>${CAM_NAMES[settings.cam]}</b>`); return; }
-  if (code === 'KeyV') { settings.gfx = settings.gfx === 'fancy' ? 'simple' : 'fancy'; applyGfx(); buildMenu(); toast(`Graphics: <b>${settings.gfx === 'fancy' ? 'Fancy' : 'Simple'}</b>`); return; }
+  if (code === 'KeyV') { nextGfx(); applyGfx(); buildMenu(); toast(`Graphics: <b>${GFX_NAMES[settings.gfx]}</b>`); return; }
+  if (code === 'KeyN') { toggleFps(); return; }
   if (state === 'menu') { if (code === 'Enter' || code === 'Space') startMatch(); return; }
   if (state === 'matchEnd') {
     if (code === 'Enter') { document.getElementById('menu').style.display = 'none'; startMatch(); }
@@ -5747,7 +5825,13 @@ function applyGfx() {
   const sky = (curTrack && curTrack.sky) || { fancy: 0xbfdcf0, simple: 0x9fd3f0, fogNear: 180, fogFar: 420 };
   scene.fog.color.setHex(fancy ? sky.fancy : sky.simple); scene.background.setHex(fancy ? sky.fancy : sky.simple);
   scene.fog.near = sky.fogNear; scene.fog.far = sky.fogFar;
-  renderer.setPixelRatio(fancy ? Math.min(window.devicePixelRatio || 1, 1.25) : 1);
+  const low = settings.gfx === 'low';
+  renderer.setPixelRatio(fancy ? Math.min(window.devicePixelRatio || 1, 1.25) : low ? 0.7 : 1);
+  if (trackGroup) trackGroup.traverse(o => {
+    if (o.userData.fancyOnly) o.visible = fancy;      // real lanterns etc: Fancy only
+    if (o.userData.detail) o.visible = !low;         // fog banks: off in Low
+    if (o.userData.lightPool) o.material.opacity = fancy ? 0.3 : 0.55;
+  });
   resize();
 }
 function draw() {
@@ -5767,6 +5851,24 @@ function draw() {
   } else {
     sun.position.copy(camTarget).add(SUN_OFF); sun.target.position.copy(camTarget);
     renderer.render(scene, camera);
+  }
+}
+
+// ---------- FPS counter (press N, or add ?fps to the address) ----------
+const fpsEl = document.createElement('div');
+fpsEl.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:60;font:600 13px system-ui;color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:8px;pointer-events:none;display:none';
+document.body.appendChild(fpsEl);
+let fpsOn = URLQ.has('fps'), fpsN = 0, fpsT = 0, fpsWorst = 0;
+function toggleFps() { fpsOn = !fpsOn; fpsEl.style.display = fpsOn ? 'block' : 'none'; }
+if (fpsOn) fpsEl.style.display = 'block';
+function fpsTick(dt) {
+  if (!fpsOn) return;
+  fpsN++; fpsT += dt; fpsWorst = Math.max(fpsWorst, dt);
+  if (fpsT >= 0.5) {
+    const fps = Math.round(fpsN / fpsT), info = renderer.info.render;
+    fpsEl.textContent = `${fps} fps · worst ${Math.round(fpsWorst * 1000)} ms · ${info.calls} draws · ${GFX_NAMES[settings.gfx]}`;
+    fpsEl.style.color = fps >= 50 ? '#9cff9c' : fps >= 30 ? '#ffe082' : '#ff8a80';
+    fpsN = 0; fpsT = 0; fpsWorst = 0;
   }
 }
 
@@ -5868,7 +5970,7 @@ let last = performance.now(), wt = 0;
 function frame(now) {
   requestAnimationFrame(frame);
   let rdt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now; wt += rdt;
-  pollPads();
+  pollPads(); fpsTick(rdt);
   phonesTick(rdt);
   if (toastT > 0) { toastT -= rdt; if (toastT <= 0) document.getElementById('toast').style.opacity = 0; }
   if (state === 'paused' || state === 'menu') {
@@ -5974,7 +6076,7 @@ function animateWorld(dt) {
 camTarget.copy(P[0]);
 applyGfx();
 requestAnimationFrame(frame);
-window.__shunt = { screen: (x, z) => { const v = new T.Vector3(x, 0.5, z).project(camera); return [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }, cars, settings, startMatch, knock: i => knockOut(cars[i], 'was zapped'), get state() { return state; } };
+window.__shunt = { screen: (x, z) => { const v = new T.Vector3(x, 0.5, z).project(camera); return [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }, cars, settings, startMatch, knock: i => knockOut(cars[i], 'was zapped'), get state() { return state; }, renderer, scene, camera, buildTrack };
 
 // ===== src/16-phones.js =====
 // ---------- Phones: QR join + play-on-this-screen touch ----------

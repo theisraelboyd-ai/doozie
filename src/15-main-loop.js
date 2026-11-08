@@ -3,7 +3,7 @@ let last = performance.now(), wt = 0;
 function frame(now) {
   requestAnimationFrame(frame);
   let rdt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now; wt += rdt;
-  pollPads();
+  pollPads(); fpsTick(rdt);
   phonesTick(rdt);
   if (toastT > 0) { toastT -= rdt; if (toastT <= 0) document.getElementById('toast').style.opacity = 0; }
   if (state === 'paused' || state === 'menu') {
@@ -109,4 +109,4 @@ function animateWorld(dt) {
 camTarget.copy(P[0]);
 applyGfx();
 requestAnimationFrame(frame);
-window.__shunt = { screen: (x, z) => { const v = new T.Vector3(x, 0.5, z).project(camera); return [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }, cars, settings, startMatch, knock: i => knockOut(cars[i], 'was zapped'), get state() { return state; } };
+window.__shunt = { screen: (x, z) => { const v = new T.Vector3(x, 0.5, z).project(camera); return [(v.x + 1) / 2 * innerWidth, (1 - v.y) / 2 * innerHeight]; }, cars, settings, startMatch, knock: i => knockOut(cars[i], 'was zapped'), get state() { return state; }, renderer, scene, camera, buildTrack };

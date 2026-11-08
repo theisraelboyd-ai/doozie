@@ -19,7 +19,7 @@ const settings = {
   skill: 0, // 0 easy, 1 normal, 2 hard
   water: 'deadly', // deadly | bouncy
   gunner: true, // mouse rocket launcher player
-  gfx: 'fancy', // fancy | simple
+  gfx: 'fancy', // fancy | simple | low
   cam: 'cinematic', // cinematic | classic | calm
   weapons: true, // item crates and weapons
   creatures: 'own', // off | own (each creature roams its home track) | anywhere
@@ -31,3 +31,6 @@ const CAM_STYLES = ['cinematic', 'classic', 'calm'];
 const CAM_NAMES = { cinematic: 'Cinematic', classic: 'Classic', calm: 'Calm' };
 const IS_TOUCH = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
 const CREATURE_NAMES_UI = { off: 'Off', own: 'Own track', anywhere: 'Anywhere' };
+
+const GFX_ORDER = ['low', 'simple', 'fancy'], GFX_NAMES = { low: 'Low', simple: 'Simple', fancy: 'Fancy' };
+function nextGfx() { settings.gfx = GFX_ORDER[(GFX_ORDER.indexOf(settings.gfx) + 1) % 3]; }

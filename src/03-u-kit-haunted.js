@@ -28,7 +28,7 @@ KITS.haunted = function (def) {
   const darkWood = new T.MeshStandardMaterial({ color: 0x241d19, roughness: 1 });
   const flicker = [];  // glowing windows that flicker
   const lanterns = []; // { glow sprite, light, ph }
-  const glowTex = softTexture(255, 190, 110);
+  const glowTex = softTexture(255, 190, 110), poolTex = softTexture(255, 170, 90);
 
   // ----- abandoned houses -----
   function house(x, z, yaw, w = 8, d = 6) {
@@ -42,7 +42,7 @@ KITS.haunted = function (def) {
     for (const wx of [-w * 0.3, w * 0.3]) {
       const lit = rnd() < 0.5;
       const win = part(new T.BoxGeometry(1.3, 1.1, 0.1), new T.MeshStandardMaterial({ color: lit ? 0x99ffdd : 0x090909, emissive: lit ? 0x55ffcc : 0x000000, emissiveIntensity: lit ? 1.2 : 0 }), wx, 2.8, d / 2 + 0.02);
-      if (lit) flicker.push({ m: win.material, ph: rnd() * 10 });
+      if (lit) { win.material.userData.keep = true; flicker.push({ m: win.material, ph: rnd() * 10 }); }
       const board = part(new T.BoxGeometry(1.6, 0.18, 0.08), darkWood, wx, 2.8, d / 2 + 0.08); board.rotation.z = (rnd() - 0.5) * 1.2;
     }
     for (const px of [-w * 0.45, w * 0.45]) part(new T.BoxGeometry(0.25, 2.6, 0.25), darkWood, px, 1.3, d / 2 + 1.2);
@@ -68,7 +68,7 @@ KITS.haunted = function (def) {
       part(new T.BoxGeometry(4, 11, 4), stone, 0, 5.5, -6);
       part(new T.ConeGeometry(3, 6, 4), darkWood, 0, 14, -6).rotation.y = Math.PI / 4;
       const rose = part(new T.CircleGeometry(1.4, 16), new T.MeshStandardMaterial({ color: 0xb388ff, emissive: 0x7c4dff, emissiveIntensity: 1.6 }), 0, 7, -8.05);
-      rose.rotation.y = Math.PI; flicker.push({ m: rose.material, ph: 2 });
+      rose.rotation.y = Math.PI; rose.material.userData.keep = true; flicker.push({ m: rose.material, ph: 2 });
       const crossV = part(new T.BoxGeometry(0.3, 2, 0.3), stone, 0, 18, -6), crossH = part(new T.BoxGeometry(1.2, 0.3, 0.3), stone, 0, 18.4, -6);
       // gravestones and crosses in rows towards the road
       const graveM = new T.MeshStandardMaterial({ color: 0x6b6b70, roughness: 1, flatShading: true });
@@ -95,7 +95,11 @@ KITS.haunted = function (def) {
     const glow = new T.Sprite(new T.SpriteMaterial({ map: glowTex, color: 0xffb060, transparent: true, opacity: 0.85, blending: T.AdditiveBlending, depthWrite: false }));
     glow.position.set(q.x, 2.9, q.z); glow.scale.setScalar(4.5); addTo(glow);
     let light = null;
-    if (n % 2 === 0 && lights < 10) { light = new T.PointLight(0xffa860, 70, 26, 2); light.position.set(q.x, 3.2, q.z); addTo(light); lights++; }
+    // a soft pool of light on the ground: nearly free, and all Simple/Low mode gets
+    const pool = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ map: poolTex, color: 0xff9a40, transparent: true, opacity: 0.55, blending: T.AdditiveBlending, depthWrite: false }));
+    pool.rotation.x = -Math.PI / 2; pool.position.set(q.x, 0.09, q.z); pool.scale.setScalar(13); pool.userData.lightPool = true; addTo(pool);
+    // real lights cost every pixel on screen, so only Fancy gets them
+    if (n % 2 === 0 && lights < 8) { light = new T.PointLight(0xffa860, 70, 26, 2); light.position.set(q.x, 3.2, q.z); light.userData.fancyOnly = true; addTo(light); lights++; }
     lanterns.push({ glow, light, ph: rnd() * 20 });
     clear.push([p.x, p.z, 2]);
   }
@@ -176,7 +180,7 @@ KITS.haunted = function (def) {
     const i = Math.floor(rnd() * N), p = trackPoint(i, (rnd() - 0.5) * 60);
     const m = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ map: fogTex, transparent: true, opacity: 0.25 + rnd() * 0.2, depthWrite: false, fog: false }));
     const sz = 35 + rnd() * 45; m.scale.set(sz, sz * 0.7, 1); m.rotation.x = -Math.PI / 2; m.rotation.z = rnd() * 6;
-    m.position.set(p.x, 1.5 + rnd() * 5, p.z); addTo(m);
+    m.position.set(p.x, 1.5 + rnd() * 5, p.z); m.userData.detail = true; addTo(m);
     banks.push({ m, vx: (rnd() - 0.5) * 2, vz: (rnd() - 0.5) * 2, ph: rnd() * 6, base: m.material.opacity });
   }
 
@@ -185,7 +189,7 @@ KITS.haunted = function (def) {
   const eyeMat = new T.MeshBasicMaterial({ color: 0x050505 });
   const ghosts = [];
   for (let k = 0; k < 12; k++) {
-    const g = new T.Group();
+    const g = new T.Group(); g.userData.dynamic = true;
     const head = new T.Mesh(new T.SphereGeometry(0.85, 14, 10), ghostMat); head.position.y = 2.2; g.add(head);
     const body = new T.Mesh(new T.ConeGeometry(1.0, 2.4, 14, 1, true), ghostMat); body.position.y = 1.1; body.rotation.x = Math.PI; g.add(body);
     for (const ex of [-0.3, 0.3]) { const e = new T.Mesh(new T.SphereGeometry(0.14, 8, 6), eyeMat); e.position.set(ex, 2.35, 0.72); g.add(e); }

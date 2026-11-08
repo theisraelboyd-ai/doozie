@@ -102,7 +102,77 @@ function buildTrack(id) {
   const kit = KITS[def.theme] || KITS.harbour;
   kit(def);
   startLine();
+  mergeStatic(trackGroup);
   if (typeof applyGfx === 'function' && typeof composer !== 'undefined' && composer) applyGfx();
+}
+
+// ---------- Merge still scenery ----------
+// Hundreds of separate boxes, trunks and stones cost one draw call each. Once a track is built,
+// meshes that never move are baked together by look (same colour, finish, shadows) and by area
+// (so off-screen chunks are still skipped). Mark anything that animates with userData.dynamic
+// (on the mesh or a parent group) and any material that animates with material.userData.keep.
+const MERGE_CELL = 70;
+function matKey(m) {
+  if (m.userData.keep || m.map || m.normalMap || m.emissiveMap || m.type !== 'MeshStandardMaterial') return m.uuid;
+  return [m.color.getHex(), m.emissive.getHex(), m.emissiveIntensity, m.roughness, m.metalness, m.flatShading, m.vertexColors, m.side, m.fog].join('|');
+}
+function mergeStatic(root) {
+  root.updateMatrixWorld(true);
+  const groups = new Map(), victims = [];
+  root.traverse(o => {
+    if (!o.isMesh || o.isInstancedMesh || Array.isArray(o.material) || o.material.transparent) return;
+    for (let a = o; a && a !== root; a = a.parent) if (a.userData.dynamic) return;
+    const g = o.geometry; if (!g.attributes.position || g.morphAttributes.position) return;
+    const attrs = Object.keys(g.attributes).sort().join(',');
+    g.computeBoundingSphere();
+    const c = g.boundingSphere.center.clone().applyMatrix4(o.matrixWorld);
+    const key = [matKey(o.material), attrs, o.castShadow, o.receiveShadow, Math.floor(c.x / MERGE_CELL), Math.floor(c.z / MERGE_CELL)].join('#');
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(o);
+  });
+  const inv = new T.Matrix4().copy(root.matrixWorld).invert(), mtx = new T.Matrix4();
+  for (const list of groups.values()) {
+    if (list.length < 2) continue;
+    const parts = list.map(o => { let g = o.geometry.clone(); g = g.index ? g.toNonIndexed() : g; return g.applyMatrix4(mtx.multiplyMatrices(inv, o.matrixWorld)); });
+    const names = Object.keys(parts[0].attributes), total = parts.reduce((n, g) => n + g.attributes.position.count, 0);
+    const merged = new T.BufferGeometry();
+    for (const name of names) {
+      const size = parts[0].attributes[name].itemSize, arr = new Float32Array(total * size);
+      let off = 0; for (const g of parts) { arr.set(g.attributes[name].array, off); off += g.attributes[name].array.length; }
+      merged.setAttribute(name, new T.BufferAttribute(arr, size));
+    }
+    merged.computeBoundingSphere(); merged.computeBoundingBox();
+    parts.forEach(g => g.dispose());
+    const m = new T.Mesh(merged, list[0].material); m.castShadow = list[0].castShadow; m.receiveShadow = list[0].receiveShadow;
+    root.add(m);
+    for (const o of list) victims.push(o);
+  }
+  for (const o of victims) {
+    o.parent.remove(o);
+    if (o.geometry !== boxGeo) o.geometry.dispose();
+  }
+  // Big instanced batches (trees, bushes, gravestones) are split into chunks by area so the ones
+  // behind the camera are skipped instead of the whole forest being drawn every frame.
+  const big = [];
+  root.traverse(o => { if (o.isInstancedMesh && o.count > 120 && !o.userData.dynamic) big.push(o); });
+  const m4 = new T.Matrix4(), pos = new T.Vector3(), col = new T.Color();
+  for (const im of big) {
+    const cells = new Map();
+    for (let k = 0; k < im.count; k++) {
+      im.getMatrixAt(k, m4); pos.setFromMatrixPosition(m4);
+      const key = Math.floor(pos.x / MERGE_CELL) + ',' + Math.floor(pos.z / MERGE_CELL);
+      if (!cells.has(key)) cells.set(key, []);
+      cells.get(key).push(k);
+    }
+    for (const ids of cells.values()) {
+      const c = new T.InstancedMesh(im.geometry, im.material, ids.length);
+      ids.forEach((k, n) => { im.getMatrixAt(k, m4); c.setMatrixAt(n, m4); if (im.instanceColor) { im.getColorAt(k, col); c.setColorAt(n, col); } });
+      c.castShadow = im.castShadow; c.receiveShadow = im.receiveShadow; c.computeBoundingSphere();
+      im.parent.add(c);
+    }
+    im.parent.remove(im);
+  }
+  return victims.length;
 }
 
 // ---------- Theme kits ----------
@@ -154,7 +224,7 @@ KITS.harbour = function (def) {
       box(x, 20.5, z + 6, 1.4, 1.4, 26, c);
     } else {
       const b = box(x, -0.9, z, 4, 1.4, 10, rnd() < 0.5 ? 0xffffff : 0xd84315, rnd() * Math.PI);
-      bobbers.push({ m: b, ph: rnd() * 6, y: -0.9 });
+      b.userData.dynamic = true; bobbers.push({ m: b, ph: rnd() * 6, y: -0.9 });
     }
   }
   for (let i = 0; i < N; i += 14) if (NARROW[i] > 0.9) for (const s of [-1, 1]) {
@@ -224,7 +294,7 @@ KITS.forest = function (def) {
   const fi = Math.floor(N * 0.33), fx = P[fi].x - NRM[fi].x * (ROAD_W + 3.5), fz = P[fi].z - NRM[fi].z * (ROAD_W + 3.5);
   clear.push([fx, fz, 4]);
   const fire = new T.Mesh(new T.ConeGeometry(0.6, 1.4, 6), new T.MeshStandardMaterial({ color: 0xff9800, emissive: 0xff6d00, emissiveIntensity: 3 }));
-  fire.position.set(fx, 0.7, fz); addTo(fire);
+  fire.position.set(fx, 0.7, fz); fire.userData.dynamic = true; addTo(fire);
   const fireLight = new T.PointLight(0xff8f3a, 40, 16, 2); fireLight.position.set(fx, 1.6, fz); addTo(fireLight);
   for (let k = 0; k < 5; k++) { const st = new T.Mesh(new T.DodecahedronGeometry(0.35), rockM); st.position.set(fx + Math.cos(k * 1.26) * 1.1, 0.2, fz + Math.sin(k * 1.26) * 1.1); addTo(st); }
   // logs and boulders on the verge
@@ -285,7 +355,7 @@ KITS.forest = function (def) {
     const i = Math.floor(rnd() * N), lat = (rnd() - 0.5) * 60, p = trackPoint(i, lat);
     const m = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ map: fogTex, transparent: true, opacity: 0.3 + rnd() * 0.25, depthWrite: false, fog: false }));
     const sz = 40 + rnd() * 50; m.scale.set(sz, sz * 0.7, 1); m.rotation.x = -Math.PI / 2; m.rotation.z = rnd() * 6;
-    m.position.set(p.x, 3 + rnd() * 7, p.z); addTo(m);
+    m.position.set(p.x, 3 + rnd() * 7, p.z); m.userData.detail = true; addTo(m);
     banks.push({ m, vx: (rnd() - 0.5) * 2.5, vz: (rnd() - 0.5) * 2.5, ph: rnd() * 6, base: m.material.opacity });
   }
   themeTick = (dt, t) => {

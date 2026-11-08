@@ -69,7 +69,7 @@ function buildMenu() {
   document.getElementById('optWater').textContent = settings.water === 'deadly' ? 'Fall = out' : 'Bouncy';
   document.getElementById('optTrack').textContent = settings.track === 'random' ? 'Random' : (TRACKS.find(t => t.id === settings.track) || TRACKS[0]).name;
   document.getElementById('optGun').textContent = settings.gunner ? 'On' : 'Off';
-  document.getElementById('optGfx').textContent = settings.gfx === 'fancy' ? 'Fancy' : 'Simple';
+  document.getElementById('optGfx').textContent = GFX_NAMES[settings.gfx];
   document.getElementById('optAuto').textContent = settings.autoGas ? 'On' : 'Off';
   document.getElementById('optCam').textContent = CAM_NAMES[settings.cam];
   document.getElementById('optWeapons').textContent = settings.weapons ? 'On' : 'Off';
@@ -78,7 +78,7 @@ function buildMenu() {
 document.getElementById('btnTarget').onclick = () => { const o = [3, 5, 8, 10]; settings.target = o[(o.indexOf(settings.target) + 1) % o.length]; buildMenu(); };
 document.getElementById('btnSkill').onclick = () => { settings.skill = (settings.skill + 1) % 3; buildMenu(); };
 document.getElementById('btnWater').onclick = () => { settings.water = settings.water === 'deadly' ? 'bouncy' : 'deadly'; buildMenu(); };
-document.getElementById('btnGfx').onclick = () => { settings.gfx = settings.gfx === 'fancy' ? 'simple' : 'fancy'; applyGfx(); buildMenu(); };
+document.getElementById('btnGfx').onclick = () => { nextGfx(); applyGfx(); buildMenu(); };
 document.getElementById('btnGun').onclick = () => { settings.gunner = !settings.gunner; buildMenu(); };
 function cycleTrack() {
   const ids = [...TRACKS.map(t => t.id), 'random'];
@@ -114,7 +114,8 @@ function onKey(code) {
   if (state === 'race' && code === 'KeyB') { if (spawnBigfoot()) toast('<b>BIGFOOT</b> summoned!'); return; }
   if (state === 'race' && code === 'KeyZ') { if (spawnGhost()) toast('The <b>Ghost car</b> is coming…'); return; }
   if (code === 'KeyC') { cycleCam(); toast(`Camera: <b>${CAM_NAMES[settings.cam]}</b>`); return; }
-  if (code === 'KeyV') { settings.gfx = settings.gfx === 'fancy' ? 'simple' : 'fancy'; applyGfx(); buildMenu(); toast(`Graphics: <b>${settings.gfx === 'fancy' ? 'Fancy' : 'Simple'}</b>`); return; }
+  if (code === 'KeyV') { nextGfx(); applyGfx(); buildMenu(); toast(`Graphics: <b>${GFX_NAMES[settings.gfx]}</b>`); return; }
+  if (code === 'KeyN') { toggleFps(); return; }
   if (state === 'menu') { if (code === 'Enter' || code === 'Space') startMatch(); return; }
   if (state === 'matchEnd') {
     if (code === 'Enter') { document.getElementById('menu').style.display = 'none'; startMatch(); }
