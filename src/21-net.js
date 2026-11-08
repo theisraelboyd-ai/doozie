@@ -77,22 +77,62 @@ function netHostTick() {
 const clientInput = { st: 0, thr: 0, boost: false, fire: false };
 function clean(html) { return String(html).replace(/<\s*\/?\s*(script|iframe|object|embed|img|svg|link|style)[^>]*>/gi, '').replace(/\son\w+\s*=/gi, ' data-x='); }
 
+// Joining tries for up to 75 s and says what's wrong: the room isn't open (the host's game isn't on
+// screen), no answer, or the two devices found each other but the network won't let them link up.
+let pendingJoin = null;
+function joinMsg(pj) { return { t: 'join', role: 'player', net: true, cid: pj.cid, name: pj.name, dev: IS_TOUCH ? 'phone' : 'laptop' }; }
 function joinGame(code) {
   code = String(code || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
   if (code.length !== 4) { joinStatus('Room codes are 4 letters'); return; }
-  if (code === roomCode) { joinStatus("That's this screen's own room"); return; }
-  if (!peerHost || !peerHost.open) { joinStatus('Not online yet – check the internet connection'); return; }
-  joinStatus('Connecting to room ' + code + '…');
+  if (code === roomCode) { joinStatus("That's this screen's own room – type the code from the other screen"); return; }
   let name = ''; try { name = (document.getElementById('joinName').value || localStorage.getItem('doozie-name') || '').trim().slice(0, 12); localStorage.setItem('doozie-name', name); } catch (e) {}
   let cid; try { cid = sessionStorage.getItem('doozie-net-cid'); } catch (e) {}
   if (!cid) { cid = 'net-' + Math.random().toString(36).slice(2, 10); try { sessionStorage.setItem('doozie-net-cid', cid); } catch (e) {} }
-  const conn = peerHost.connect('doozie-' + code, { reliable: true, serialization: 'json' });
-  const failT = setTimeout(() => { if (!netClient || netClient.conn !== conn || !netClient.ok) { joinStatus("Couldn't reach room " + code + '. Is the code right, and is that game open?'); try { conn.close(); } catch (e) {} } }, 10000);
-  netClient = { conn, code, slot: -1, live: false, snap: null, lobby: null, objs: new Map(), inT: 0, ok: false, cid, name, lastMsg: performance.now() };
-  conn.on('open', () => { conn.send({ t: 'join', role: 'player', net: true, cid, name, dev: IS_TOUCH ? 'phone' : 'laptop' }); });
-  conn.on('data', m => { if (netClient && netClient.conn === conn) { netClient.ok = true; netClient.lastMsg = performance.now(); clearTimeout(failT); onHostMessage(m); } });
+  cancelJoin();
+  pendingJoin = { code, name, cid, started: performance.now(), tries: 0, lastWhy: '' };
+  attemptJoin(pendingJoin);
+}
+function cancelJoin() { if (pendingJoin) { clearTimeout(pendingJoin.t); try { if (pendingJoin.conn) pendingJoin.conn.close(); } catch (e) {} pendingJoin = null; } }
+const JOIN_TRY = {
+  unavailable: c => `Room ${c} isn't open right now. Keep the game on screen on the host's device (switching apps closes the room).`,
+  link: c => `Found room ${c}, but the two devices can't link up. This network is blocking direct connections.`,
+  noanswer: c => `No answer from room ${c} yet.`,
+};
+const JOIN_FAIL = {
+  unavailable: c => `Couldn't find room ${c}. Check the code, and keep the game open on the host's screen, then try again.`,
+  link: c => `Couldn't link up with room ${c}: the network is blocking it. Try both devices on the same Wi-Fi, or one on a phone hotspot.`,
+  noanswer: c => `Room ${c} didn't answer. Is the game open on the host's screen?`,
+};
+function attemptJoin(pj) {
+  if (pendingJoin !== pj) return;
+  if ((performance.now() - pj.started) / 1000 > 75) { joinStatus(JOIN_FAIL[pj.lastWhy || 'noanswer'](pj.code)); pendingJoin = null; return; }
+  if (!peerHost || !peerHost.open) { joinStatus('Getting online…'); pj.t = setTimeout(() => attemptJoin(pj), 1500); return; }
+  pj.tries++;
+  joinStatus(pj.tries === 1 ? `Looking for room ${pj.code}…` : `${JOIN_TRY[pj.lastWhy](pj.code)} Trying again…`);
+  const conn = peerHost.connect('doozie-' + pj.code, { reliable: true, serialization: 'json' });
+  pj.conn = conn;
+  conn.on('open', () => { if (pendingJoin === pj && pj.conn === conn) { joinStatus(`Linked to room ${pj.code} – joining…`); conn.send(joinMsg(pj)); } });
+  conn.on('data', m => {
+    if (pendingJoin === pj && pj.conn === conn) {
+      clearTimeout(pj.t); pendingJoin = null;
+      netClient = { conn, code: pj.code, slot: -1, live: false, snap: null, lobby: null, objs: new Map(), inT: 0, ok: true, cid: pj.cid, name: pj.name, lastMsg: performance.now() };
+    }
+    if (netClient && netClient.conn === conn) { netClient.lastMsg = performance.now(); onHostMessage(m); }
+  });
   conn.on('close', () => { if (netClient && netClient.conn === conn) retryJoin(); });
   conn.on('error', () => {});
+  pj.t = setTimeout(() => {
+    const pc = conn.peerConnection, st = pc ? pc.iceConnectionState : 'none';
+    joinAttemptFailed(pj, st === 'checking' || st === 'failed' || st === 'disconnected' ? 'link' : 'noanswer');
+  }, 9000);
+}
+function joinAttemptFailed(pj, why) {
+  if (pendingJoin !== pj) return;
+  clearTimeout(pj.t);
+  const c = pj.conn; pj.conn = null; try { if (c) c.close(); } catch (e) {}
+  pj.lastWhy = why;
+  joinStatus(`${JOIN_TRY[why](pj.code)} Trying again…`);
+  pj.t = setTimeout(() => attemptJoin(pj), why === 'unavailable' ? 3000 : 1500);
 }
 function retryJoin() {
   const nc = netClient; if (!nc) return;
@@ -297,9 +337,14 @@ function closeJoinDialog() { const d = document.getElementById('joinDlg'); if (d
 document.getElementById('joinGo').onclick = () => { audio(); joinGame(document.getElementById('joinCode').value); };
 document.getElementById('joinName').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') document.getElementById('joinCode').focus(); });
 document.getElementById('joinCode').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') joinGame(e.target.value); if (e.key === 'Escape') closeJoinDialog(); });
-document.getElementById('joinCancel').onclick = () => closeJoinDialog();
+document.getElementById('joinCancel').onclick = () => { cancelJoin(); closeJoinDialog(); };
 document.getElementById('btnJoin').onclick = () => { audio(); openJoinDialog(); };
 document.getElementById('btnLeave').onclick = () => leaveNet('You left the game');
 // a link with ?room=ABCD joins straight away (handy to send to a colleague)
-if (URLQ.get('room')) { const code = URLQ.get('room'); const tryJoin = (n) => { if (peerHost && peerHost.open) joinGame(code); else if (n < 40) setTimeout(() => tryJoin(n + 1), 250); }; tryJoin(0); }
-window.__net = { get client() { return netClient; }, joinGame, leaveNet, get room() { return roomCode; }, netPlayers };
+if (URLQ.get('room')) {
+  const code = URLQ.get('room').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
+  openJoinDialog(); document.getElementById('joinCode').value = code;
+  let known = ''; try { known = localStorage.getItem('doozie-name') || ''; } catch (e) {}
+  if (known) joinGame(code); else joinStatus('Type your name and press Join');
+}
+window.__net = { get client() { return netClient; }, get pending() { return pendingJoin; }, joinGame, leaveNet, get room() { return roomCode; }, netPlayers };

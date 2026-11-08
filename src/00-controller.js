@@ -7,23 +7,34 @@
 const URLQ = new URLSearchParams(location.search);
 const JOIN_CODE = (URLQ.get('join') || '').toUpperCase().replace(/[^A-Z]/g, '');
 
+// How devices find each other: several free STUN servers, PeerJS's own relay, and (once set up)
+// a proper relay server for networks that block direct links. TURN_API is a credentials URL,
+// e.g. Metered's https://<app>.metered.live/api/v1/turn/credentials?apiKey=<key>
+const TURN_API = '';
+let EXTRA_ICE = [];
+const iceReady = !TURN_API ? Promise.resolve() : Promise.race([
+  fetch(TURN_API).then(r => r.json()).then(list => { if (Array.isArray(list)) EXTRA_ICE = list; }).catch(() => {}),
+  new Promise(r => setTimeout(r, 4000)),
+]);
 function peerOptions() {
   const host = URLQ.get('peerhost');
-  return host ? { host, port: Number(URLQ.get('peerport') || 9000), path: '/', secure: false, debug: 0 } : { debug: 0 };
+  const config = { iceServers: [
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] },
+    { urls: 'stun:stun.cloudflare.com:3478' },
+    ...EXTRA_ICE,
+    { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' },
+  ] };
+  return host ? { host, port: Number(URLQ.get('peerport') || 9000), path: '/', secure: false, debug: 0, config } : { debug: 0, config };
 }
 
 function makeTouchPad(root, onChange, opts = {}) {
   root.innerHTML = `
     <div class="tp-left">
-      <button class="tp-btn tp-steer" data-k="left">◀</button>
-      <button class="tp-btn tp-steer" data-k="right">▶</button>
+      <div class="tp-row tp-top"><button class="tp-btn tp-fire" data-k="fire">FIRE</button><button class="tp-btn tp-boost" data-k="boost">BOOST</button></div>
+      <div class="tp-row"><button class="tp-btn tp-steer" data-k="left">◀</button><button class="tp-btn tp-steer" data-k="right">▶</button></div>
     </div>
     <div class="tp-right">
-      <div class="tp-row tp-top"><button class="tp-btn tp-fire" data-k="fire">FIRE</button><button class="tp-btn tp-boost" data-k="boost">BOOST</button></div>
-      <div class="tp-row">
-        <button class="tp-btn tp-brake" data-k="brake">BRAKE</button>
-        <button class="tp-btn tp-gas" data-k="gas">GO</button>
-      </div>
+      <div class="tp-row"><button class="tp-btn tp-brake" data-k="brake">BRAKE</button><button class="tp-btn tp-gas" data-k="gas">GO</button></div>
     </div>`;
   const held = { left: new Set(), right: new Set(), gas: new Set(), brake: new Set(), boost: new Set(), fire: new Set() };
   const out = { st: 0, thr: 0, boost: false, fire: false };
@@ -159,11 +170,13 @@ function runController() {
   }, 1000);
 
   if (!JOIN_CODE) { status('No room code – scan the QR code on the big screen'); return; }
+  iceReady.then(() => {
   peer = new Peer(undefined, peerOptions());
   peer.on('open', () => connect());
   peer.on('error', e => {
-    if (e.type === 'peer-unavailable') status(`Room ${JOIN_CODE} not found – check the code on the big screen`);
+    if (e.type === 'peer-unavailable') status(`Room ${JOIN_CODE} isn't open – keep the game showing on the big screen`);
     else status('Connection hiccup (' + e.type + ') – retrying…');
+  });
   });
 }
 

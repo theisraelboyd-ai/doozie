@@ -103,6 +103,10 @@
   /* ---- phone join panel ---- */
   #phoneJoin { display: flex; gap: 10px; align-items: center; background: rgba(10,20,35,.75); border: 2px solid rgba(255,255,255,.25); border-radius: 12px; padding: 8px 12px 8px 8px; font-size: 13px; line-height: 1.35; }
   #phoneJoin:empty { display: none; }
+  #liveJoin { display: none; position: fixed; right: 12px; bottom: 12px; z-index: 12; background: rgba(10,20,35,.72); border: 2px solid rgba(255,255,255,.2); border-radius: 12px; padding: 6px 6px 4px; text-align: center; font-size: 11px; font-weight: 800; letter-spacing: .5px; pointer-events: none; }
+  body.playing #liveJoin:not(:empty) { display: block; }
+  body.is-touch #liveJoin, body.netclient #liveJoin, body.noliveqr #liveJoin { display: none !important; }
+  .lj-qr { width: 92px; height: 92px; background: #fff; border-radius: 6px; padding: 2px; margin-bottom: 3px; } .lj-qr svg { width: 100%; height: 100%; display: block; }
   .pj-share { margin-top: 4px; font: inherit; font-size: 12px; font-weight: 900; padding: 5px 10px; border-radius: 8px; border: 0; background: #ffca28; color: #222; cursor: pointer; }
   body.netclient #btnTouch { display: none !important; }
   .pj-qr { width: 104px; height: 104px; background: #fff; border-radius: 6px; padding: 2px; }
@@ -116,39 +120,37 @@
   #touchpad, #tpPause { display: none; }
   body.touchplay #touchpad { display: flex; position: fixed; inset: auto 0 0 0; height: 46vh; pointer-events: none; z-index: 15; }
   body.touchplay #tpPause { display: block; position: fixed; top: 10px; left: 10px; z-index: 16; width: 46px; height: 46px; border-radius: 50%; border: 0; background: rgba(10,20,35,.7); color: #fff; font-weight: 900; font-size: 16px; }
-  .tp-left, .tp-right { flex: 1; display: flex; align-items: flex-end; gap: 12px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
-  .tp-right { flex-direction: column; align-items: flex-end; justify-content: flex-end; }
+  .tp-left, .tp-right { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
+  .tp-left { align-items: flex-start; } .tp-right { align-items: flex-end; }
+  .tp-right .tp-row { align-items: flex-end; }
   .tp-row { display: flex; gap: 12px; }
   .tp-btn { pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; border: 3px solid rgba(255,255,255,.5); border-radius: 22px; background: rgba(10,20,35,.45); color: #fff; font: inherit; font-weight: 900; font-size: 22px; }
   .tp-btn.on { background: rgba(255,255,255,.45); transform: scale(.96); }
-  .tp-steer { width: min(22vw, 140px); height: min(22vw, 140px); font-size: 40px; }
-  .tp-gas { width: min(24vw, 150px); height: min(24vw, 130px); background: rgba(46,125,50,.6); }
-  .tp-brake { width: min(18vw, 110px); height: min(24vw, 130px); background: rgba(198,40,40,.55); font-size: 18px; }
-  .tp-boost { width: min(14vw, 128px); height: 54px; background: rgba(239,108,0,.6); font-size: 16px; }
-  .tp-fire { width: min(15vw, 140px); height: 54px; background: rgba(171,71,188,.65); font-size: 18px; }
+  .tp-steer { width: min(16vw, 110px); height: min(16vw, 100px); font-size: 30px; }
+  .tp-gas { width: min(20vw, 130px); height: min(22vw, 120px); background: rgba(46,125,50,.6); }
+  .tp-brake { width: min(12vw, 80px); height: min(12vw, 64px); background: rgba(198,40,40,.55); font-size: 13px; }
+  .tp-boost { width: min(16vw, 110px); height: 40px; background: rgba(239,108,0,.6); font-size: 13px; }
+  .tp-fire { width: min(16vw, 110px); height: 40px; background: rgba(171,71,188,.65); font-size: 13px; }
   .touchonly { display: none; }
   body.is-touch .touchonly { display: inline-block; }
   #btnTouch { margin-top: 10px; font: inherit; font-size: 18px; font-weight: 800; padding: 10px 22px; border-radius: 12px; border: 2px solid #ffca28; background: rgba(255,202,40,.12); color: #ffca28; }
   #rotate, #pc-rotate { display: none !important; }
-  /* portrait: the game fills the top of the screen, a solid control panel sits underneath */
+  /* portrait: the game fills the top of the screen, a slim control strip sits underneath */
   @media (orientation: portrait) {
-    body.touchplay #touchpad { height: 38vh; background: linear-gradient(180deg, #0f1d30, #08111d); border-top: 2px solid rgba(255,255,255,.12); }
-    body.touchplay .tp-left { flex: 1; align-items: center; justify-content: center; padding: 10px 6px calc(10px + env(safe-area-inset-bottom)); gap: 10px; }
-    body.touchplay .tp-right { flex: 1.2; align-items: center; justify-content: center; padding: 10px 6px calc(10px + env(safe-area-inset-bottom)); gap: 10px; }
-    body.touchplay .tp-steer { width: 20vw; height: 22vh; font-size: 30px; }
-    body.touchplay .tp-gas { width: 25vw; height: 17vh; font-size: 20px; }
-    body.touchplay .tp-brake { width: 18vw; height: 17vh; font-size: 13px; }
-    body.touchplay .tp-boost, body.touchplay .tp-fire { width: 21.5vw; height: 7.5vh; font-size: 13px; }
-    body.touchplay #tpPause { top: auto; bottom: calc(38vh + 10px); left: 10px; width: 40px; height: 40px; }
-    body.playing.touchplay #toast { top: auto; bottom: calc(38vh + 12px); font-size: 14px; white-space: normal; max-width: 86vw; text-align: center; }
-    body.touchplay #big { top: 18%; }
-    #pc-pad .tp-left, #pc-pad .tp-right { flex-direction: row; flex-wrap: wrap; align-content: center; justify-content: center; padding: 10px 6px; }
-    #pc-pad .tp-right { flex-direction: column; }
-    #pc-pad .tp-steer { width: 21vw; height: 34vh; font-size: 40px; }
-    #pc-pad .tp-gas { width: 26vw; height: 26vh; font-size: 22px; }
-    #pc-pad .tp-brake { width: 18vw; height: 26vh; font-size: 14px; }
-    #pc-pad .tp-boost, #pc-pad .tp-fire { width: 22vw; height: 10vh; font-size: 15px; }
+    body.touchplay #touchpad { height: 25vh; background: linear-gradient(180deg, #0f1d30, #08111d); border-top: 2px solid rgba(255,255,255,.12); }
+    body.touchplay .tp-left, body.touchplay .tp-right { padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); gap: 7px; justify-content: center; }
+    body.touchplay .tp-row { gap: 7px; }
+    body.touchplay .tp-btn { border-width: 2px; border-radius: 14px; }
+    body.touchplay .tp-steer { width: 19vw; height: 11.5vh; font-size: 24px; }
+    body.touchplay .tp-fire, body.touchplay .tp-boost { width: 19vw; height: 5.2vh; font-size: 11px; }
+    body.touchplay .tp-gas { width: 30vw; height: 17vh; font-size: 20px; }
+    body.touchplay .tp-brake { width: 15vw; height: 8vh; font-size: 10px; }
+    body.touchplay #tpPause { top: auto; bottom: calc(25vh + 10px); left: 10px; width: 38px; height: 38px; }
+    body.playing.touchplay #toast { top: auto; bottom: calc(25vh + 12px); font-size: 14px; white-space: normal; max-width: 80vw; text-align: center; }
+    body.touchplay #big { top: 20%; }
   }
+  #rotate, #pc-rotate { display: none !important; }
+  /* portrait: the game fills the top of the screen, a solid control panel sits underneath */
   #rotate, #pc-rotate { position: fixed; inset: 0; z-index: 50; align-items: center; justify-content: center; background: rgba(13,27,42,.95); font-size: 26px; font-weight: 900; color: #ffca28; text-align: center; padding: 20px; }
   /* ---- small screens ---- */
   @media (max-height: 520px), (max-width: 700px) {
@@ -176,6 +178,14 @@
   #pc-item { font-size: 28px; min-width: 10px; }
   #pc-pad .tp-right { justify-content: center; }
   #pc-rotate { display: none; }
+  #pc-pad .tp-left { align-items: flex-start; } #pc-pad .tp-right { align-items: flex-end; }
+  @media (orientation: portrait) {
+    #pc-pad .tp-left, #pc-pad .tp-right { justify-content: center; padding: 10px 8px; }
+    #pc-pad .tp-steer { width: 22vw; height: 24vh; font-size: 40px; }
+    #pc-pad .tp-fire, #pc-pad .tp-boost { width: 22vw; height: 8vh; font-size: 14px; }
+    #pc-pad .tp-gas { width: 32vw; height: 30vh; font-size: 24px; }
+    #pc-pad .tp-brake { width: 17vw; height: 14vh; font-size: 12px; }
+  }
 
   /* ---- viewer cheers on the big screen ---- */
   .cheer { position: fixed; bottom: -60px; font-size: 54px; z-index: 30; pointer-events: none; animation: cheerUp 2.5s ease-out forwards; }
@@ -207,6 +217,7 @@
 <body>
 <canvas id="c"></canvas>
 <div id="hud"></div>
+<div id="liveJoin"></div>
 <div id="big"><div id="bigT"></div><div id="bigS"></div></div>
 <div id="toast"></div>
 <div id="menu">
@@ -243,6 +254,7 @@
   <button class="opt" id="btnGfx">Graphics<b id="optGfx"></b></button>
   <button class="opt" id="btnCam">Camera<b id="optCam"></b></button>
   <button class="opt" id="btnSound">Sound<b id="optSound"></b></button>
+  <button class="opt" id="btnLiveQr">Join code while playing<b id="optLiveQr"></b></button>
   <details class="dr-help"><summary>How to play</summary>
     <p>Stay on screen! Fall behind the camera or get shunted off the edge and you're out. Last car left wins the round (+2), second gets +1, first out loses 1.</p>
     <p>Drive through <b>?</b> crates to grab a weapon and press FIRE to use it. Everyone has a boost.</p>
@@ -4251,23 +4263,34 @@ const T = THREE;
 const URLQ = new URLSearchParams(location.search);
 const JOIN_CODE = (URLQ.get('join') || '').toUpperCase().replace(/[^A-Z]/g, '');
 
+// How devices find each other: several free STUN servers, PeerJS's own relay, and (once set up)
+// a proper relay server for networks that block direct links. TURN_API is a credentials URL,
+// e.g. Metered's https://<app>.metered.live/api/v1/turn/credentials?apiKey=<key>
+const TURN_API = '';
+let EXTRA_ICE = [];
+const iceReady = !TURN_API ? Promise.resolve() : Promise.race([
+  fetch(TURN_API).then(r => r.json()).then(list => { if (Array.isArray(list)) EXTRA_ICE = list; }).catch(() => {}),
+  new Promise(r => setTimeout(r, 4000)),
+]);
 function peerOptions() {
   const host = URLQ.get('peerhost');
-  return host ? { host, port: Number(URLQ.get('peerport') || 9000), path: '/', secure: false, debug: 0 } : { debug: 0 };
+  const config = { iceServers: [
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] },
+    { urls: 'stun:stun.cloudflare.com:3478' },
+    ...EXTRA_ICE,
+    { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' },
+  ] };
+  return host ? { host, port: Number(URLQ.get('peerport') || 9000), path: '/', secure: false, debug: 0, config } : { debug: 0, config };
 }
 
 function makeTouchPad(root, onChange, opts = {}) {
   root.innerHTML = `
     <div class="tp-left">
-      <button class="tp-btn tp-steer" data-k="left">◀</button>
-      <button class="tp-btn tp-steer" data-k="right">▶</button>
+      <div class="tp-row tp-top"><button class="tp-btn tp-fire" data-k="fire">FIRE</button><button class="tp-btn tp-boost" data-k="boost">BOOST</button></div>
+      <div class="tp-row"><button class="tp-btn tp-steer" data-k="left">◀</button><button class="tp-btn tp-steer" data-k="right">▶</button></div>
     </div>
     <div class="tp-right">
-      <div class="tp-row tp-top"><button class="tp-btn tp-fire" data-k="fire">FIRE</button><button class="tp-btn tp-boost" data-k="boost">BOOST</button></div>
-      <div class="tp-row">
-        <button class="tp-btn tp-brake" data-k="brake">BRAKE</button>
-        <button class="tp-btn tp-gas" data-k="gas">GO</button>
-      </div>
+      <div class="tp-row"><button class="tp-btn tp-brake" data-k="brake">BRAKE</button><button class="tp-btn tp-gas" data-k="gas">GO</button></div>
     </div>`;
   const held = { left: new Set(), right: new Set(), gas: new Set(), brake: new Set(), boost: new Set(), fire: new Set() };
   const out = { st: 0, thr: 0, boost: false, fire: false };
@@ -4403,11 +4426,13 @@ function runController() {
   }, 1000);
 
   if (!JOIN_CODE) { status('No room code – scan the QR code on the big screen'); return; }
+  iceReady.then(() => {
   peer = new Peer(undefined, peerOptions());
   peer.on('open', () => connect());
   peer.on('error', e => {
-    if (e.type === 'peer-unavailable') status(`Room ${JOIN_CODE} not found – check the code on the big screen`);
+    if (e.type === 'peer-unavailable') status(`Room ${JOIN_CODE} isn't open – keep the game showing on the big screen`);
     else status('Connection hiccup (' + e.type + ') – retrying…');
+  });
   });
 }
 
@@ -4437,6 +4462,7 @@ const settings = {
   water: 'deadly', // deadly | bouncy
   gunner: true, // mouse rocket launcher player
   sound: 'all', // all | sfx | off
+  liveQr: true, // QR code in the corner while playing
   mode: 'knockout', // knockout | teams | laps | flag
   gfx: 'fancy', // fancy | simple | low
   cam: 'cinematic', // cinematic | classic | calm
@@ -4490,7 +4516,7 @@ scene.fog = new T.Fog(0x9fd3f0, 180, 420);
 const camera = new T.PerspectiveCamera(50, 1, 1, 1000);
 function playHeight() {
   const portraitPad = document.body.classList.contains('touchplay') && window.innerHeight > window.innerWidth;
-  return portraitPad ? Math.round(window.innerHeight * 0.62) : window.innerHeight;
+  return portraitPad ? Math.round(window.innerHeight * 0.75) : window.innerHeight;
 }
 function resize() {
   const w = window.innerWidth, h = playHeight();
@@ -5891,6 +5917,8 @@ function buildMenu() {
   document.getElementById('optSkill').textContent = SKILL_NAMES[settings.skill];
   document.getElementById('optWater').textContent = settings.water === 'deadly' ? 'Fall = out' : 'Bouncy';
   document.getElementById('optSound').textContent = SOUND_NAMES[settings.sound];
+  document.getElementById('optLiveQr').textContent = settings.liveQr ? 'On' : 'Off';
+  document.body.classList.toggle('noliveqr', !settings.liveQr);
   document.getElementById('optGun').textContent = settings.gunner ? 'On' : 'Off';
   document.getElementById('optGfx').textContent = GFX_NAMES[settings.gfx];
   document.getElementById('optAuto').textContent = settings.autoGas ? 'On' : 'Off';
@@ -5920,6 +5948,7 @@ document.getElementById('modeNext').onclick = () => cycleMode(1);
 document.getElementById('modePrev').onclick = () => cycleMode(-1);
 document.getElementById('trackNext').onclick = () => { audio(); cycleTrack(1); };
 document.getElementById('trackPrev').onclick = () => { audio(); cycleTrack(-1); };
+document.getElementById('btnLiveQr').onclick = () => { settings.liveQr = !settings.liveQr; buildMenu(); };
 document.getElementById('btnSettings').onclick = () => { audio(); document.getElementById('drawer').classList.add('open'); };
 document.getElementById('drClose').onclick = () => document.getElementById('drawer').classList.remove('open');
 document.getElementById('btnTrack').onclick = () => { audio(); cycleTrack(1); };
@@ -6434,12 +6463,15 @@ function startRoom(tries = 0, code) {
   peer.on('error', e => {
     // the code may still be held for a moment by this screen's last visit: wait, then try again
     if (e.type === 'unavailable-id' && tries < 4) { peer.destroy(); setTimeout(() => startRoom(tries + 1, tries < 2 ? code : newRoomCode()), tries < 2 ? 2500 : 0); return; }
-    if (e.type === 'peer-unavailable') return;
+    if (e.type === 'peer-unavailable') { if (typeof pendingJoin !== 'undefined' && pendingJoin) joinAttemptFailed(pendingJoin, 'unavailable'); return; }
     if (!peer.open) setJoinPanel('offline');
   });
   peer.on('disconnected', () => { setTimeout(() => { try { if (!peer.destroyed) peer.reconnect(); } catch (e) {} }, 1000); });
   peer.on('connection', conn => {
     let p = null;
+    // tell the host someone is trying, and if the link never opens, say why
+    if (state === 'menu') toast('📶 Someone is joining…');
+    setTimeout(() => { if (!conn.open && !p) toast("A player couldn't link up – the network blocked it"); }, 10000);
     conn.on('data', m => {
       if (!p) {
         // first message identifies the phone; a returning phone gets its old car back
@@ -6484,6 +6516,8 @@ function setJoinPanel(mode) {
     if (location.protocol !== 'file:') { const qr = qrcode(0, 'M'); qr.addData(joinLink()); qr.make(); qrHtml = `<div class="pj-qr">${qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}</div>`; }
     el.innerHTML = `${qrHtml}<div class="pj-txt"><b>Room <span class="pj-code">${roomCode}</span></b><br><span class="pj-long">Scan to use a phone as a controller<br></span><button class="pj-share" id="pjShare">Share link to play</button><br><span id="pj-count"></span></div>`;
     document.getElementById('pjShare').onclick = e => { e.stopPropagation(); audio(); shareRoom(); };
+    // a small code in the corner while playing, so people can join the live game at any time
+    document.getElementById('liveJoin').innerHTML = qrHtml ? `${qrHtml.replace('pj-qr', 'lj-qr')}<div>SCAN TO JOIN · ${roomCode}</div>` : `JOIN · ROOM ${roomCode}`;
     setJoinPanelCount();
   } else if (mode === 'connecting') el.innerHTML = `<div class="pj-txt"><b>Phone controller</b><br>Opening a room…</div>`;
   else el.innerHTML = `<div class="pj-txt"><b>Phone controller</b><br>Offline – needs internet</div>`;
@@ -6542,7 +6576,7 @@ if (IS_TOUCH) {
   settings.slots = ['cpu', 'cpu', 'cpu', 'cpu'];
   applyGfx(); buildMenu();
 }
-startRoom();
+iceReady.then(() => startRoom());
 
 // With touch buttons covering the bottom of the screen, aim the picture a little lower
 // so the cars sit in the clear upper part (the knock-out edge moves with it, so it stays fair)
@@ -7404,6 +7438,16 @@ function soundTick() {
 // music runs on its own timer so a slow frame never makes it stutter
 setInterval(() => { if (actx && actx.state === 'running') musicTick(); }, 60);
 window.__sound = { engines, mus, cheer, get ctx() { return actx; }, get master() { return masterBus; } };
+// phones: stop all sound the moment the page is hidden or closed, carry on when it comes back
+function pauseAudioForHidden() { if (actx && actx.state === 'running') actx.suspend().catch(() => {}); }
+document.addEventListener('visibilitychange', () => {
+  if (!actx) return;
+  if (document.hidden) pauseAudioForHidden();
+  else actx.resume().catch(() => {});
+});
+window.addEventListener('pagehide', pauseAudioForHidden);
+window.addEventListener('blur', () => { if (IS_TOUCH) pauseAudioForHidden(); });
+window.addEventListener('focus', () => { if (actx && !document.hidden) actx.resume().catch(() => {}); });
 
 // ===== src/21-net.js =====
 // ---------- Network play: laptops join a hosted game with its room code ----------
@@ -7485,22 +7529,62 @@ function netHostTick() {
 const clientInput = { st: 0, thr: 0, boost: false, fire: false };
 function clean(html) { return String(html).replace(/<\s*\/?\s*(script|iframe|object|embed|img|svg|link|style)[^>]*>/gi, '').replace(/\son\w+\s*=/gi, ' data-x='); }
 
+// Joining tries for up to 75 s and says what's wrong: the room isn't open (the host's game isn't on
+// screen), no answer, or the two devices found each other but the network won't let them link up.
+let pendingJoin = null;
+function joinMsg(pj) { return { t: 'join', role: 'player', net: true, cid: pj.cid, name: pj.name, dev: IS_TOUCH ? 'phone' : 'laptop' }; }
 function joinGame(code) {
   code = String(code || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
   if (code.length !== 4) { joinStatus('Room codes are 4 letters'); return; }
-  if (code === roomCode) { joinStatus("That's this screen's own room"); return; }
-  if (!peerHost || !peerHost.open) { joinStatus('Not online yet – check the internet connection'); return; }
-  joinStatus('Connecting to room ' + code + '…');
+  if (code === roomCode) { joinStatus("That's this screen's own room – type the code from the other screen"); return; }
   let name = ''; try { name = (document.getElementById('joinName').value || localStorage.getItem('doozie-name') || '').trim().slice(0, 12); localStorage.setItem('doozie-name', name); } catch (e) {}
   let cid; try { cid = sessionStorage.getItem('doozie-net-cid'); } catch (e) {}
   if (!cid) { cid = 'net-' + Math.random().toString(36).slice(2, 10); try { sessionStorage.setItem('doozie-net-cid', cid); } catch (e) {} }
-  const conn = peerHost.connect('doozie-' + code, { reliable: true, serialization: 'json' });
-  const failT = setTimeout(() => { if (!netClient || netClient.conn !== conn || !netClient.ok) { joinStatus("Couldn't reach room " + code + '. Is the code right, and is that game open?'); try { conn.close(); } catch (e) {} } }, 10000);
-  netClient = { conn, code, slot: -1, live: false, snap: null, lobby: null, objs: new Map(), inT: 0, ok: false, cid, name, lastMsg: performance.now() };
-  conn.on('open', () => { conn.send({ t: 'join', role: 'player', net: true, cid, name, dev: IS_TOUCH ? 'phone' : 'laptop' }); });
-  conn.on('data', m => { if (netClient && netClient.conn === conn) { netClient.ok = true; netClient.lastMsg = performance.now(); clearTimeout(failT); onHostMessage(m); } });
+  cancelJoin();
+  pendingJoin = { code, name, cid, started: performance.now(), tries: 0, lastWhy: '' };
+  attemptJoin(pendingJoin);
+}
+function cancelJoin() { if (pendingJoin) { clearTimeout(pendingJoin.t); try { if (pendingJoin.conn) pendingJoin.conn.close(); } catch (e) {} pendingJoin = null; } }
+const JOIN_TRY = {
+  unavailable: c => `Room ${c} isn't open right now. Keep the game on screen on the host's device (switching apps closes the room).`,
+  link: c => `Found room ${c}, but the two devices can't link up. This network is blocking direct connections.`,
+  noanswer: c => `No answer from room ${c} yet.`,
+};
+const JOIN_FAIL = {
+  unavailable: c => `Couldn't find room ${c}. Check the code, and keep the game open on the host's screen, then try again.`,
+  link: c => `Couldn't link up with room ${c}: the network is blocking it. Try both devices on the same Wi-Fi, or one on a phone hotspot.`,
+  noanswer: c => `Room ${c} didn't answer. Is the game open on the host's screen?`,
+};
+function attemptJoin(pj) {
+  if (pendingJoin !== pj) return;
+  if ((performance.now() - pj.started) / 1000 > 75) { joinStatus(JOIN_FAIL[pj.lastWhy || 'noanswer'](pj.code)); pendingJoin = null; return; }
+  if (!peerHost || !peerHost.open) { joinStatus('Getting online…'); pj.t = setTimeout(() => attemptJoin(pj), 1500); return; }
+  pj.tries++;
+  joinStatus(pj.tries === 1 ? `Looking for room ${pj.code}…` : `${JOIN_TRY[pj.lastWhy](pj.code)} Trying again…`);
+  const conn = peerHost.connect('doozie-' + pj.code, { reliable: true, serialization: 'json' });
+  pj.conn = conn;
+  conn.on('open', () => { if (pendingJoin === pj && pj.conn === conn) { joinStatus(`Linked to room ${pj.code} – joining…`); conn.send(joinMsg(pj)); } });
+  conn.on('data', m => {
+    if (pendingJoin === pj && pj.conn === conn) {
+      clearTimeout(pj.t); pendingJoin = null;
+      netClient = { conn, code: pj.code, slot: -1, live: false, snap: null, lobby: null, objs: new Map(), inT: 0, ok: true, cid: pj.cid, name: pj.name, lastMsg: performance.now() };
+    }
+    if (netClient && netClient.conn === conn) { netClient.lastMsg = performance.now(); onHostMessage(m); }
+  });
   conn.on('close', () => { if (netClient && netClient.conn === conn) retryJoin(); });
   conn.on('error', () => {});
+  pj.t = setTimeout(() => {
+    const pc = conn.peerConnection, st = pc ? pc.iceConnectionState : 'none';
+    joinAttemptFailed(pj, st === 'checking' || st === 'failed' || st === 'disconnected' ? 'link' : 'noanswer');
+  }, 9000);
+}
+function joinAttemptFailed(pj, why) {
+  if (pendingJoin !== pj) return;
+  clearTimeout(pj.t);
+  const c = pj.conn; pj.conn = null; try { if (c) c.close(); } catch (e) {}
+  pj.lastWhy = why;
+  joinStatus(`${JOIN_TRY[why](pj.code)} Trying again…`);
+  pj.t = setTimeout(() => attemptJoin(pj), why === 'unavailable' ? 3000 : 1500);
 }
 function retryJoin() {
   const nc = netClient; if (!nc) return;
@@ -7705,12 +7789,17 @@ function closeJoinDialog() { const d = document.getElementById('joinDlg'); if (d
 document.getElementById('joinGo').onclick = () => { audio(); joinGame(document.getElementById('joinCode').value); };
 document.getElementById('joinName').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') document.getElementById('joinCode').focus(); });
 document.getElementById('joinCode').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') joinGame(e.target.value); if (e.key === 'Escape') closeJoinDialog(); });
-document.getElementById('joinCancel').onclick = () => closeJoinDialog();
+document.getElementById('joinCancel').onclick = () => { cancelJoin(); closeJoinDialog(); };
 document.getElementById('btnJoin').onclick = () => { audio(); openJoinDialog(); };
 document.getElementById('btnLeave').onclick = () => leaveNet('You left the game');
 // a link with ?room=ABCD joins straight away (handy to send to a colleague)
-if (URLQ.get('room')) { const code = URLQ.get('room'); const tryJoin = (n) => { if (peerHost && peerHost.open) joinGame(code); else if (n < 40) setTimeout(() => tryJoin(n + 1), 250); }; tryJoin(0); }
-window.__net = { get client() { return netClient; }, joinGame, leaveNet, get room() { return roomCode; }, netPlayers };
+if (URLQ.get('room')) {
+  const code = URLQ.get('room').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
+  openJoinDialog(); document.getElementById('joinCode').value = code;
+  let known = ''; try { known = localStorage.getItem('doozie-name') || ''; } catch (e) {}
+  if (known) joinGame(code); else joinStatus('Type your name and press Join');
+}
+window.__net = { get client() { return netClient; }, get pending() { return pendingJoin; }, joinGame, leaveNet, get room() { return roomCode; }, netPlayers };
 
 })();
 </script>

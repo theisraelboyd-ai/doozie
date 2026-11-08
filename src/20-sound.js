@@ -196,3 +196,13 @@ function soundTick() {
 // music runs on its own timer so a slow frame never makes it stutter
 setInterval(() => { if (actx && actx.state === 'running') musicTick(); }, 60);
 window.__sound = { engines, mus, cheer, get ctx() { return actx; }, get master() { return masterBus; } };
+// phones: stop all sound the moment the page is hidden or closed, carry on when it comes back
+function pauseAudioForHidden() { if (actx && actx.state === 'running') actx.suspend().catch(() => {}); }
+document.addEventListener('visibilitychange', () => {
+  if (!actx) return;
+  if (document.hidden) pauseAudioForHidden();
+  else actx.resume().catch(() => {});
+});
+window.addEventListener('pagehide', pauseAudioForHidden);
+window.addEventListener('blur', () => { if (IS_TOUCH) pauseAudioForHidden(); });
+window.addEventListener('focus', () => { if (actx && !document.hidden) actx.resume().catch(() => {}); });

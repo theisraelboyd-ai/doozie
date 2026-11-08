@@ -78,12 +78,15 @@ function startRoom(tries = 0, code) {
   peer.on('error', e => {
     // the code may still be held for a moment by this screen's last visit: wait, then try again
     if (e.type === 'unavailable-id' && tries < 4) { peer.destroy(); setTimeout(() => startRoom(tries + 1, tries < 2 ? code : newRoomCode()), tries < 2 ? 2500 : 0); return; }
-    if (e.type === 'peer-unavailable') return;
+    if (e.type === 'peer-unavailable') { if (typeof pendingJoin !== 'undefined' && pendingJoin) joinAttemptFailed(pendingJoin, 'unavailable'); return; }
     if (!peer.open) setJoinPanel('offline');
   });
   peer.on('disconnected', () => { setTimeout(() => { try { if (!peer.destroyed) peer.reconnect(); } catch (e) {} }, 1000); });
   peer.on('connection', conn => {
     let p = null;
+    // tell the host someone is trying, and if the link never opens, say why
+    if (state === 'menu') toast('📶 Someone is joining…');
+    setTimeout(() => { if (!conn.open && !p) toast("A player couldn't link up – the network blocked it"); }, 10000);
     conn.on('data', m => {
       if (!p) {
         // first message identifies the phone; a returning phone gets its old car back
@@ -128,6 +131,8 @@ function setJoinPanel(mode) {
     if (location.protocol !== 'file:') { const qr = qrcode(0, 'M'); qr.addData(joinLink()); qr.make(); qrHtml = `<div class="pj-qr">${qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}</div>`; }
     el.innerHTML = `${qrHtml}<div class="pj-txt"><b>Room <span class="pj-code">${roomCode}</span></b><br><span class="pj-long">Scan to use a phone as a controller<br></span><button class="pj-share" id="pjShare">Share link to play</button><br><span id="pj-count"></span></div>`;
     document.getElementById('pjShare').onclick = e => { e.stopPropagation(); audio(); shareRoom(); };
+    // a small code in the corner while playing, so people can join the live game at any time
+    document.getElementById('liveJoin').innerHTML = qrHtml ? `${qrHtml.replace('pj-qr', 'lj-qr')}<div>SCAN TO JOIN · ${roomCode}</div>` : `JOIN · ROOM ${roomCode}`;
     setJoinPanelCount();
   } else if (mode === 'connecting') el.innerHTML = `<div class="pj-txt"><b>Phone controller</b><br>Opening a room…</div>`;
   else el.innerHTML = `<div class="pj-txt"><b>Phone controller</b><br>Offline – needs internet</div>`;
@@ -186,7 +191,7 @@ if (IS_TOUCH) {
   settings.slots = ['cpu', 'cpu', 'cpu', 'cpu'];
   applyGfx(); buildMenu();
 }
-startRoom();
+iceReady.then(() => startRoom());
 
 // With touch buttons covering the bottom of the screen, aim the picture a little lower
 // so the cars sit in the clear upper part (the knock-out edge moves with it, so it stays fair)

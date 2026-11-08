@@ -103,6 +103,10 @@
   /* ---- phone join panel ---- */
   #phoneJoin { display: flex; gap: 10px; align-items: center; background: rgba(10,20,35,.75); border: 2px solid rgba(255,255,255,.25); border-radius: 12px; padding: 8px 12px 8px 8px; font-size: 13px; line-height: 1.35; }
   #phoneJoin:empty { display: none; }
+  #liveJoin { display: none; position: fixed; right: 12px; bottom: 12px; z-index: 12; background: rgba(10,20,35,.72); border: 2px solid rgba(255,255,255,.2); border-radius: 12px; padding: 6px 6px 4px; text-align: center; font-size: 11px; font-weight: 800; letter-spacing: .5px; pointer-events: none; }
+  body.playing #liveJoin:not(:empty) { display: block; }
+  body.is-touch #liveJoin, body.netclient #liveJoin, body.noliveqr #liveJoin { display: none !important; }
+  .lj-qr { width: 92px; height: 92px; background: #fff; border-radius: 6px; padding: 2px; margin-bottom: 3px; } .lj-qr svg { width: 100%; height: 100%; display: block; }
   .pj-share { margin-top: 4px; font: inherit; font-size: 12px; font-weight: 900; padding: 5px 10px; border-radius: 8px; border: 0; background: #ffca28; color: #222; cursor: pointer; }
   body.netclient #btnTouch { display: none !important; }
   .pj-qr { width: 104px; height: 104px; background: #fff; border-radius: 6px; padding: 2px; }
@@ -116,39 +120,37 @@
   #touchpad, #tpPause { display: none; }
   body.touchplay #touchpad { display: flex; position: fixed; inset: auto 0 0 0; height: 46vh; pointer-events: none; z-index: 15; }
   body.touchplay #tpPause { display: block; position: fixed; top: 10px; left: 10px; z-index: 16; width: 46px; height: 46px; border-radius: 50%; border: 0; background: rgba(10,20,35,.7); color: #fff; font-weight: 900; font-size: 16px; }
-  .tp-left, .tp-right { flex: 1; display: flex; align-items: flex-end; gap: 12px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
-  .tp-right { flex-direction: column; align-items: flex-end; justify-content: flex-end; }
+  .tp-left, .tp-right { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
+  .tp-left { align-items: flex-start; } .tp-right { align-items: flex-end; }
+  .tp-right .tp-row { align-items: flex-end; }
   .tp-row { display: flex; gap: 12px; }
   .tp-btn { pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; border: 3px solid rgba(255,255,255,.5); border-radius: 22px; background: rgba(10,20,35,.45); color: #fff; font: inherit; font-weight: 900; font-size: 22px; }
   .tp-btn.on { background: rgba(255,255,255,.45); transform: scale(.96); }
-  .tp-steer { width: min(22vw, 140px); height: min(22vw, 140px); font-size: 40px; }
-  .tp-gas { width: min(24vw, 150px); height: min(24vw, 130px); background: rgba(46,125,50,.6); }
-  .tp-brake { width: min(18vw, 110px); height: min(24vw, 130px); background: rgba(198,40,40,.55); font-size: 18px; }
-  .tp-boost { width: min(14vw, 128px); height: 54px; background: rgba(239,108,0,.6); font-size: 16px; }
-  .tp-fire { width: min(15vw, 140px); height: 54px; background: rgba(171,71,188,.65); font-size: 18px; }
+  .tp-steer { width: min(16vw, 110px); height: min(16vw, 100px); font-size: 30px; }
+  .tp-gas { width: min(20vw, 130px); height: min(22vw, 120px); background: rgba(46,125,50,.6); }
+  .tp-brake { width: min(12vw, 80px); height: min(12vw, 64px); background: rgba(198,40,40,.55); font-size: 13px; }
+  .tp-boost { width: min(16vw, 110px); height: 40px; background: rgba(239,108,0,.6); font-size: 13px; }
+  .tp-fire { width: min(16vw, 110px); height: 40px; background: rgba(171,71,188,.65); font-size: 13px; }
   .touchonly { display: none; }
   body.is-touch .touchonly { display: inline-block; }
   #btnTouch { margin-top: 10px; font: inherit; font-size: 18px; font-weight: 800; padding: 10px 22px; border-radius: 12px; border: 2px solid #ffca28; background: rgba(255,202,40,.12); color: #ffca28; }
   #rotate, #pc-rotate { display: none !important; }
-  /* portrait: the game fills the top of the screen, a solid control panel sits underneath */
+  /* portrait: the game fills the top of the screen, a slim control strip sits underneath */
   @media (orientation: portrait) {
-    body.touchplay #touchpad { height: 38vh; background: linear-gradient(180deg, #0f1d30, #08111d); border-top: 2px solid rgba(255,255,255,.12); }
-    body.touchplay .tp-left { flex: 1; align-items: center; justify-content: center; padding: 10px 6px calc(10px + env(safe-area-inset-bottom)); gap: 10px; }
-    body.touchplay .tp-right { flex: 1.2; align-items: center; justify-content: center; padding: 10px 6px calc(10px + env(safe-area-inset-bottom)); gap: 10px; }
-    body.touchplay .tp-steer { width: 20vw; height: 22vh; font-size: 30px; }
-    body.touchplay .tp-gas { width: 25vw; height: 17vh; font-size: 20px; }
-    body.touchplay .tp-brake { width: 18vw; height: 17vh; font-size: 13px; }
-    body.touchplay .tp-boost, body.touchplay .tp-fire { width: 21.5vw; height: 7.5vh; font-size: 13px; }
-    body.touchplay #tpPause { top: auto; bottom: calc(38vh + 10px); left: 10px; width: 40px; height: 40px; }
-    body.playing.touchplay #toast { top: auto; bottom: calc(38vh + 12px); font-size: 14px; white-space: normal; max-width: 86vw; text-align: center; }
-    body.touchplay #big { top: 18%; }
-    #pc-pad .tp-left, #pc-pad .tp-right { flex-direction: row; flex-wrap: wrap; align-content: center; justify-content: center; padding: 10px 6px; }
-    #pc-pad .tp-right { flex-direction: column; }
-    #pc-pad .tp-steer { width: 21vw; height: 34vh; font-size: 40px; }
-    #pc-pad .tp-gas { width: 26vw; height: 26vh; font-size: 22px; }
-    #pc-pad .tp-brake { width: 18vw; height: 26vh; font-size: 14px; }
-    #pc-pad .tp-boost, #pc-pad .tp-fire { width: 22vw; height: 10vh; font-size: 15px; }
+    body.touchplay #touchpad { height: 25vh; background: linear-gradient(180deg, #0f1d30, #08111d); border-top: 2px solid rgba(255,255,255,.12); }
+    body.touchplay .tp-left, body.touchplay .tp-right { padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); gap: 7px; justify-content: center; }
+    body.touchplay .tp-row { gap: 7px; }
+    body.touchplay .tp-btn { border-width: 2px; border-radius: 14px; }
+    body.touchplay .tp-steer { width: 19vw; height: 11.5vh; font-size: 24px; }
+    body.touchplay .tp-fire, body.touchplay .tp-boost { width: 19vw; height: 5.2vh; font-size: 11px; }
+    body.touchplay .tp-gas { width: 30vw; height: 17vh; font-size: 20px; }
+    body.touchplay .tp-brake { width: 15vw; height: 8vh; font-size: 10px; }
+    body.touchplay #tpPause { top: auto; bottom: calc(25vh + 10px); left: 10px; width: 38px; height: 38px; }
+    body.playing.touchplay #toast { top: auto; bottom: calc(25vh + 12px); font-size: 14px; white-space: normal; max-width: 80vw; text-align: center; }
+    body.touchplay #big { top: 20%; }
   }
+  #rotate, #pc-rotate { display: none !important; }
+  /* portrait: the game fills the top of the screen, a solid control panel sits underneath */
   #rotate, #pc-rotate { position: fixed; inset: 0; z-index: 50; align-items: center; justify-content: center; background: rgba(13,27,42,.95); font-size: 26px; font-weight: 900; color: #ffca28; text-align: center; padding: 20px; }
   /* ---- small screens ---- */
   @media (max-height: 520px), (max-width: 700px) {
@@ -176,6 +178,14 @@
   #pc-item { font-size: 28px; min-width: 10px; }
   #pc-pad .tp-right { justify-content: center; }
   #pc-rotate { display: none; }
+  #pc-pad .tp-left { align-items: flex-start; } #pc-pad .tp-right { align-items: flex-end; }
+  @media (orientation: portrait) {
+    #pc-pad .tp-left, #pc-pad .tp-right { justify-content: center; padding: 10px 8px; }
+    #pc-pad .tp-steer { width: 22vw; height: 24vh; font-size: 40px; }
+    #pc-pad .tp-fire, #pc-pad .tp-boost { width: 22vw; height: 8vh; font-size: 14px; }
+    #pc-pad .tp-gas { width: 32vw; height: 30vh; font-size: 24px; }
+    #pc-pad .tp-brake { width: 17vw; height: 14vh; font-size: 12px; }
+  }
 
   /* ---- viewer cheers on the big screen ---- */
   .cheer { position: fixed; bottom: -60px; font-size: 54px; z-index: 30; pointer-events: none; animation: cheerUp 2.5s ease-out forwards; }
@@ -207,6 +217,7 @@
 <body>
 <canvas id="c"></canvas>
 <div id="hud"></div>
+<div id="liveJoin"></div>
 <div id="big"><div id="bigT"></div><div id="bigS"></div></div>
 <div id="toast"></div>
 <div id="menu">
@@ -243,6 +254,7 @@
   <button class="opt" id="btnGfx">Graphics<b id="optGfx"></b></button>
   <button class="opt" id="btnCam">Camera<b id="optCam"></b></button>
   <button class="opt" id="btnSound">Sound<b id="optSound"></b></button>
+  <button class="opt" id="btnLiveQr">Join code while playing<b id="optLiveQr"></b></button>
   <details class="dr-help"><summary>How to play</summary>
     <p>Stay on screen! Fall behind the camera or get shunted off the edge and you're out. Last car left wins the round (+2), second gets +1, first out loses 1.</p>
     <p>Drive through <b>?</b> crates to grab a weapon and press FIRE to use it. Everyone has a boost.</p>

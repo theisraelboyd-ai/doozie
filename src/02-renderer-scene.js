@@ -12,7 +12,7 @@ scene.fog = new T.Fog(0x9fd3f0, 180, 420);
 const camera = new T.PerspectiveCamera(50, 1, 1, 1000);
 function playHeight() {
   const portraitPad = document.body.classList.contains('touchplay') && window.innerHeight > window.innerWidth;
-  return portraitPad ? Math.round(window.innerHeight * 0.62) : window.innerHeight;
+  return portraitPad ? Math.round(window.innerHeight * 0.75) : window.innerHeight;
 }
 function resize() {
   const w = window.innerWidth, h = playHeight();

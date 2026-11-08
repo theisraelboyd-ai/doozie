@@ -21,6 +21,7 @@ const settings = {
   water: 'deadly', // deadly | bouncy
   gunner: true, // mouse rocket launcher player
   sound: 'all', // all | sfx | off
+  liveQr: true, // QR code in the corner while playing
   mode: 'knockout', // knockout | teams | laps | flag
   gfx: 'fancy', // fancy | simple | low
   cam: 'cinematic', // cinematic | classic | calm

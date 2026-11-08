@@ -105,6 +105,8 @@ function buildMenu() {
   document.getElementById('optSkill').textContent = SKILL_NAMES[settings.skill];
   document.getElementById('optWater').textContent = settings.water === 'deadly' ? 'Fall = out' : 'Bouncy';
   document.getElementById('optSound').textContent = SOUND_NAMES[settings.sound];
+  document.getElementById('optLiveQr').textContent = settings.liveQr ? 'On' : 'Off';
+  document.body.classList.toggle('noliveqr', !settings.liveQr);
   document.getElementById('optGun').textContent = settings.gunner ? 'On' : 'Off';
   document.getElementById('optGfx').textContent = GFX_NAMES[settings.gfx];
   document.getElementById('optAuto').textContent = settings.autoGas ? 'On' : 'Off';
@@ -134,6 +136,7 @@ document.getElementById('modeNext').onclick = () => cycleMode(1);
 document.getElementById('modePrev').onclick = () => cycleMode(-1);
 document.getElementById('trackNext').onclick = () => { audio(); cycleTrack(1); };
 document.getElementById('trackPrev').onclick = () => { audio(); cycleTrack(-1); };
+document.getElementById('btnLiveQr').onclick = () => { settings.liveQr = !settings.liveQr; buildMenu(); };
 document.getElementById('btnSettings').onclick = () => { audio(); document.getElementById('drawer').classList.add('open'); };
 document.getElementById('drClose').onclick = () => document.getElementById('drawer').classList.remove('open');
 document.getElementById('btnTrack').onclick = () => { audio(); cycleTrack(1); };
