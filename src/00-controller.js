@@ -11,9 +11,19 @@ const JOIN_CODE = (URLQ.get('join') || '').toUpperCase().replace(/[^A-Z]/g, '');
 // a proper relay server for networks that block direct links. TURN_API is a credentials URL,
 // e.g. Metered's https://<app>.metered.live/api/v1/turn/credentials?apiKey=<key>
 const TURN_API = '';
-let EXTRA_ICE = [];
+// Metered relay (free plan, 20 GB a month): used only when two devices can't link up directly.
+// These are relay-only credentials, meant to sit in a web page; they can be replaced in the
+// Metered dashboard (TURN Server page) if they ever leak or the quota gets used up.
+const RELAY_USER = 'f7d795910cc5cde9fc45b4fe', RELAY_PASS = 'zWy5IUt/DcZsGoOn';
+let EXTRA_ICE = [
+  { urls: 'stun:stun.relay.metered.ca:80' },
+  { urls: 'turn:standard.relay.metered.ca:80', username: RELAY_USER, credential: RELAY_PASS },
+  { urls: 'turn:standard.relay.metered.ca:80?transport=tcp', username: RELAY_USER, credential: RELAY_PASS },
+  { urls: 'turn:standard.relay.metered.ca:443', username: RELAY_USER, credential: RELAY_PASS },
+  { urls: 'turns:standard.relay.metered.ca:443?transport=tcp', username: RELAY_USER, credential: RELAY_PASS },
+];
 const iceReady = !TURN_API ? Promise.resolve() : Promise.race([
-  fetch(TURN_API).then(r => r.json()).then(list => { if (Array.isArray(list)) EXTRA_ICE = list; }).catch(() => {}),
+  fetch(TURN_API).then(r => r.json()).then(list => { if (Array.isArray(list)) EXTRA_ICE = list.concat(EXTRA_ICE); }).catch(() => {}),
   new Promise(r => setTimeout(r, 4000)),
 ]);
 function peerOptions() {
