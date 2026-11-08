@@ -82,6 +82,19 @@ Pick with the **Mode** button on the menu.
 | Lap Race | First to finish 3 laps. Fall off or get left behind and you come back at the back of the pack a moment later, blinking and see-through. |
 | Hold the Flag | Grab the chequered flag and keep it for 20 seconds. Ram the holder to steal it; a spin-out or a hit drops it on the road. |
 
+## Cars
+
+Click the car name on a player's slot (or press **LB/RB** on a controller in the menu) to change body. Every body keeps its player's colour.
+
+| Car | Handling |
+|---|---|
+| 🚗 Classic | All-rounder |
+| 🏎️ Racer | Highest top speed, slides more in corners |
+| 🛻 Buggy | Quickest off the line, turns sharpest, easy to knock around |
+| 🚙 Monster | Slow, but heavy: shoves everyone and barely moves when hit |
+| 🚐 Van | Heavy and steady |
+| 🎲 Random | A different body each match |
+
 ## Performance
 
 - **Graphics** (button or **V**): *Fancy* (shadows, bloom, depth of field, real lantern lights), *Simple* (no post effects or shadows), *Low* (lower resolution, no fog banks) for weak laptops and phones.

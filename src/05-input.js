@@ -53,6 +53,9 @@ function pollPads() {
       if (hit(0)) { if (padSlot(i) < 0) joinPad(i); }
       if (hit(1) || hit(8)) leavePad(i);
       if (hit(9)) startMatch();
+      const s = padSlot(i);
+      if (s >= 0 && (hit(5) || hit(15))) cycleCar(s, 1);
+      if (s >= 0 && (hit(4) || hit(14))) cycleCar(s, -1);
     } else if (state === 'matchEnd') {
       if (hit(0) || hit(9)) { startMatch(); }
       if (hit(1) || hit(8)) toMenu();

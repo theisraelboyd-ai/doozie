@@ -7,17 +7,17 @@ function driveCar(car, inp, dt) {
   let vl = car.vel.x * rx + car.vel.y * rz;
   const lat = (car.pos.x - P[car.idx].x) * NRM[car.idx].x + (car.pos.z - P[car.idx].z) * NRM[car.idx].z;
   const onVerge = Math.abs(lat) > ROAD_W;
-  const skillMul = car.human ? 1 : SKILL_SPEED[settings.skill];
+  const skillMul = car.human ? 1 : SKILL_SPEED[settings.skill], st8 = car.stats || CAR_TYPES.classic;
   const inMud = !onVerge && MUD[car.idx] > 0.5;
-  const maxv = (onVerge ? 22 : inMud ? 17 : MAXV) * skillMul * (car.burn > 0 ? 0.65 : 1) * (car.ram > 0 ? 1.3 : 1);
-  if (inp.thr > 0) vf += ACC * inp.thr * dt * (vf < maxv ? 1 : 0);
+  const maxv = (onVerge ? 22 : inMud ? 17 : MAXV * st8.top) * skillMul * (car.burn > 0 ? 0.65 : 1) * (car.ram > 0 ? 1.3 : 1);
+  if (inp.thr > 0) vf += ACC * st8.acc * inp.thr * dt * (vf < maxv ? 1 : 0);
   else if (inp.thr < 0) vf += (vf > 0 ? -BRAKE : -ACC * 0.6) * -inp.thr * dt;
   if (vf < -12) vf = -12;
   if (vf > maxv) vf -= (vf - maxv) * 2.5 * dt;
   vf -= vf * (inp.thr === 0 ? 0.9 : 0.15) * dt;
-  vl *= Math.exp(-(car.slip > 0 ? GRIP * 0.12 : GRIP) * dt); // oil = almost no grip
+  vl *= Math.exp(-(car.slip > 0 ? GRIP * 0.12 : GRIP * st8.grip) * dt); // oil = almost no grip
   const steerScale = Math.max(-1, Math.min(1, vf / 7));
-  car.h -= inp.st * TURN * steerScale * dt;
+  car.h -= inp.st * TURN * st8.turn * steerScale * dt;
   if (car.spin > 0) { car.spin -= dt; car.h += 9 * dt; }
   if (car.boostCd > 0) car.boostCd -= dt;
   if (inp.boost && car.boostCd <= 0) {
@@ -44,7 +44,9 @@ function collide() {
     if (rv < 0) {
       const j = -rv * 0.85;
       // a ramming car hits much harder and barely slows
-      const ja = j * (A.ram > 0 ? 0.3 : B.ram > 0 ? 2.6 : 1), jb = j * (B.ram > 0 ? 0.3 : A.ram > 0 ? 2.6 : 1);
+      // heavier bodies shove harder and get shoved less
+      const mA = (A.stats || CAR_TYPES.classic).mass, mB = (B.stats || CAR_TYPES.classic).mass, ka = 2 * mB / (mA + mB), kb = 2 * mA / (mA + mB);
+      const ja = j * ka * (A.ram > 0 ? 0.3 : B.ram > 0 ? 2.6 : 1), jb = j * kb * (B.ram > 0 ? 0.3 : A.ram > 0 ? 2.6 : 1);
       A.vel.x -= nx * ja; A.vel.y -= nz * ja; B.vel.x += nx * jb; B.vel.y += nz * jb;
       if (-rv > 5) flagBump(A, B);
       if (-rv > 6) {

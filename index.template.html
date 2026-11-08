@@ -20,6 +20,9 @@
   .card .bst i { display: block; height: 100%; background: #ff9800; width: 100%; }
   .card .itm { position: absolute; right: -14px; top: -14px; min-width: 36px; height: 36px; border-radius: 50%; background: rgba(10,20,35,.9); border: 2px solid rgba(255,255,255,.5); font-size: 20px; line-height: 32px; text-align: center; }
   .card .itm:empty { display: none; } .card .itm small { font-size: 10px; }
+  .slot .car { margin: 6px auto 2px; padding: 4px 8px; border-radius: 8px; background: rgba(255,255,255,.1); font-size: 13px; font-weight: 800; cursor: pointer; }
+  .slot .car:hover { background: rgba(255,255,255,.22); }
+  .slot .car small { display: block; font-size: 10px; font-weight: 600; opacity: .7; }
   .card .md { font-size: 12px; font-weight: 800; letter-spacing: .5px; min-height: 0; }
   .card .md:empty { display: none; }
   .card.flag { box-shadow: 0 0 0 3px #fff, 0 0 22px rgba(255,255,255,.6); }
@@ -167,7 +170,7 @@
   </div>
   <button id="btnTouch" class="touchonly">📱 Play on this phone</button>
   <button id="go">START (Enter / ☰ Start)</button>
-  <div class="rules"><b style="color:#ffca28">Controllers:</b> press A to join · B to leave · START to begin.<br>Click a car to switch it between Keyboard, Computer and Empty.<br>
+  <div class="rules"><b style="color:#ffca28">Controllers:</b> press A to join · LB/RB to change car · B to leave · START to begin.<br>Click a slot to switch it between Keyboard, Computer and Empty · click the car name to change car.<br>
     Stay on screen! Fall behind the camera or get shunted off the edge and you're out.
     Last car left wins the round (+2), second gets +1, first out loses 1. First to the target wins.<br>
     Drive through <b>?</b> crates to grab a weapon, press FIRE to use it. Each player has a boost. Esc pauses. B / Z call Bigfoot / the Ghost car. V switches Fancy / Simple graphics, C changes the camera.<br>

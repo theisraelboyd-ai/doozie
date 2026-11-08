@@ -38,6 +38,8 @@ function startMatch() {
   if (activeCars().length < 2) { flashMsg('Need at least 2 cars', 1.5); return; }
   if (settings.mode === 'teams' && new Set(activeCars().map(teamOf)).size < 2) { flashMsg('Teams needs a car on each side (Red/Gold vs Blue/Green)', 2.5); return; }
   teamPts = [0, 0];
+  cars.forEach((c, i) => setCarType(c, settings.carOf[i]));
+  applyGfx(); // new bodies need their headlights set for night tracks
   // pick the track (Random chooses a different one each match)
   const want = settings.track === 'random' ? TRACKS[Math.floor(Math.random() * TRACKS.length)].id : settings.track;
   if (!curTrack || curTrack.id !== want) buildTrack(want);

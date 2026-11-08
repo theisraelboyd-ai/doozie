@@ -50,6 +50,13 @@ function updateHud(force) {
 }
 
 // Menu
+function cycleCar(i, dir) {
+  const k = CAR_ORDER.indexOf(settings.carOf[i]);
+  settings.carOf[i] = CAR_ORDER[(k + dir + CAR_ORDER.length) % CAR_ORDER.length];
+  if (settings.carOf[i] !== 'random') setCarType(cars[i], settings.carOf[i]);
+  tone(520 + 60 * CAR_ORDER.indexOf(settings.carOf[i]), 0.06, 'square', 0.05);
+  buildMenu();
+}
 function buildMenu() {
   const wrap = document.getElementById('slots'); wrap.innerHTML = '';
   COLORS.forEach((c, i) => {
@@ -58,9 +65,11 @@ function buildMenu() {
     d.className = 'slot ' + s; d.style.borderColor = c.css;
     d.innerHTML = `<div class="sw" style="background:${c.css}"></div><div class="nm">${c.name}</div>
       <div class="ty">${s === 'keys' ? 'KEYBOARD' : s === 'pad' ? 'CONTROLLER ' + (settings.padOf[i] + 1) : s === 'phone' ? 'PHONE' : s === 'touch' ? 'THIS SCREEN' : s === 'cpu' ? 'COMPUTER' : 'EMPTY'}</div>
+      ${s !== 'off' ? `<div class="car" data-car="${i}" title="Change car">${CAR_TYPES[settings.carOf[i]].icon} ${CAR_TYPES[settings.carOf[i]].name} <small>${CAR_TYPES[settings.carOf[i]].blurb}</small></div>` : ''}
       <div class="ks">${s === 'keys' ? KEYSETS[i].label : s === 'pad' ? 'B to leave' : s === 'phone' ? 'click to remove' : s === 'touch' ? 'touch buttons' : s === 'cpu' ? 'drives itself' : 'click to add'}</div>`;
-    d.onclick = () => {
+    d.onclick = e => {
       audio(); tone(660, 0.05, 'square', 0.06);
+      if (e.target.closest('.car')) { cycleCar(i, 1); return; }
       if (s === 'phone') { const p = phoneForSlot(i); if (p) unseatPhone(p, true); return; }
       if (s === 'pad') settings.padOf[i] = null;
       settings.slots[i] = s === 'keys' ? 'cpu' : s === 'cpu' ? 'off' : (s === 'pad' || s === 'touch') ? 'cpu' : (IS_TOUCH ? 'cpu' : 'keys');

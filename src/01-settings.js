@@ -13,6 +13,7 @@ const KEYSETS = [
 ];
 const settings = {
   slots: ['keys', 'keys', 'cpu', 'cpu'], // keys | pad | cpu | off
+  carOf: ['classic', 'classic', 'classic', 'classic'], // body each colour drives
   padOf: [null, null, null, null], // gamepad index driving each slot
   autoGas: false, // kids assist: accelerate automatically
   target: 5,
@@ -33,7 +34,7 @@ const CAM_NAMES = { cinematic: 'Cinematic', classic: 'Classic', calm: 'Calm' };
 const IS_TOUCH = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
 const CREATURE_NAMES_UI = { off: 'Off', own: 'Own track', anywhere: 'Anywhere' };
 
-const GFX_ORDER = ['low', 'simple', 'fancy'], GFX_NAMES = { low: 'Low', simple: 'Simple', fancy: 'Fancy' };
+const GFX_ORDER = ['fancy', 'simple', 'low'], GFX_NAMES = { low: 'Low', simple: 'Simple', fancy: 'Fancy' };
 function nextGfx() { settings.gfx = GFX_ORDER[(GFX_ORDER.indexOf(settings.gfx) + 1) % 3]; }
 const MODE_ORDER = ['knockout', 'teams', 'laps', 'flag'];
 const MODE_NAMES = { knockout: 'Knockout', teams: 'Teams', laps: 'Lap Race', flag: 'Hold the Flag' };
@@ -42,4 +43,14 @@ const MODE_TAGS = {
   teams: 'Red &amp; Gold vs Blue &amp; Green · last team on screen wins',
   laps: 'First to finish 3 laps · fall behind and you restart at the back',
   flag: 'Grab the flag and hold on · ram the holder to steal it',
+};
+const CAR_ORDER = ['classic', 'racer', 'buggy', 'monster', 'van', 'random'];
+// top: top speed · acc: pick-up · grip: cornering · turn: steering · mass: how hard you shove and how little you're shoved
+const CAR_TYPES = {
+  classic: { name: 'Classic', icon: '🚗', blurb: 'all-rounder', top: 1, acc: 1, grip: 1, turn: 1, mass: 1 },
+  racer: { name: 'Racer', icon: '🏎️', blurb: 'fast · slippy', top: 1.1, acc: 1.02, grip: 0.82, turn: 1, mass: 0.85 },
+  buggy: { name: 'Buggy', icon: '🛻', blurb: 'quick · nimble · light', top: 0.95, acc: 1.2, grip: 1.12, turn: 1.12, mass: 0.75 },
+  monster: { name: 'Monster', icon: '🚙', blurb: 'slow · heavy · bully', top: 0.9, acc: 0.88, grip: 0.95, turn: 0.88, mass: 1.75 },
+  van: { name: 'Van', icon: '🚐', blurb: 'heavy · steady', top: 0.95, acc: 0.92, grip: 1.05, turn: 0.92, mass: 1.4 },
+  random: { name: 'Random', icon: '🎲', blurb: 'surprise me' },
 };
