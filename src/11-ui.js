@@ -73,6 +73,7 @@ function buildMenu() {
   document.getElementById('optAuto').textContent = settings.autoGas ? 'On' : 'Off';
   document.getElementById('optCam').textContent = CAM_NAMES[settings.cam];
   document.getElementById('optWeapons').textContent = settings.weapons ? 'On' : 'Off';
+  document.getElementById('optCreatures').textContent = CREATURE_NAMES_UI[settings.creatures];
 }
 document.getElementById('btnTarget').onclick = () => { const o = [3, 5, 8, 10]; settings.target = o[(o.indexOf(settings.target) + 1) % o.length]; buildMenu(); };
 document.getElementById('btnSkill').onclick = () => { settings.skill = (settings.skill + 1) % 3; buildMenu(); };
@@ -85,6 +86,7 @@ function cycleTrack() {
   if (settings.track !== 'random') buildTrack(settings.track);
   buildMenu();
 }
+document.getElementById('btnCreatures').onclick = () => { const o = ['off', 'own', 'anywhere']; settings.creatures = o[(o.indexOf(settings.creatures) + 1) % 3]; buildMenu(); };
 document.getElementById('btnWeapons').onclick = () => { settings.weapons = !settings.weapons; buildMenu(); };
 document.getElementById('btnTrack').onclick = () => { audio(); cycleTrack(); };
 function cycleCam() { settings.cam = CAM_STYLES[(CAM_STYLES.indexOf(settings.cam) + 1) % CAM_STYLES.length]; buildMenu(); }
@@ -108,6 +110,9 @@ function toMenu() {
 }
 
 function onKey(code) {
+  // B / Z summon Bigfoot / the Ghost car during a race (for the host, or for testing)
+  if (state === 'race' && code === 'KeyB') { if (spawnBigfoot()) toast('<b>BIGFOOT</b> summoned!'); return; }
+  if (state === 'race' && code === 'KeyZ') { if (spawnGhost()) toast('The <b>Ghost car</b> is coming…'); return; }
   if (code === 'KeyC') { cycleCam(); toast(`Camera: <b>${CAM_NAMES[settings.cam]}</b>`); return; }
   if (code === 'KeyV') { settings.gfx = settings.gfx === 'fancy' ? 'simple' : 'fancy'; applyGfx(); buildMenu(); toast(`Graphics: <b>${settings.gfx === 'fancy' ? 'Fancy' : 'Simple'}</b>`); return; }
   if (state === 'menu') { if (code === 'Enter' || code === 'Space') startMatch(); return; }

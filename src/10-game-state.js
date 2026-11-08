@@ -21,7 +21,7 @@ function placeCars(atIdx) {
     const w = side * 3.6;
     c.idx = k; c.pos.set(P[k].x + NRM[k].x * w, 0, P[k].z + NRM[k].z * w);
     c.h = Math.atan2(TAN[k].x, TAN[k].z);
-    c.vel.set(0, 0); c.y = 0; c.vy = 0; c.alive = true; c.falling = false; c.off = 0; c.warn = 0; c.spin = 0; c.boostCd = 0;
+    c.vel.set(0, 0); c.y = 0; c.vy = 0; c.alive = true; c.falling = false; c.lost = false; c.off = 0; c.warn = 0; c.spin = 0; c.boostCd = 0;
     c.mesh.group.visible = c.mesh.shadow.visible = c.mesh.ring.visible = true;
     c.mesh.group.rotation.set(0, c.h, 0);
     c.prog = atIdx - row * Math.round(7 / SPACING);
@@ -49,7 +49,7 @@ function startMatch() {
 
 function newRound(atIdx) {
   roundNo++;
-  clearCreature();
+  clearCreature(); resetAmbient();
   outOrder = [];
   placeCars(atIdx);
   resetWeapons();
@@ -66,7 +66,10 @@ function knockOut(car, why) {
   car.alive = false;
   rumble(car, 1, 1, 450);
   const remaining = activeCars().filter(c => c.alive && !c.falling).length;
-  if (car.falling) {
+  if (car.lost) {
+    burst(car.pos.x, 1.5, car.pos.z, 0x2e7d32, 26, 9, 9, 1.1); burst(car.pos.x, 2, car.pos.z, 0x8bc34a, 14, 6, 10, 0.9);
+    tone(520, 0.12, 'square', 0.1, 600); setTimeout(() => noise(0.35, 0.2, 2500), 60);
+  } else if (car.falling) {
     noise(0.5, 0.3, 1200);
     burst(car.pos.x, -0.5, car.pos.z, 0xe3f2fd, 26, 7, 10, 1);
   } else {

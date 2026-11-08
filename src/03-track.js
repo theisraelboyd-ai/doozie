@@ -169,85 +169,131 @@ KITS.harbour = function (def) {
   }
 };
 
+// Bigfoot Woods: a dirt trail through thick forest at road level. Leave the road and the trees swallow you.
+function nearestOnTrack(x, z) {
+  let best = 1e9, bi = 0;
+  for (let i = 0; i < N; i += 3) { const dx = x - P[i].x, dz = z - P[i].z, d = dx * dx + dz * dz; if (d < best) { best = d; bi = i; } }
+  return { d: Math.sqrt(best), i: bi };
+}
+function softTexture(r, g, b) {
+  const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+  const c = cv.getContext('2d'), gr = c.createRadialGradient(64, 64, 4, 64, 64, 64);
+  gr.addColorStop(0, `rgba(${r},${g},${b},1)`); gr.addColorStop(0.55, `rgba(${r},${g},${b},.45)`); gr.addColorStop(1, `rgba(${r},${g},${b},0)`);
+  c.fillStyle = gr; c.fillRect(0, 0, 128, 128);
+  return new T.CanvasTexture(cv);
+}
 KITS.forest = function (def) {
-  curTrack.fallText = 'fell into the ravine';
-  curTrack.sky = { fancy: 0xb5cbbf, simple: 0x9cb9aa, fogNear: 120, fogFar: 360 };
-  const cMoss = new T.Color(0x4f8a3c), cPlank = new T.Color(0x8b6a43), cDirt = new T.Color(0x7a5d40);
-  const cMud = new T.Color(0x3e2c1c), cK1 = new T.Color(0xe8dcc0), cK2 = new T.Color(0x6d4c2f), cTyre = new T.Color(0x5b4632);
-  ribbon(k => -(ROAD_W + SH[k]), k => ROAD_W + SH[k], 0, k => cMoss.clone().lerp(cPlank, NARROW[k]));
-  ribbon(k => -ROAD_W, k => ROAD_W, 0.03, k => cDirt.clone().lerp(cPlank, NARROW[k] * 0.8).lerp(cMud, MUD[k]));
+  curTrack.fallText = 'got lost in the woods';
+  curTrack.edge = 'woods';
+  curTrack.sky = { fancy: 0xa7b7ae, simple: 0x98aca1, fogNear: 18, fogFar: 150 };
+  const cMoss = new T.Color(0x4f7f3a), cDirt = new T.Color(0x7a5d40), cMud = new T.Color(0x3e2c1c);
+  const cK1 = new T.Color(0xe8dcc0), cK2 = new T.Color(0x6d4c2f), cTyre = new T.Color(0x5b4632), cRoot = new T.Color(0x3d5c2c);
+  ribbon(k => -(ROAD_W + SH[k]), k => ROAD_W + SH[k], 0, k => cMoss.clone().lerp(cRoot, NARROW[k]));
+  ribbon(k => -ROAD_W, k => ROAD_W, 0.03, k => cDirt.clone().lerp(cMud, MUD[k]));
   ribbon(k => ROAD_W - 0.9, k => ROAD_W, 0.06, (k, i) => ((i >> 2) % 2 ? cK1 : cK2));
   ribbon(k => -ROAD_W, k => -ROAD_W + 0.9, 0.06, (k, i) => ((i >> 2) % 2 ? cK1 : cK2));
-  // faint tyre ruts in the dirt
   ribbon(k => -3.6, k => -2.6, 0.045, () => cTyre);
   ribbon(k => 2.6, k => 3.6, 0.045, () => cTyre);
-  skirts(60, 0x5f5850);
-  // the ravine: a misty floor far below
-  const floor = new T.Mesh(new T.PlaneGeometry(2000, 2000), new T.MeshStandardMaterial({ color: 0x2f3e36, roughness: 1 }));
-  floor.rotation.x = -Math.PI / 2; floor.position.y = -60; addTo(floor);
-  const mistMat = new T.MeshBasicMaterial({ color: 0xc9d8d0, transparent: true, opacity: 0.1, depthWrite: false });
-  for (let k = 0; k < 3; k++) { const mist = new T.Mesh(new T.PlaneGeometry(2000, 2000), mistMat); mist.rotation.x = -Math.PI / 2; mist.position.y = -14 - k * 12; addTo(mist); }
-  // pine tree parts (shared geometry)
-  const trunkG = new T.CylinderGeometry(0.35, 0.5, 1, 6), coneG = new T.ConeGeometry(1, 1, 7);
-  const trunkM = new T.MeshStandardMaterial({ color: 0x5b3b22, roughness: 1 });
-  const pineMs = [0x1f5a32, 0x2a6b3a, 0x1a4d2c, 0x34703f].map(c => new T.MeshStandardMaterial({ color: c, roughness: 0.9, flatShading: true }));
-  function pine(x, y, z, h) {
-    const t = new T.Mesh(trunkG, trunkM); t.scale.set(1, h * 0.35, 1); t.position.set(x, y + h * 0.17, z); t.castShadow = true; addTo(t);
-    const m = pineMs[Math.floor(rnd() * pineMs.length)];
-    for (let k = 0; k < 3; k++) { const c = new T.Mesh(coneG, m); const s = h * (0.42 - k * 0.1); c.scale.set(s, h * 0.38, s); c.position.set(x, y + h * (0.38 + k * 0.2), z); c.castShadow = true; addTo(c); }
-  }
-  // rock pillars rising out of the ravine, each topped with trees
+  // forest floor
+  const floor = new T.Mesh(new T.PlaneGeometry(2400, 2400), new T.MeshStandardMaterial({ color: 0x2c4327, roughness: 1 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = -0.04; floor.receiveShadow = true; addTo(floor);
+
+  // landmarks first, so the trees can leave clearings around them
+  const clear = [];
   const rockM = new T.MeshStandardMaterial({ color: 0x6e675e, roughness: 1, flatShading: true });
-  const capM = new T.MeshStandardMaterial({ color: 0x46803a, roughness: 1, flatShading: true });
-  for (let n = 0; n < 90; n++) {
-    const x = -280 + rnd() * 580, z = -150 + rnd() * 470;
-    const d = minTrackDist(x, z); if (d < 26) continue;
-    const r = Math.min(d - 18, 6 + rnd() * 14), top = -2 + rnd() * 5;
-    const col = new T.Mesh(new T.CylinderGeometry(r, r * 1.25, 62 + top, 7), rockM); col.position.set(x, top - (62 + top) / 2, z); col.receiveShadow = true; addTo(col);
-    const cap = new T.Mesh(new T.CylinderGeometry(r * 1.02, r, 1, 7), capM); cap.position.set(x, top, z); cap.receiveShadow = true; addTo(cap);
-    const trees = Math.max(1, Math.floor(r / 3));
-    for (let k = 0; k < trees; k++) { const a = rnd() * 6.28, rr = rnd() * r * 0.75; pine(x + Math.cos(a) * rr, top, z + Math.sin(a) * rr, 8 + rnd() * 9); }
-  }
-  // trees along the outer edge of the verge, and logs, rocks and stumps
-  for (let i = 0; i < N; i += 9) {
-    if (NARROW[i] > 0.3) continue;
-    for (const s of [-1, 1]) {
-      if (rnd() < 0.45) continue;
-      const w = s * (ROAD_W + SH[i] - 0.9);
-      pine(P[i].x + NRM[i].x * w, 0, P[i].z + NRM[i].z * w, 7 + rnd() * 7);
-    }
-  }
-  for (let i = 30; i < N; i += 70) {
-    const s = rnd() < 0.5 ? -1 : 1, w = s * (ROAD_W + 3.2), x = P[i].x + NRM[i].x * w, z = P[i].z + NRM[i].z * w;
-    const lg = new T.Mesh(new T.CylinderGeometry(0.5, 0.5, 4.5, 8), trunkM); lg.rotation.z = Math.PI / 2; lg.rotation.y = Math.atan2(TAN[i].x, TAN[i].z) + Math.PI / 2; lg.position.set(x, 0.5, z); lg.castShadow = true; addTo(lg);
-    const rk = new T.Mesh(new T.DodecahedronGeometry(0.9 + rnd()), rockM); rk.position.set(x + TAN[i].x * 4, 0.5, z + TAN[i].z * 4); rk.castShadow = true; addTo(rk);
-  }
-  // log bridge: rails and rope posts along narrow sections
-  for (let i = 0; i < N; i += 10) if (NARROW[i] > 0.9) for (const s of [-1, 1]) {
-    const w = s * (ROAD_W + SH[i] - 0.2);
-    box(P[i].x + NRM[i].x * w, 0.7, P[i].z + NRM[i].z * w, 0.35, 1.4, 0.35, 0x5b3b22);
-  }
-  // a log cabin with a glowing window, a campfire, and the famous sign
-  const spot = Math.floor(N * 0.62), s0 = 1, cw = ROAD_W + SH[spot] + 9;
-  const cxp = P[spot].x + NRM[spot].x * cw * s0, czp = P[spot].z + NRM[spot].z * cw * s0, yaw = Math.atan2(TAN[spot].x, TAN[spot].z);
-  if (minTrackDist(cxp, czp) > ROAD_W + 7) {
-    const plat = new T.Mesh(new T.CylinderGeometry(9, 11, 62, 8), rockM); plat.position.set(cxp, -31, czp); addTo(plat);
-    const pc = new T.Mesh(new T.CylinderGeometry(9.2, 9, 1, 8), capM); pc.position.set(cxp, 0, czp); addTo(pc);
+  const trunkM = new T.MeshStandardMaterial({ color: 0x5b3b22, roughness: 1 });
+  // cabin in a clearing
+  const spot = Math.floor(N * 0.62), cw = ROAD_W + SH[spot] + 9;
+  const cxp = P[spot].x + NRM[spot].x * cw, czp = P[spot].z + NRM[spot].z * cw, yaw = Math.atan2(TAN[spot].x, TAN[spot].z);
+  if (nearestOnTrack(cxp, czp).d > ROAD_W + 7) {
+    clear.push([cxp, czp, 9]);
     box(cxp, 2, czp, 8, 4, 6, 0x7b5230, yaw);
     const roof = new T.Mesh(new T.ConeGeometry(6.3, 3, 4), new T.MeshStandardMaterial({ color: 0x4e342e, roughness: 0.9, flatShading: true }));
     roof.position.set(cxp, 5.5, czp); roof.rotation.y = yaw + Math.PI / 4; roof.castShadow = true; addTo(roof);
     box(cxp - NRM[spot].x * 3.05, 2.2, czp - NRM[spot].z * 3.05, 1.6, 1.2, 0.1, 0xffcc80, yaw + Math.PI / 2, { emissive: 0xffa726, emissiveIntensity: 2 });
+    box(cxp + TAN[spot].x * 5, 1.2, czp + TAN[spot].z * 5, 1.2, 2.4, 1.2, 0x8d6e63); // wood pile
   }
+  // the famous sign
   const sp = Math.floor(N * 0.05), sw = ROAD_W + 2.4;
   const signX = P[sp].x + NRM[sp].x * sw, signZ = P[sp].z + NRM[sp].z * sw;
+  clear.push([signX, signZ, 3]);
   box(signX, 1.6, signZ, 0.25, 3.2, 0.25, 0x5b3b22);
   const sign = new T.Mesh(new T.PlaneGeometry(3.4, 2.1), new T.MeshStandardMaterial({ map: signTexture(['BIGFOOT', 'CROSSING']), side: T.DoubleSide, roughness: 0.6 }));
   sign.position.set(signX, 3.6, signZ); sign.rotation.y = Math.atan2(TAN[sp].x, TAN[sp].z) + Math.PI; sign.castShadow = true; addTo(sign);
+  // campfire on the verge
   const fi = Math.floor(N * 0.33), fx = P[fi].x - NRM[fi].x * (ROAD_W + 3.5), fz = P[fi].z - NRM[fi].z * (ROAD_W + 3.5);
+  clear.push([fx, fz, 4]);
   const fire = new T.Mesh(new T.ConeGeometry(0.6, 1.4, 6), new T.MeshStandardMaterial({ color: 0xff9800, emissive: 0xff6d00, emissiveIntensity: 3 }));
   fire.position.set(fx, 0.7, fz); addTo(fire);
+  const fireLight = new T.PointLight(0xff8f3a, 40, 16, 2); fireLight.position.set(fx, 1.6, fz); addTo(fireLight);
   for (let k = 0; k < 5; k++) { const st = new T.Mesh(new T.DodecahedronGeometry(0.35), rockM); st.position.set(fx + Math.cos(k * 1.26) * 1.1, 0.2, fz + Math.sin(k * 1.26) * 1.1); addTo(st); }
-  themeTick = (dt, t) => { fire.scale.set(1 + Math.sin(t * 13) * 0.12, 1 + Math.sin(t * 9) * 0.2, 1 + Math.cos(t * 11) * 0.12); };
+  // logs and boulders on the verge
+  for (let i = 30; i < N; i += 70) {
+    if (NARROW[i] > 0.3) continue;
+    const s = rnd() < 0.5 ? -1 : 1, w = s * (ROAD_W + 3.2), x = P[i].x + NRM[i].x * w, z = P[i].z + NRM[i].z * w;
+    if (clear.some(([a, b, r]) => Math.hypot(x - a, z - b) < r)) continue;
+    const lg = new T.Mesh(new T.CylinderGeometry(0.5, 0.5, 4.5, 8), trunkM); lg.rotation.z = Math.PI / 2; lg.rotation.y = Math.atan2(TAN[i].x, TAN[i].z) + Math.PI / 2; lg.position.set(x, 0.5, z); lg.castShadow = true; addTo(lg);
+    const rk = new T.Mesh(new T.DodecahedronGeometry(0.9 + rnd()), rockM); rk.position.set(x + TAN[i].x * 4, 0.5, z + TAN[i].z * 4); rk.castShadow = true; addTo(rk);
+  }
+
+  // ---- the woods: thousands of pines and bushes, drawn as a few instanced meshes ----
+  const trees = [], bushes = [];
+  const near = (x, z) => clear.some(([a, b, r]) => Math.hypot(x - a, z - b) < r);
+  let minX = 1e9, maxX = -1e9, minZ = 1e9, maxZ = -1e9;
+  for (const p of P) { minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minZ = Math.min(minZ, p.z); maxZ = Math.max(maxZ, p.z); }
+  const PAD = 50;
+  for (let x = minX - PAD; x < maxX + PAD; x += 4.2) for (let z = minZ - PAD; z < maxZ + PAD; z += 4.2) {
+    const tx = x + (rnd() - 0.5) * 3.4, tz = z + (rnd() - 0.5) * 3.4;
+    const { d, i } = nearestOnTrack(tx, tz), edge = ROAD_W + SH[i];
+    // beyond ~55 m from the road the fog hides everything, so don't plant trees there
+    if (d < edge + 1.4 || d > edge + 55 || near(tx, tz)) continue;
+    // shorter trees right by the road so they don't hide the cars from the camera
+    const h = d < edge + 8 ? 5 + rnd() * 4 : 8 + rnd() * 10;
+    trees.push([tx, tz, h]);
+  }
+  for (let i = 0; i < N; i += 2) for (const s of [-1, 1]) {
+    if (rnd() < 0.25) continue;
+    const w = s * (ROAD_W + SH[i] + 1.2 + rnd() * 1.6), x = P[i].x + NRM[i].x * w, z = P[i].z + NRM[i].z * w;
+    if (!near(x, z)) bushes.push([x, z, 0.9 + rnd() * 1.1]);
+  }
+  const dummy = new T.Object3D(), tint = new T.Color();
+  const trunkI = new T.InstancedMesh(new T.CylinderGeometry(0.3, 0.45, 1, 6), trunkM, trees.length);
+  const leafG = new T.ConeGeometry(1, 1, 7);
+  const leafM = new T.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, flatShading: true });
+  const layers = [0, 1, 2].map(() => new T.InstancedMesh(leafG, leafM, trees.length));
+  const greens = [0x1f5a32, 0x2a6b3a, 0x1a4d2c, 0x34703f, 0x24603a];
+  trees.forEach(([x, z, h], n) => {
+    dummy.position.set(x, h * 0.17, z); dummy.rotation.set(0, rnd() * 6.28, 0); dummy.scale.set(1, h * 0.35, 1); dummy.updateMatrix(); trunkI.setMatrixAt(n, dummy.matrix);
+    tint.setHex(greens[Math.floor(rnd() * greens.length)]);
+    layers.forEach((L, k) => {
+      const s = h * (0.4 - k * 0.1);
+      dummy.position.set(x, h * (0.38 + k * 0.2), z); dummy.scale.set(s, h * 0.38, s); dummy.updateMatrix();
+      L.setMatrixAt(n, dummy.matrix); L.setColorAt(n, tint);
+    });
+  });
+  const bushI = new T.InstancedMesh(new T.IcosahedronGeometry(1, 0), new T.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true }), bushes.length);
+  bushes.forEach(([x, z, r], n) => {
+    dummy.position.set(x, r * 0.55, z); dummy.rotation.set(rnd(), rnd() * 6, rnd()); dummy.scale.set(r * 1.3, r, r * 1.3); dummy.updateMatrix();
+    bushI.setMatrixAt(n, dummy.matrix); bushI.setColorAt(n, tint.setHex(rnd() < 0.5 ? 0x2e6b33 : 0x3b7a3a));
+  });
+  for (const m of [trunkI, ...layers, bushI]) { m.castShadow = true; m.receiveShadow = true; addTo(m); }
+  curTrack.treeCount = trees.length;
+
+  // ---- drifting fog banks ----
+  const fogTex = softTexture(225, 232, 228), banks = [];
+  for (let k = 0; k < 44; k++) {
+    const i = Math.floor(rnd() * N), lat = (rnd() - 0.5) * 60, p = trackPoint(i, lat);
+    const m = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ map: fogTex, transparent: true, opacity: 0.3 + rnd() * 0.25, depthWrite: false, fog: false }));
+    const sz = 40 + rnd() * 50; m.scale.set(sz, sz * 0.7, 1); m.rotation.x = -Math.PI / 2; m.rotation.z = rnd() * 6;
+    m.position.set(p.x, 3 + rnd() * 7, p.z); addTo(m);
+    banks.push({ m, vx: (rnd() - 0.5) * 2.5, vz: (rnd() - 0.5) * 2.5, ph: rnd() * 6, base: m.material.opacity });
+  }
+  themeTick = (dt, t) => {
+    fire.scale.set(1 + Math.sin(t * 13) * 0.12, 1 + Math.sin(t * 9) * 0.2, 1 + Math.cos(t * 11) * 0.12);
+    fireLight.intensity = 35 + Math.sin(t * 17) * 8;
+    for (const b of banks) { b.m.position.x += b.vx * dt; b.m.position.z += b.vz * dt; b.m.material.opacity = b.base * (0.75 + 0.25 * Math.sin(t * 0.3 + b.ph)); }
+  };
 };
+function trackPoint(i, lat, y = 0) { const k = ((i % N) + N) % N; return new T.Vector3(P[k].x + NRM[k].x * lat, y, P[k].z + NRM[k].z * lat); }
 
 buildTrack(TRACKS[0].id);

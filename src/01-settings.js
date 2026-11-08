@@ -22,6 +22,7 @@ const settings = {
   gfx: 'fancy', // fancy | simple
   cam: 'cinematic', // cinematic | classic | calm
   weapons: true, // item crates and weapons
+  creatures: 'own', // off | own (each creature roams its home track) | anywhere
   track: 'harbour', // a TRACKS id, or 'random'
 };
 const SKILL_NAMES = ['Easy', 'Normal', 'Hard'];
@@ -29,3 +30,4 @@ const SKILL_SPEED = [0.84, 0.93, 1.0];
 const CAM_STYLES = ['cinematic', 'classic', 'calm'];
 const CAM_NAMES = { cinematic: 'Cinematic', classic: 'Classic', calm: 'Calm' };
 const IS_TOUCH = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+const CREATURE_NAMES_UI = { off: 'Off', own: 'Own track', anywhere: 'Anywhere' };

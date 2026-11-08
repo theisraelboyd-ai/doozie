@@ -46,7 +46,7 @@ function frame(now) {
     }
   }
   if (state === 'race') collide();
-  if (state === 'race' || state === 'roundEnd') { updateCreature(dt); updateWeapons(dt, wt); }
+  if (state === 'race' || state === 'roundEnd') { ambientCreatures(dt); updateCreature(dt); updateWeapons(dt, wt); }
 
   // knock-out by camera
   updateCamera(rdt);

@@ -65,6 +65,9 @@ function edgeCheck(car, dt) {
       car.pos.x -= NRM[k].x * s * push; car.pos.z -= NRM[k].z * s * push;
       const vn = car.vel.x * NRM[k].x + car.vel.y * NRM[k].z;
       if (vn * s > 0) { car.vel.x -= NRM[k].x * vn * 1.6; car.vel.y -= NRM[k].z * vn * 1.6; }
+    } else if (curTrack.edge === 'woods') {
+      // into the trees: gone with a pop of leaves
+      if (car.alive) { car.lost = true; car.mesh.group.visible = car.mesh.shadow.visible = car.mesh.ring.visible = false; knockOut(car, curTrack.fallText || 'got lost'); }
     } else if (!car.falling) {
       car.falling = true; car.vy = 2;
       knockOut(car, curTrack.fallText || 'fell off');

@@ -2,8 +2,22 @@
 // One creature on the track at a time. They cause chaos but never knock a car out directly:
 // cars bounce off Bigfoot and spin when the Ghost car passes through them.
 let creature = null;
+let ambientT = 15; // seconds until a creature wanders in by itself
+// Creatures that turn up by themselves: Bigfoot lives in Bigfoot Woods; with 'anywhere'
+// he and the Ghost car visit every track.
+function ambientCreatures(dt) {
+  if (settings.creatures === 'off' || state !== 'race' || raceT < 4 || creature) return;
+  ambientT -= dt;
+  if (ambientT > 0) return;
+  ambientT = 30 + Math.random() * 15;
+  if (curTrack.theme === 'forest') { if (spawnBigfoot()) toast('Something is moving in the trees… <b>BIGFOOT!</b>'); }
+  else if (settings.creatures === 'anywhere') {
+    if (Math.random() < 0.5) { if (spawnBigfoot()) toast('<b>BIGFOOT</b> has wandered onto the track!'); }
+    else if (spawnGhost()) toast('A <b>Ghost car</b> is coming…');
+  }
+}
+function resetAmbient() { ambientT = 10 + Math.random() * 8; }
 
-function trackPoint(i, lat, y = 0) { const k = ((i % N) + N) % N; return new T.Vector3(P[k].x + NRM[k].x * lat, y, P[k].z + NRM[k].z * lat); }
 function leadCar() { const a = activeCars().filter(c => c.alive && !c.falling); return a.length ? a.reduce((x, y) => (y.prog > x.prog ? y : x)) : null; }
 function backCar() { const a = activeCars().filter(c => c.alive && !c.falling); return a.length ? a.reduce((x, y) => (y.prog < x.prog ? y : x)) : null; }
 function clearCreature() { if (creature) { scene.remove(creature.g); creature = null; } }
