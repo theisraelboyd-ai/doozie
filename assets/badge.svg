@@ -1,0 +1,44 @@
+<svg class="badge" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Doozie!">
+<defs>
+<linearGradient id="bdchrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"></stop><stop offset="0.42" stop-color="#d7dee3"></stop><stop offset="0.52" stop-color="#7d8e99"></stop><stop offset="0.7" stop-color="#c9d3da"></stop><stop offset="1" stop-color="#f4f7f9"></stop></linearGradient>
+<linearGradient id="bdpipe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f7f9"></stop><stop offset="0.5" stop-color="#9aa9b3"></stop><stop offset="1" stop-color="#e3e8ec"></stop></linearGradient>
+</defs>
+<circle cx="300" cy="300" r="276" fill="#c62828"></circle>
+<circle cx="300" cy="300" r="256" fill="#0d1b2a" stroke="#ffca28" stroke-width="14"></circle>
+<circle cx="300" cy="300" r="232" fill="none" stroke="#ffca28" stroke-width="2" opacity="0.5"></circle>
+<g class="speed"><line x1="60" y1="300" x2="116" y2="300" stroke="#ffca28" stroke-width="7" stroke-linecap="round" opacity="0.7"></line><line x1="52" y1="322" x2="110" y2="322" stroke="#ffca28" stroke-width="7" stroke-linecap="round" opacity="0.5"></line><line x1="66" y1="344" x2="116" y2="344" stroke="#ffca28" stroke-width="7" stroke-linecap="round" opacity="0.35"></line></g>
+<g class="mascot"><g transform="translate(362 336) scale(1.0)"><path d="M -78 -34 L -214 -46 L -74 -28 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M -74 -28 L -196 -28 L -70 -22 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M -68 -22 L -176 -10 L -62 -17 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M 22 -58 L -238 -118 L -222 -106 L 10 -52 Z" fill="#8a9aa5" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M -86 -32 L -22 -54 L 68 -62 L 104 -54 L 160 -45 L 104 -36 L 62 -22 L -12 -16 L -62 -20 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M 68 -62 L 84 -42 L 104 -36" fill="none" stroke="#1b2731" stroke-width="2.4000000000000004"></path><path d="M 104 -54 L 104 -36" fill="none" stroke="#1b2731" stroke-width="2.4000000000000004"></path><path d="M -22 -54 L 12 -30 L 62 -22" fill="none" stroke="#1b2731" stroke-width="1.7999999999999998" opacity="0.6"></path><path d="M 90 -54 L 95 -50 L 90 -46 L 85 -50 Z" fill="#1b2731"></path><path d="M 46 -56 L -272 -106 L -252 -94 L 34 -47 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M 36 -45 L -234 -84 L -214 -73 L 24 -37 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M 26 -35 L -192 -63 L -174 -54 L 14 -28 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M 16 -26 L -146 -42 L -130 -35 L 6 -20 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M -7 -17 L 7 -17 L 10 0 L -10 0 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path></g></g>
+<g class="cyl c0"><g class="piston">
+<rect x="128" y="380" width="52" height="80" rx="16" fill="#7f1416"></rect>
+<rect x="128" y="372" width="52" height="80" rx="16" fill="#ffca28" stroke="#b37800" stroke-width="5"></rect>
+<line x1="138" y1="384" x2="170" y2="384" stroke="#b37800" stroke-width="4" stroke-linecap="round"></line>
+<text x="154" y="432" text-anchor="middle" font-family="DoozieBungee, Bungee, Impact, sans-serif" font-size="44" fill="#0d1b2a">D</text>
+</g><circle class="pop" cx="154" cy="350" r="16" fill="#fff3c4" opacity="0"></circle></g><g class="cyl c1"><g class="piston">
+<rect x="186" y="380" width="52" height="80" rx="16" fill="#7f1416"></rect>
+<rect x="186" y="372" width="52" height="80" rx="16" fill="#ffca28" stroke="#b37800" stroke-width="5"></rect>
+<line x1="196" y1="384" x2="228" y2="384" stroke="#b37800" stroke-width="4" stroke-linecap="round"></line>
+<text x="212" y="432" text-anchor="middle" font-family="DoozieBungee, Bungee, Impact, sans-serif" font-size="44" fill="#0d1b2a">O</text>
+</g><circle class="pop" cx="212" cy="350" r="16" fill="#fff3c4" opacity="0"></circle></g><g class="cyl c2"><g class="piston">
+<rect x="244" y="380" width="52" height="80" rx="16" fill="#7f1416"></rect>
+<rect x="244" y="372" width="52" height="80" rx="16" fill="#ffca28" stroke="#b37800" stroke-width="5"></rect>
+<line x1="254" y1="384" x2="286" y2="384" stroke="#b37800" stroke-width="4" stroke-linecap="round"></line>
+<text x="270" y="432" text-anchor="middle" font-family="DoozieBungee, Bungee, Impact, sans-serif" font-size="44" fill="#0d1b2a">O</text>
+</g><circle class="pop" cx="270" cy="350" r="16" fill="#fff3c4" opacity="0"></circle></g><g class="cyl c3"><g class="piston">
+<rect x="302" y="380" width="52" height="80" rx="16" fill="#7f1416"></rect>
+<rect x="302" y="372" width="52" height="80" rx="16" fill="#ffca28" stroke="#b37800" stroke-width="5"></rect>
+<line x1="312" y1="384" x2="344" y2="384" stroke="#b37800" stroke-width="4" stroke-linecap="round"></line>
+<text x="328" y="432" text-anchor="middle" font-family="DoozieBungee, Bungee, Impact, sans-serif" font-size="44" fill="#0d1b2a">Z</text>
+</g><circle class="pop" cx="328" cy="350" r="16" fill="#fff3c4" opacity="0"></circle></g><g class="cyl c4"><g class="piston">
+<rect x="360" y="380" width="52" height="80" rx="16" fill="#7f1416"></rect>
+<rect x="360" y="372" width="52" height="80" rx="16" fill="#ffca28" stroke="#b37800" stroke-width="5"></rect>
+<line x1="370" y1="384" x2="402" y2="384" stroke="#b37800" stroke-width="4" stroke-linecap="round"></line>
+<text x="386" y="432" text-anchor="middle" font-family="DoozieBungee, Bungee, Impact, sans-serif" font-size="44" fill="#0d1b2a">I</text>
+</g><circle class="pop" cx="386" cy="350" r="16" fill="#fff3c4" opacity="0"></circle></g><g class="cyl c5"><g class="piston">
+<rect x="418" y="380" width="52" height="80" rx="16" fill="#7f1416"></rect>
+<rect x="418" y="372" width="52" height="80" rx="16" fill="#ffca28" stroke="#b37800" stroke-width="5"></rect>
+<line x1="428" y1="384" x2="460" y2="384" stroke="#b37800" stroke-width="4" stroke-linecap="round"></line>
+<text x="444" y="432" text-anchor="middle" font-family="DoozieBungee, Bungee, Impact, sans-serif" font-size="44" fill="#0d1b2a">E</text>
+</g><circle class="pop" cx="444" cy="350" r="16" fill="#fff3c4" opacity="0"></circle></g>
+<rect class="head" x="122" y="358" width="356" height="16" rx="7" fill="#c62828" stroke="#4a0b0c" stroke-width="3"></rect>
+<text x="300" y="506" text-anchor="middle" font-family="DoozieBungee, Bungee, Impact, sans-serif" font-size="40" fill="#c62828">!</text>
+</svg>

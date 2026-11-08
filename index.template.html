@@ -4,7 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>DOOZIE!</title>
+<meta name="theme-color" content="#0d1b2a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Doozie!">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
+  /*BADGEFONT*/
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1b2a; font-family: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif; color: #fff; user-select: none; }
   #c { display: block; width: 100vw; height: 100vh; }
@@ -41,15 +51,31 @@
   #help { position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 13px; opacity: .75; text-shadow: 0 1px 3px #000; pointer-events: none; }
   #menu, #pause { position: fixed; inset: 0; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(ellipse at 50% 60%, rgba(13,27,42,.35), rgba(8,16,28,.9)); }
   #pause { display: none; }
-  #menu { justify-content: flex-start; padding: 22px 28px 18px; gap: 0; }
+  #menu { justify-content: flex-start; padding: min(18px, 2vh) 28px 18px; gap: 0; }
   h1 { margin: 0; font-size: clamp(56px, 9vw, 112px); font-weight: 900; letter-spacing: 4px; color: #ffca28; text-shadow: 0 6px 0 #c62828, 0 10px 20px rgba(0,0,0,.5); transform: rotate(-3deg); line-height: 1; }
   .tag { margin: 6px 0 22px; font-size: 20px; font-weight: 700; opacity: .9; }
-  .lb-top { width: 100%; max-width: 1180px; display: flex; justify-content: space-between; align-items: flex-start; }
-  .lb-logo { padding: 6px 0 0 6px; }
+  .lb-top { position: relative; width: 100%; max-width: 1180px; display: flex; justify-content: center; align-items: flex-start; }
+  .lb-logo { width: min(270px, 31vh); height: min(270px, 31vh); margin-top: -6px; filter: drop-shadow(0 12px 24px rgba(0,0,0,.45)); }
+  .lb-logo .badge { width: 100%; height: 100%; display: block; overflow: visible; }
+  .lb-top #phoneJoin { position: absolute; top: 0; right: 0; }
+  /* the badge's engine: each cylinder fires like a piston */
+  .badge .piston, .badge .pop, .badge .mascot { transform-box: fill-box; }
+  .badge .piston { transform-origin: 50% 100%; }
+  .badge .pop { transform-origin: 50% 50%; }
+  .badge .mascot { transform-origin: 30% 100%; }
+  .badge .cyl.f .piston { animation: piston .3s cubic-bezier(.2,.9,.3,1.4); }
+  .badge .cyl.f .pop { animation: pop .4s ease-out; }
+  .badge .cyl.fi .piston { animation: pistonIdle .45s ease-in-out; }
+  .badge.revving .mascot { animation: shiver .09s linear infinite; }
+  @keyframes piston { 0% { transform: none; } 30% { transform: translateY(-18px) scaleY(1.08); } 60% { transform: translateY(5px) scaleY(.93); } 100% { transform: none; } }
+  @keyframes pistonIdle { 0% { transform: none; } 45% { transform: translateY(-5px); } 100% { transform: none; } }
+  @keyframes pop { 0% { opacity: .95; transform: scale(.3); } 100% { opacity: 0; transform: translateY(-34px) scale(1.5); } }
+  @keyframes shiver { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(1.5px, -1px); } 75% { transform: translate(-1.5px, 1px); } }
+  @media (prefers-reduced-motion: reduce) { .badge .cyl .piston, .badge .cyl .pop, .badge .mascot { animation: none !important; } }
   .lb-sub { margin: 10px 0 0 26px; font-size: 18px; font-style: italic; font-weight: 700; color: #ffe082; opacity: .85; transform: rotate(-3deg); letter-spacing: .5px; }
   #netBanner { display: none; margin-top: 8px; padding: 8px 18px; border-radius: 999px; background: rgba(41,121,255,.25); border: 2px solid rgba(130,177,255,.6); font-weight: 800; font-size: 15px; }
   body.netclient #netBanner { display: block; }
-  #slots { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 26px; }
+  #slots { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: min(18px, 2vh); }
   .slot { --c: #888; position: relative; width: 210px; padding: 0 0 12px; background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.04)); border: 2px solid rgba(255,255,255,.14); border-radius: 18px; color: #fff; font: inherit; cursor: pointer; overflow: hidden; transition: transform .12s, border-color .12s, background .12s; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
   .slot:hover { transform: translateY(-4px); border-color: var(--c); }
   .slot .st-band { background: var(--c); color: #fff; font-weight: 900; font-size: 18px; letter-spacing: 3px; padding: 7px 0 6px; text-shadow: 0 2px 0 rgba(0,0,0,.25); }
@@ -65,7 +91,7 @@
   .slot.off .st-add { margin: 40px 0 48px; font-size: 15px; font-weight: 800; opacity: .55; }
   .slot.me { box-shadow: 0 0 0 3px #fff, 0 10px 30px rgba(0,0,0,.3); }
   body.netclient .slot { cursor: default; } body.netclient .slot:hover { transform: none; }
-  .lb-picks { display: flex; gap: 16px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+  .lb-picks { display: flex; gap: 16px; margin-top: min(16px, 2vh); flex-wrap: wrap; justify-content: center; }
   .pick { display: flex; align-items: stretch; width: 430px; max-width: 92vw; border-radius: 16px; background: rgba(10,20,35,.6); border: 2px solid rgba(255,255,255,.14); overflow: hidden; }
   .pick .arr { width: 52px; border: 0; background: rgba(255,255,255,.06); color: #fff; font-size: 34px; cursor: pointer; font-family: inherit; }
   .pick .arr:hover { background: rgba(255,202,40,.25); }
@@ -74,7 +100,7 @@
   .pk-val { font-size: 24px; font-weight: 900; color: #ffca28; margin-top: 2px; }
   .pk-sub { font-size: 13px; opacity: .8; margin-top: 3px; min-height: 17px; }
   body.netclient .pick .arr { visibility: hidden; } body.netclient .pk-body { cursor: default; }
-  #go { margin-top: 22px; font: inherit; font-size: 30px; font-weight: 900; letter-spacing: 6px; padding: 14px 70px; border-radius: 18px; border: 0; background: linear-gradient(180deg, #ffd54f, #ffb300); color: #2a1c00; cursor: pointer; box-shadow: 0 7px 0 #b37800, 0 14px 30px rgba(255,179,0,.25); }
+  #go { margin-top: min(18px, 2.2vh); font: inherit; font-size: 30px; font-weight: 900; letter-spacing: 6px; padding: 14px 70px; border-radius: 18px; border: 0; background: linear-gradient(180deg, #ffd54f, #ffb300); color: #2a1c00; cursor: pointer; box-shadow: 0 7px 0 #b37800, 0 14px 30px rgba(255,179,0,.25); }
   #go:hover { transform: translateY(-2px); } #go:active { transform: translateY(4px); box-shadow: 0 3px 0 #b37800; }
   .lb-hint { margin-top: 14px; font-size: 13px; opacity: .6; } .lb-hint b { color: #ffca28; font-weight: 800; }
   .lb-bar { position: fixed; left: 18px; bottom: 16px; display: flex; gap: 10px; }
@@ -155,9 +181,9 @@
   /* ---- small screens ---- */
   @media (max-height: 520px), (max-width: 700px) {
     h1 { font-size: 46px; } .tag { margin: 2px 0 8px; font-size: 14px; }
-    #menu { padding: 8px 10px 12px; } .lb-sub { font-size: 12px; margin: 4px 0 0 12px; } #slots { margin-top: 8px; gap: 8px; } .slot { width: 150px; padding-bottom: 6px; } .slot .st-band { font-size: 13px; padding: 4px 0; } .slot .st-car { font-size: 30px; margin: 6px 0 2px; } .slot .st-carname { font-size: 13px; } .slot .st-who { margin-top: 6px; font-size: 10px; } .slot .st-keys, .slot .st-blurb { display: none; } .slot.off .st-add { margin: 18px 0; } .lb-picks { margin-top: 8px; gap: 8px; } .pick { width: 300px; } .pk-val { font-size: 17px; } .pk-sub { display: none; } .lb-hint { display: none; } .lb-bar { position: static; margin-top: 10px; flex-wrap: wrap; justify-content: center; } .lb-btn, #btnTouch { padding: 6px 10px; font-size: 12px; margin-top: 0; }
+    #menu { padding: 8px 10px 12px; } #slots { margin-top: 8px; gap: 8px; } .slot { width: 150px; padding-bottom: 6px; } .slot .st-band { font-size: 13px; padding: 4px 0; } .slot .st-car { font-size: 30px; margin: 6px 0 2px; } .slot .st-carname { font-size: 13px; } .slot .st-who { margin-top: 6px; font-size: 10px; } .slot .st-keys, .slot .st-blurb { display: none; } .slot.off .st-add { margin: 18px 0; } .lb-picks { margin-top: 8px; gap: 8px; } .pick { width: 300px; } .pk-val { font-size: 17px; } .pk-sub { display: none; } .lb-hint { display: none; } .lb-bar { position: static; margin-top: 10px; flex-wrap: wrap; justify-content: center; } .lb-btn, #btnTouch { padding: 6px 10px; font-size: 12px; margin-top: 0; }
     #go { font-size: 20px; padding: 8px 36px; margin-top: 10px; }
-    .lb-top { flex-direction: column; align-items: center; gap: 8px; } .lb-logo { padding: 0; text-align: center; } #phoneJoin { padding: 5px 8px; font-size: 11px; } .pj-qr { width: 70px; height: 70px; } body.is-touch .pj-qr, .pj-long { display: none; } .pj-code { font-size: 16px; }
+    .lb-top { flex-direction: column; align-items: center; gap: 8px; } .lb-logo { width: 170px; height: 170px; margin: 0; } .lb-top #phoneJoin { position: static; } #phoneJoin { padding: 5px 8px; font-size: 11px; } .pj-qr { width: 70px; height: 70px; } body.is-touch .pj-qr, .pj-long { display: none; } .pj-code { font-size: 16px; }
     #hud { gap: 5px; top: 6px; } .card { min-width: 74px; padding: 3px 6px 5px; border-width: 2px; } .card .nm { font-size: 11px; } .card .pts { font-size: 18px; } .card .pips span { width: 6px; height: 6px; } .card .lbl { display: none; }
     #bigT { font-size: 40px; } #bigS { font-size: 15px; }
   }
@@ -222,7 +248,7 @@
 <div id="toast"></div>
 <div id="menu">
   <div class="lb-top">
-    <div class="lb-logo"><h1>DOOZIE!</h1><div class="lb-sub">that's a Duesy.</div></div>
+    <div class="lb-logo"><!--BADGE--></div>
     <div id="phoneJoin"></div>
   </div>
   <div id="netBanner"></div>

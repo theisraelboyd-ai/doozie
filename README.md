@@ -71,6 +71,12 @@ node build.mjs
 
 This writes `docs/index.html`, a single file with no outside dependencies. It can be opened straight from disk or served by GitHub Pages (Settings → Pages → Deploy from branch → `main` / `docs`).
 
+## Install as an app
+
+Doozie! is an installable web app. On a phone open the site and choose **Add to Home Screen** (iPhone: Share › Add to Home Screen; Android/Chrome: menu › Install app). It gets the badge icon, opens full-screen without the browser bars, and the last version opened also starts without internet.
+
+The badge (lobby logo and icons) is drawn by `tools/make-badge.py`; `python3 tools/make-badge.py --icons` rebuilds `assets/badge.svg` and the PNG icons in `docs/icons/`.
+
 ## Network play (laptops and phones)
 
 Play across several laptops or phones, on the same Wi-Fi or anywhere on the internet.

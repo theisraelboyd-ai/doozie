@@ -158,6 +158,7 @@ function toMenu() {
   document.body.classList.remove('playing');
   document.getElementById('pause').style.display = 'none';
   seatWaitingPhones();
+  if (typeof startBadgeEngine === 'function') startBadgeEngine();
 }
 
 function onKey(code) {

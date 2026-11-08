@@ -4,7 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>DOOZIE!</title>
+<meta name="theme-color" content="#0d1b2a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Doozie!">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
+  @font-face{font-family:DoozieBungee;src:url(data:font/woff2;base64,d09GMgABAAAAAASMABEAAAAACawAAAQzAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGhYbgXQcTgZgAFQRCAqHJIYCATYCJAMqCxwABCAFgw4HIAwHFyQYNBvGBwgehU3ZbhQKxhxhgviSB8ef7Htduu9/0ci6u4AJ5EQmkpEwChKWRF0mZbiLizZEPBB6vC/JB5Hf6wRxEjTRM7j2ugHa6mGD0P8AsIXn/36v3vidHCUUeXxgAxm+6EUGRQXYbIA7A4oqHk1sZyAb2IRngbuse0QuU/8TEEADAABDiIgQQBUoC+vVp6wO9rmTFkzATgDg/38hgLA506wJ2JfPsSbgDCAEIAAjacAARMHMoQDCpeG4wo6Ek6k0jAtlM9GGM0TFpy2nDGuOJny7FCUEAvz/rUBquO0VYpu54HJ5uZAjautZMZgo4P5s2gYF0nJCYlYQlHIJPAQQotpgDxKBbWNNgFJvOzSeGYQrZJIn9c22dDxVqyX68+8R0oLokPZc+hLeAzoOYGB5nHFkFmQ9XaNgBP7yFavU8h/wlwe/7P9Tj5xz0tGC5XjoP9m/3QYAPAEzgFoBzQUojyaXlXm0/39ZSkWFq90zQ8tJC56aqW0jca2Tbfsb4ZrXs8P07URrVQc7ENakaZzqpSospEsA1TpFaRYj1alh1eSaRwVT2ra3riBa+86Uvv1Nk6lrjjSI15mea2nbrphiM60Nax2mtHGTI8ygmnxbTqWjNu+mEyNlNF+YvVTarXk0PuwXEJHjrJQ6kl6Os7SDGnbk9vV3wrlBsbElNqpXLe4dShqq7OvIGbo4KuZzs6ZIvqcgY7Cwyrn8hdVv1DBeDC/AXWiOjcVuUG9Vr2Eszb1m13ZXdbM74tKFJp4lufFLvDs6EqLez6sksj7Si4A+wAd4vmNrM+ePbdq+LMh0vtu2zYcCOR/ieFO89VOjJ32OfxXHBxu2Pi953/O9oSceN7h9LZ97uZ7b1nKXxLuGsT42arWI6jnfnXI7R2LDWtKT0sJa83Omc4YO+2rOnwvSfX1O0pE2WFhbUv5zPdafwwfgr9ZNAzfhfyRkzGqz2yO3V3b8Iu+2tjJRFz0thoA+2EdYYbrvNzfvu862iLmn/ZNjrQhUMay57o4Ph0wKagEK0GJgK8J7AgCDbWmZxyZkd/qaEkUvAKZXXp5tP3Tp38N/5ibvlvoAEgYACL5ukbhVpfp7iO48pyAqTN+p4Su9w135HxsnPvykQ3gATYIrGBS9cMdd991wJ1iMADYryfoJiJXLcY2sBUxJSAUcAvmI5pCPsTvn40x3fAJv0z6Rp3+fI/EO3OWaNGUpy7BBQxbQmaKZYunqDOmny7HQhEH9fmgVy6SR3N5u52dbaIEhkyzz6YKHq15gyqpOEVWqHTSs/PmFekTqNWlclD4jLJYeUROtDbHFmrI4aO03ppvFFCk6yU8dZqMu1VsnouNcTSy9tkH/0rcaNmmCPsniBy7lCtn9P1kLN7sb/N8TdiLIQV/+ZYC4788PN8ekD4BAst0VMo3cAVfiHeFdiqKFqkiEk2u6SAQA) format('woff2')}
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1b2a; font-family: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif; color: #fff; user-select: none; }
   #c { display: block; width: 100vw; height: 100vh; }
@@ -41,15 +51,31 @@
   #help { position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 13px; opacity: .75; text-shadow: 0 1px 3px #000; pointer-events: none; }
   #menu, #pause { position: fixed; inset: 0; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(ellipse at 50% 60%, rgba(13,27,42,.35), rgba(8,16,28,.9)); }
   #pause { display: none; }
-  #menu { justify-content: flex-start; padding: 22px 28px 18px; gap: 0; }
+  #menu { justify-content: flex-start; padding: min(18px, 2vh) 28px 18px; gap: 0; }
   h1 { margin: 0; font-size: clamp(56px, 9vw, 112px); font-weight: 900; letter-spacing: 4px; color: #ffca28; text-shadow: 0 6px 0 #c62828, 0 10px 20px rgba(0,0,0,.5); transform: rotate(-3deg); line-height: 1; }
   .tag { margin: 6px 0 22px; font-size: 20px; font-weight: 700; opacity: .9; }
-  .lb-top { width: 100%; max-width: 1180px; display: flex; justify-content: space-between; align-items: flex-start; }
-  .lb-logo { padding: 6px 0 0 6px; }
+  .lb-top { position: relative; width: 100%; max-width: 1180px; display: flex; justify-content: center; align-items: flex-start; }
+  .lb-logo { width: min(270px, 31vh); height: min(270px, 31vh); margin-top: -6px; filter: drop-shadow(0 12px 24px rgba(0,0,0,.45)); }
+  .lb-logo .badge { width: 100%; height: 100%; display: block; overflow: visible; }
+  .lb-top #phoneJoin { position: absolute; top: 0; right: 0; }
+  /* the badge's engine: each cylinder fires like a piston */
+  .badge .piston, .badge .pop, .badge .mascot { transform-box: fill-box; }
+  .badge .piston { transform-origin: 50% 100%; }
+  .badge .pop { transform-origin: 50% 50%; }
+  .badge .mascot { transform-origin: 30% 100%; }
+  .badge .cyl.f .piston { animation: piston .3s cubic-bezier(.2,.9,.3,1.4); }
+  .badge .cyl.f .pop { animation: pop .4s ease-out; }
+  .badge .cyl.fi .piston { animation: pistonIdle .45s ease-in-out; }
+  .badge.revving .mascot { animation: shiver .09s linear infinite; }
+  @keyframes piston { 0% { transform: none; } 30% { transform: translateY(-18px) scaleY(1.08); } 60% { transform: translateY(5px) scaleY(.93); } 100% { transform: none; } }
+  @keyframes pistonIdle { 0% { transform: none; } 45% { transform: translateY(-5px); } 100% { transform: none; } }
+  @keyframes pop { 0% { opacity: .95; transform: scale(.3); } 100% { opacity: 0; transform: translateY(-34px) scale(1.5); } }
+  @keyframes shiver { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(1.5px, -1px); } 75% { transform: translate(-1.5px, 1px); } }
+  @media (prefers-reduced-motion: reduce) { .badge .cyl .piston, .badge .cyl .pop, .badge .mascot { animation: none !important; } }
   .lb-sub { margin: 10px 0 0 26px; font-size: 18px; font-style: italic; font-weight: 700; color: #ffe082; opacity: .85; transform: rotate(-3deg); letter-spacing: .5px; }
   #netBanner { display: none; margin-top: 8px; padding: 8px 18px; border-radius: 999px; background: rgba(41,121,255,.25); border: 2px solid rgba(130,177,255,.6); font-weight: 800; font-size: 15px; }
   body.netclient #netBanner { display: block; }
-  #slots { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 26px; }
+  #slots { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: min(18px, 2vh); }
   .slot { --c: #888; position: relative; width: 210px; padding: 0 0 12px; background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.04)); border: 2px solid rgba(255,255,255,.14); border-radius: 18px; color: #fff; font: inherit; cursor: pointer; overflow: hidden; transition: transform .12s, border-color .12s, background .12s; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
   .slot:hover { transform: translateY(-4px); border-color: var(--c); }
   .slot .st-band { background: var(--c); color: #fff; font-weight: 900; font-size: 18px; letter-spacing: 3px; padding: 7px 0 6px; text-shadow: 0 2px 0 rgba(0,0,0,.25); }
@@ -65,7 +91,7 @@
   .slot.off .st-add { margin: 40px 0 48px; font-size: 15px; font-weight: 800; opacity: .55; }
   .slot.me { box-shadow: 0 0 0 3px #fff, 0 10px 30px rgba(0,0,0,.3); }
   body.netclient .slot { cursor: default; } body.netclient .slot:hover { transform: none; }
-  .lb-picks { display: flex; gap: 16px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+  .lb-picks { display: flex; gap: 16px; margin-top: min(16px, 2vh); flex-wrap: wrap; justify-content: center; }
   .pick { display: flex; align-items: stretch; width: 430px; max-width: 92vw; border-radius: 16px; background: rgba(10,20,35,.6); border: 2px solid rgba(255,255,255,.14); overflow: hidden; }
   .pick .arr { width: 52px; border: 0; background: rgba(255,255,255,.06); color: #fff; font-size: 34px; cursor: pointer; font-family: inherit; }
   .pick .arr:hover { background: rgba(255,202,40,.25); }
@@ -74,7 +100,7 @@
   .pk-val { font-size: 24px; font-weight: 900; color: #ffca28; margin-top: 2px; }
   .pk-sub { font-size: 13px; opacity: .8; margin-top: 3px; min-height: 17px; }
   body.netclient .pick .arr { visibility: hidden; } body.netclient .pk-body { cursor: default; }
-  #go { margin-top: 22px; font: inherit; font-size: 30px; font-weight: 900; letter-spacing: 6px; padding: 14px 70px; border-radius: 18px; border: 0; background: linear-gradient(180deg, #ffd54f, #ffb300); color: #2a1c00; cursor: pointer; box-shadow: 0 7px 0 #b37800, 0 14px 30px rgba(255,179,0,.25); }
+  #go { margin-top: min(18px, 2.2vh); font: inherit; font-size: 30px; font-weight: 900; letter-spacing: 6px; padding: 14px 70px; border-radius: 18px; border: 0; background: linear-gradient(180deg, #ffd54f, #ffb300); color: #2a1c00; cursor: pointer; box-shadow: 0 7px 0 #b37800, 0 14px 30px rgba(255,179,0,.25); }
   #go:hover { transform: translateY(-2px); } #go:active { transform: translateY(4px); box-shadow: 0 3px 0 #b37800; }
   .lb-hint { margin-top: 14px; font-size: 13px; opacity: .6; } .lb-hint b { color: #ffca28; font-weight: 800; }
   .lb-bar { position: fixed; left: 18px; bottom: 16px; display: flex; gap: 10px; }
@@ -155,9 +181,9 @@
   /* ---- small screens ---- */
   @media (max-height: 520px), (max-width: 700px) {
     h1 { font-size: 46px; } .tag { margin: 2px 0 8px; font-size: 14px; }
-    #menu { padding: 8px 10px 12px; } .lb-sub { font-size: 12px; margin: 4px 0 0 12px; } #slots { margin-top: 8px; gap: 8px; } .slot { width: 150px; padding-bottom: 6px; } .slot .st-band { font-size: 13px; padding: 4px 0; } .slot .st-car { font-size: 30px; margin: 6px 0 2px; } .slot .st-carname { font-size: 13px; } .slot .st-who { margin-top: 6px; font-size: 10px; } .slot .st-keys, .slot .st-blurb { display: none; } .slot.off .st-add { margin: 18px 0; } .lb-picks { margin-top: 8px; gap: 8px; } .pick { width: 300px; } .pk-val { font-size: 17px; } .pk-sub { display: none; } .lb-hint { display: none; } .lb-bar { position: static; margin-top: 10px; flex-wrap: wrap; justify-content: center; } .lb-btn, #btnTouch { padding: 6px 10px; font-size: 12px; margin-top: 0; }
+    #menu { padding: 8px 10px 12px; } #slots { margin-top: 8px; gap: 8px; } .slot { width: 150px; padding-bottom: 6px; } .slot .st-band { font-size: 13px; padding: 4px 0; } .slot .st-car { font-size: 30px; margin: 6px 0 2px; } .slot .st-carname { font-size: 13px; } .slot .st-who { margin-top: 6px; font-size: 10px; } .slot .st-keys, .slot .st-blurb { display: none; } .slot.off .st-add { margin: 18px 0; } .lb-picks { margin-top: 8px; gap: 8px; } .pick { width: 300px; } .pk-val { font-size: 17px; } .pk-sub { display: none; } .lb-hint { display: none; } .lb-bar { position: static; margin-top: 10px; flex-wrap: wrap; justify-content: center; } .lb-btn, #btnTouch { padding: 6px 10px; font-size: 12px; margin-top: 0; }
     #go { font-size: 20px; padding: 8px 36px; margin-top: 10px; }
-    .lb-top { flex-direction: column; align-items: center; gap: 8px; } .lb-logo { padding: 0; text-align: center; } #phoneJoin { padding: 5px 8px; font-size: 11px; } .pj-qr { width: 70px; height: 70px; } body.is-touch .pj-qr, .pj-long { display: none; } .pj-code { font-size: 16px; }
+    .lb-top { flex-direction: column; align-items: center; gap: 8px; } .lb-logo { width: 170px; height: 170px; margin: 0; } .lb-top #phoneJoin { position: static; } #phoneJoin { padding: 5px 8px; font-size: 11px; } .pj-qr { width: 70px; height: 70px; } body.is-touch .pj-qr, .pj-long { display: none; } .pj-code { font-size: 16px; }
     #hud { gap: 5px; top: 6px; } .card { min-width: 74px; padding: 3px 6px 5px; border-width: 2px; } .card .nm { font-size: 11px; } .card .pts { font-size: 18px; } .card .pips span { width: 6px; height: 6px; } .card .lbl { display: none; }
     #bigT { font-size: 40px; } #bigS { font-size: 15px; }
   }
@@ -222,7 +248,50 @@
 <div id="toast"></div>
 <div id="menu">
   <div class="lb-top">
-    <div class="lb-logo"><h1>DOOZIE!</h1><div class="lb-sub">that's a Duesy.</div></div>
+    <div class="lb-logo"><svg class="badge" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Doozie!">
+<defs>
+<linearGradient id="bdchrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"></stop><stop offset="0.42" stop-color="#d7dee3"></stop><stop offset="0.52" stop-color="#7d8e99"></stop><stop offset="0.7" stop-color="#c9d3da"></stop><stop offset="1" stop-color="#f4f7f9"></stop></linearGradient>
+<linearGradient id="bdpipe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f7f9"></stop><stop offset="0.5" stop-color="#9aa9b3"></stop><stop offset="1" stop-color="#e3e8ec"></stop></linearGradient>
+</defs>
+<circle cx="300" cy="300" r="276" fill="#c62828"></circle>
+<circle cx="300" cy="300" r="256" fill="#0d1b2a" stroke="#ffca28" stroke-width="14"></circle>
+<circle cx="300" cy="300" r="232" fill="none" stroke="#ffca28" stroke-width="2" opacity="0.5"></circle>
+<g class="speed"><line x1="60" y1="300" x2="116" y2="300" stroke="#ffca28" stroke-width="7" stroke-linecap="round" opacity="0.7"></line><line x1="52" y1="322" x2="110" y2="322" stroke="#ffca28" stroke-width="7" stroke-linecap="round" opacity="0.5"></line><line x1="66" y1="344" x2="116" y2="344" stroke="#ffca28" stroke-width="7" stroke-linecap="round" opacity="0.35"></line></g>
+<g class="mascot"><g transform="translate(362 336) scale(1.0)"><path d="M -78 -34 L -214 -46 L -74 -28 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M -74 -28 L -196 -28 L -70 -22 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M -68 -22 L -176 -10 L -62 -17 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M 22 -58 L -238 -118 L -222 -106 L 10 -52 Z" fill="#8a9aa5" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M -86 -32 L -22 -54 L 68 -62 L 104 -54 L 160 -45 L 104 -36 L 62 -22 L -12 -16 L -62 -20 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M 68 -62 L 84 -42 L 104 -36" fill="none" stroke="#1b2731" stroke-width="2.4000000000000004"></path><path d="M 104 -54 L 104 -36" fill="none" stroke="#1b2731" stroke-width="2.4000000000000004"></path><path d="M -22 -54 L 12 -30 L 62 -22" fill="none" stroke="#1b2731" stroke-width="1.7999999999999998" opacity="0.6"></path><path d="M 90 -54 L 95 -50 L 90 -46 L 85 -50 Z" fill="#1b2731"></path><path d="M 46 -56 L -272 -106 L -252 -94 L 34 -47 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M 36 -45 L -234 -84 L -214 -73 L 24 -37 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M 26 -35 L -192 -63 L -174 -54 L 14 -28 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M 16 -26 L -146 -42 L -130 -35 L 6 -20 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path><path d="M -7 -17 L 7 -17 L 10 0 L -10 0 Z" fill="url(#bdchrome)" stroke="#1b2731" stroke-width="3.0" stroke-linejoin="miter"></path></g></g>
+<g class="cyl c0"><g class="piston">
+<rect x="128" y="380" width="52" height="80" rx="16" fill="#7f1416"></rect>
+<rect x="128" y="372" width="52" height="80" rx="16" fill="#ffca28" stroke="#b37800" stroke-width="5"></rect>
+<line x1="138" y1="384" x2="170" y2="384" stroke="#b37800" stroke-width="4" stroke-linecap="round"></line>
+<text x="154" y="432" text-anchor="middle" font-family="DoozieBungee, Bungee, Impact, sans-serif" font-size="44" fill="#0d1b2a">D</text>
+</g><circle class="pop" cx="154" cy="350" r="16" fill="#fff3c4" opacity="0"></circle></g><g class="cyl c1"><g class="piston">
+<rect x="186" y="380" width="52" height="80" rx="16" fill="#7f1416"></rect>
+<rect x="186" y="372" width="52" height="80" rx="16" fill="#ffca28" stroke="#b37800" stroke-width="5"></rect>
+<line x1="196" y1="384" x2="228" y2="384" stroke="#b37800" stroke-width="4" stroke-linecap="round"></line>
+<text x="212" y="432" text-anchor="middle" font-family="DoozieBungee, Bungee, Impact, sans-serif" font-size="44" fill="#0d1b2a">O</text>
+</g><circle class="pop" cx="212" cy="350" r="16" fill="#fff3c4" opacity="0"></circle></g><g class="cyl c2"><g class="piston">
+<rect x="244" y="380" width="52" height="80" rx="16" fill="#7f1416"></rect>
+<rect x="244" y="372" width="52" height="80" rx="16" fill="#ffca28" stroke="#b37800" stroke-width="5"></rect>
+<line x1="254" y1="384" x2="286" y2="384" stroke="#b37800" stroke-width="4" stroke-linecap="round"></line>
+<text x="270" y="432" text-anchor="middle" font-family="DoozieBungee, Bungee, Impact, sans-serif" font-size="44" fill="#0d1b2a">O</text>
+</g><circle class="pop" cx="270" cy="350" r="16" fill="#fff3c4" opacity="0"></circle></g><g class="cyl c3"><g class="piston">
+<rect x="302" y="380" width="52" height="80" rx="16" fill="#7f1416"></rect>
+<rect x="302" y="372" width="52" height="80" rx="16" fill="#ffca28" stroke="#b37800" stroke-width="5"></rect>
+<line x1="312" y1="384" x2="344" y2="384" stroke="#b37800" stroke-width="4" stroke-linecap="round"></line>
+<text x="328" y="432" text-anchor="middle" font-family="DoozieBungee, Bungee, Impact, sans-serif" font-size="44" fill="#0d1b2a">Z</text>
+</g><circle class="pop" cx="328" cy="350" r="16" fill="#fff3c4" opacity="0"></circle></g><g class="cyl c4"><g class="piston">
+<rect x="360" y="380" width="52" height="80" rx="16" fill="#7f1416"></rect>
+<rect x="360" y="372" width="52" height="80" rx="16" fill="#ffca28" stroke="#b37800" stroke-width="5"></rect>
+<line x1="370" y1="384" x2="402" y2="384" stroke="#b37800" stroke-width="4" stroke-linecap="round"></line>
+<text x="386" y="432" text-anchor="middle" font-family="DoozieBungee, Bungee, Impact, sans-serif" font-size="44" fill="#0d1b2a">I</text>
+</g><circle class="pop" cx="386" cy="350" r="16" fill="#fff3c4" opacity="0"></circle></g><g class="cyl c5"><g class="piston">
+<rect x="418" y="380" width="52" height="80" rx="16" fill="#7f1416"></rect>
+<rect x="418" y="372" width="52" height="80" rx="16" fill="#ffca28" stroke="#b37800" stroke-width="5"></rect>
+<line x1="428" y1="384" x2="460" y2="384" stroke="#b37800" stroke-width="4" stroke-linecap="round"></line>
+<text x="444" y="432" text-anchor="middle" font-family="DoozieBungee, Bungee, Impact, sans-serif" font-size="44" fill="#0d1b2a">E</text>
+</g><circle class="pop" cx="444" cy="350" r="16" fill="#fff3c4" opacity="0"></circle></g>
+<rect class="head" x="122" y="358" width="356" height="16" rx="7" fill="#c62828" stroke="#4a0b0c" stroke-width="3"></rect>
+<text x="300" y="506" text-anchor="middle" font-family="DoozieBungee, Bungee, Impact, sans-serif" font-size="40" fill="#c62828">!</text>
+</svg></div>
     <div id="phoneJoin"></div>
   </div>
   <div id="netBanner"></div>
@@ -5980,6 +6049,7 @@ function toMenu() {
   document.body.classList.remove('playing');
   document.getElementById('pause').style.display = 'none';
   seatWaitingPhones();
+  if (typeof startBadgeEngine === 'function') startBadgeEngine();
 }
 
 function onKey(code) {
@@ -7810,6 +7880,39 @@ if (URLQ.get('room')) {
   if (known) joinGame(code); else joinStatus('Type your name and press Join');
 }
 window.__net = { get client() { return netClient; }, get pending() { return pendingJoin; }, joinGame, leaveNet, get room() { return roomCode; }, netPlayers };
+
+// ===== src/22-badge.js =====
+// ---------- The lobby badge: the six letter-cylinders fire like a straight-six starting up ----------
+const badgeEl = document.querySelector('#menu .badge');
+const FIRING_ORDER = [0, 4, 2, 5, 1, 3]; // 1-5-3-6-2-4, like a real straight-six
+let badgeTimer = null;
+function badgeFire(i, idle) {
+  const g = badgeEl && badgeEl.querySelector('.c' + i); if (!g) return;
+  g.classList.remove('f', 'fi'); void g.getBoundingClientRect(); // restart the animation
+  g.classList.add(idle ? 'fi' : 'f');
+  if (!idle && actx && actx.state === 'running' && settings.sound !== 'off') noise(0.07, 0.07, 240);
+}
+function startBadgeEngine() {
+  if (!badgeEl) return;
+  clearTimeout(badgeTimer);
+  const t0 = performance.now(); let n = 0;
+  badgeEl.classList.add('revving');
+  const step = () => {
+    if (state !== 'menu') { badgeEl.classList.remove('revving'); return; }
+    const t = (performance.now() - t0) / 1000, idle = t > 2.6;
+    if (idle) badgeEl.classList.remove('revving');
+    badgeFire(FIRING_ORDER[n++ % 6], idle);
+    // catches, revs up, then settles to a slow idle
+    badgeTimer = setTimeout(step, idle ? 420 : Math.max(80, 300 - t * 95));
+  };
+  setTimeout(step, 350);
+}
+startBadgeEngine();
+
+// ---------- Installable app (PWA): register the service worker on the hosted site ----------
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
 
 })();
 </script>
