@@ -67,8 +67,10 @@ function knockOut(car, why) {
   rumble(car, 1, 1, 450);
   const remaining = activeCars().filter(c => c.alive && !c.falling).length;
   if (car.lost) {
-    burst(car.pos.x, 1.5, car.pos.z, 0x2e7d32, 26, 9, 9, 1.1); burst(car.pos.x, 2, car.pos.z, 0x8bc34a, 14, 6, 10, 0.9);
-    tone(520, 0.12, 'square', 0.1, 600); setTimeout(() => noise(0.35, 0.2, 2500), 60);
+    const lc = curTrack.lostColors || [0x2e7d32, 0x8bc34a];
+    burst(car.pos.x, 1.5, car.pos.z, lc[0], 26, 9, 9, 1.1); burst(car.pos.x, 2, car.pos.z, lc[1], 14, 6, 10, 0.9);
+    if (curTrack.theme === 'haunted') scream(0.09);
+    else { tone(520, 0.12, 'square', 0.1, 600); setTimeout(() => noise(0.35, 0.2, 2500), 60); }
   } else if (car.falling) {
     noise(0.5, 0.3, 1200);
     burst(car.pos.x, -0.5, car.pos.z, 0xe3f2fd, 26, 7, 10, 1);

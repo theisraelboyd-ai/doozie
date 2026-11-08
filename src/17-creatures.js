@@ -11,6 +11,7 @@ function ambientCreatures(dt) {
   if (ambientT > 0) return;
   ambientT = 30 + Math.random() * 15;
   if (curTrack.theme === 'forest') { if (spawnBigfoot()) toast('Something is moving in the trees… <b>BIGFOOT!</b>'); }
+  else if (curTrack.theme === 'haunted') { if (spawnGhost()) { toast('Something cold is behind you… <b>GHOST CAR!</b>'); wail(0.08); } }
   else if (settings.creatures === 'anywhere') {
     if (Math.random() < 0.5) { if (spawnBigfoot()) toast('<b>BIGFOOT</b> has wandered onto the track!'); }
     else if (spawnGhost()) toast('A <b>Ghost car</b> is coming…');

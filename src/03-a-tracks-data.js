@@ -23,3 +23,13 @@ const TRACKS = [
     ],
   },
 ];
+TRACKS.push({
+  id: 'haunted', name: 'Haunted Hollow', theme: 'haunted',
+  points: [[0, 0], [80, -50], [170, -40], [230, 20], [210, 100], [140, 120], [110, 190], [30, 230],
+    [-60, 200], [-90, 130], [-160, 110], [-190, 30], [-130, -30], [-60, -60]],
+  zones: [
+    { type: 'narrow', from: 0.30, to: 0.35 }, // squeeze between the crypts
+    { type: 'mud', from: 0.52, to: 0.58 },    // graveyard bog
+    { type: 'narrow', from: 0.80, to: 0.85 },
+  ],
+});

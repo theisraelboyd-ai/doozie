@@ -10,11 +10,15 @@ let shadowSize = 0;
 function applyGfx() {
   const fancy = settings.gfx === 'fancy';
   renderer.toneMapping = fancy ? T.ACESFilmicToneMapping : T.NoToneMapping;
-  renderer.toneMappingExposure = fancy ? 0.95 : 1;
-  scene.environment = fancy ? envTex : null;
+  renderer.toneMappingExposure = fancy ? (curTrack && curTrack.night ? 1.15 : 0.95) : 1;
+  const night = !!(curTrack && curTrack.night);
+  scene.environment = fancy && !night ? envTex : null;
   sun.castShadow = fancy;
-  sun.intensity = fancy ? 2.4 : 1.4;
-  hemi.intensity = fancy ? 0.35 : 1.6;
+  sun.color.setHex(night ? 0x8fa3ff : 0xfff0d8);
+  sun.intensity = night ? (fancy ? 0.6 : 0.55) : fancy ? 2.4 : 1.4;
+  hemi.color.setHex(night ? 0x46527a : 0xdff1ff); hemi.groundColor.setHex(night ? 0x1b1424 : 0x5a6a50);
+  hemi.intensity = night ? (fancy ? 0.55 : 0.9) : fancy ? 0.35 : 1.6;
+  for (const c of cars) { const hl = c.mesh.group.userData.headlight; if (hl) { hl.visible = night; hl.intensity = night ? (fancy ? 320 : 240) : 0; } }
   const sky = (curTrack && curTrack.sky) || { fancy: 0xbfdcf0, simple: 0x9fd3f0, fogNear: 180, fogFar: 420 };
   scene.fog.color.setHex(fancy ? sky.fancy : sky.simple); scene.background.setHex(fancy ? sky.fancy : sky.simple);
   scene.fog.near = sky.fogNear; scene.fog.far = sky.fogFar;

@@ -31,7 +31,7 @@ function frame(now) {
     if (c.falling) {
       c.vy -= 30 * dt; c.y += c.vy * dt; c.pos.x += c.vel.x * dt * 0.5; c.pos.z += c.vel.y * dt * 0.5;
       c.mesh.group.rotation.x += dt * 2;
-      if (c.y < (curTrack.theme === 'forest' ? -40 : -6)) { c.falling = false; c.mesh.group.visible = c.mesh.shadow.visible = c.mesh.ring.visible = false; }
+      if (c.y < (curTrack.edge === 'woods' ? -40 : -6)) { c.falling = false; c.mesh.group.visible = c.mesh.shadow.visible = c.mesh.ring.visible = false; }
     } else if (c.alive || (c === lastWinner && state !== 'race')) {
       let inp = { thr: 0, st: 0, boost: false };
       if (state === 'race') inp = c.human ? humanInput(c) : aiInput(c, dt);

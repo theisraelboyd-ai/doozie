@@ -21,7 +21,7 @@ A shared-screen toy-car knockout party game that runs in the browser. Inspired b
 - **Controllers:** press **A** on the start screen to join (cars are taken in order Red, Blue, Green, Gold), **B** to leave, **Start** to begin or pause.
 - **Keyboard:** click a car on the start screen to switch it between Keyboard, Computer and Empty.
 - **Phones:** the start screen shows a QR code and a 4-letter room code. Scan it and your phone becomes a controller (it needs internet; phones and screen don't need to be on the same Wi-Fi, but it's quickest if they are). Press START on any phone to begin. A green dot on the phone means it's connected; if the link drops it reconnects by itself and keeps your car (the computer drives it meanwhile, for up to 30 seconds).
-- **Creatures:** Bigfoot roams Bigfoot Woods by himself every 30–45 seconds. Set Creatures to *Anywhere* and he and the Ghost car visit every track, or *Off*. During a race **B** calls Bigfoot and **Z** the Ghost car.
+- **Creatures:** Bigfoot roams Bigfoot Woods and the Ghost car haunts Haunted Hollow by themselves every 30–45 seconds. Set Creatures to *Anywhere* and he and the Ghost car visit every track, or *Off*. During a race **B** calls Bigfoot and **Z** the Ghost car.
 - **Esc / P** pauses, **V** switches Fancy / Simple graphics, **C** changes the camera (Cinematic, Classic, Calm).
 - **Auto-accelerate** (start screen) makes cars drive forward on their own, so younger players only need to steer.
 
@@ -49,6 +49,7 @@ Drive through the glowing **?** crates (three across the road at six spots a lap
 | --- | --- | --- |
 | Harbour Dash | Harbour, containers, cranes, boats | Two narrow piers; fall in and you're out |
 | Bigfoot Woods | Dirt trail through thick, foggy pine forest | Leave the road and the woods swallow you; tight squeezes, mud patches, Bigfoot crossing |
+| Haunted Hollow | Night lane through dead woods: lanterns, weeping willows, abandoned houses, a ruined chapel and graveyard, drifting ghosts | Headlights on; leave the lane and the ghosts take you; the Ghost car haunts it by itself; owls, crows, wind, wails and screams |
 
 Pick a track (or Random) on the start screen. Tracks are plain data in `src/03-a-tracks-data.js`: a loop of points the road passes through, tagged zones (`narrow`, `mud`) and a theme kit that dresses it. Adding a layout means adding an entry there.
 

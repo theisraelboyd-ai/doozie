@@ -22,6 +22,10 @@ function makeCarMesh(color) {
   shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.09; shadow.scale.set(0.75, 1.1, 1);
   const ring = new T.Mesh(new T.RingGeometry(2.6, 3.1, 32), new T.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, depthWrite: false }));
   ring.rotation.x = -Math.PI / 2; ring.position.y = 0.1;
+  // headlight beams, switched on for night tracks
+  const hl = new T.SpotLight(0xfff1d6, 0, 46, 0.55, 0.55, 1.4); hl.position.set(0, 1.0, 2.0);
+  const tgt = new T.Object3D(); tgt.position.set(0, 0, 16); g.add(tgt); hl.target = tgt; hl.visible = false; g.add(hl);
+  g.userData.headlight = hl;
   return { group: g, shadow, ring };
 }
 
