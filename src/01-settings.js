@@ -57,3 +57,4 @@ const CAR_TYPES = {
 };
 const SOUND_ORDER = ['all', 'sfx', 'off'], SOUND_NAMES = { all: 'Music + effects', sfx: 'Effects only', off: 'Off' };
 try { const s = localStorage.getItem('doozie-sound'); if (SOUND_ORDER.includes(s)) settings.sound = s; } catch (e) {}
+let netClient = null; // set when this screen has joined someone else's game (see 21-net.js)

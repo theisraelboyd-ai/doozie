@@ -46,7 +46,7 @@ function fireRocket() {
 }
 // A rocket from the sky; byGun = fired by the mouse player (counts towards their hits)
 function spawnRocket(target, point, byGun, color = 0xab47bc, glow = 0xd500f9, dur = 0.7) {
-  const m = new T.Mesh(rocketGeo, new T.MeshStandardMaterial({ color, emissive: glow, emissiveIntensity: 2.5 }));
+  const m = netMark(new T.Mesh(rocketGeo, new T.MeshStandardMaterial({ color, emissive: glow, emissiveIntensity: 2.5 })), 'rocket:' + color + ':' + glow);
   const start = camera.position.clone().add(new T.Vector3((Math.random() - 0.5) * 20, 10, 0));
   m.position.copy(start); scene.add(m);
   rockets.push({ m, target, point: point || (target ? target.pos.clone() : camTarget.clone()), t: 0, dur, byGun });

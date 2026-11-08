@@ -124,18 +124,23 @@ const shotMat = {
   drum: new T.MeshStandardMaterial({ color: 0xc62828, roughness: 0.5, metalness: 0.4 }),
 };
 function addShot(kind, car, extra) {
-  const m = new T.Mesh(shotGeo[kind === 'homing' ? 'missile' : kind], shotMat[kind]); m.castShadow = true;
+  const m = netMark(new T.Mesh(shotGeo[kind === 'homing' ? 'missile' : kind], shotMat[kind]), 'shot:' + kind); m.castShadow = true;
   const f = fwd(car), back = kind === 'drum' ? -1 : 1;
   m.position.set(car.pos.x + f.x * 3 * back, kind === 'drum' ? 0.9 : 1.1, car.pos.z + f.z * 3 * back);
   scene.add(m);
   const s = { kind, m, owner: car, t: 0, vx: f.x, vz: f.z, ...extra };
   shots.push(s); return s;
 }
+function makeHazardMesh(kind) {
+  let m;
+  if (kind === 'oil') { m = new T.Mesh(new T.CircleGeometry(3.2, 20), new T.MeshStandardMaterial({ color: 0x111111, roughness: 0.05, metalness: 0.6, transparent: true, opacity: 0.85 })); m.rotation.x = -Math.PI / 2; }
+  else { m = new T.Group(); const body = new T.Mesh(new T.CylinderGeometry(0.7, 0.8, 0.35, 12), new T.MeshStandardMaterial({ color: 0x263238, metalness: 0.6, roughness: 0.4 })); m.add(body); const led = new T.Mesh(new T.SphereGeometry(0.16, 8, 6), new T.MeshBasicMaterial({ color: 0xff1744 })); led.position.y = 0.25; m.add(led); m.userData.led = led; }
+  return m;
+}
 function dropHazard(kind, car) {
   const f = fwd(car), x = car.pos.x - f.x * 3.2, z = car.pos.z - f.z * 3.2;
-  let m;
-  if (kind === 'oil') { m = new T.Mesh(new T.CircleGeometry(3.2, 20), new T.MeshStandardMaterial({ color: 0x111111, roughness: 0.05, metalness: 0.6, transparent: true, opacity: 0.85 })); m.rotation.x = -Math.PI / 2; m.position.set(x, 0.08, z); }
-  else { m = new T.Group(); const body = new T.Mesh(new T.CylinderGeometry(0.7, 0.8, 0.35, 12), new T.MeshStandardMaterial({ color: 0x263238, metalness: 0.6, roughness: 0.4 })); m.add(body); const led = new T.Mesh(new T.SphereGeometry(0.16, 8, 6), new T.MeshBasicMaterial({ color: 0xff1744 })); led.position.y = 0.25; m.add(led); m.userData.led = led; m.position.set(x, 0.18, z); }
+  const m = netMark(makeHazardMesh(kind), 'haz:' + kind);
+  m.position.set(x, kind === 'oil' ? 0.08 : 0.18, z);
   scene.add(m);
   hazards.push({ kind, m, x, z, t: 0, owner: car, life: kind === 'oil' ? 22 : 30, armed: kind === 'oil' ? 0 : 1.0 });
 }
@@ -163,7 +168,7 @@ function useItem(car) {
       break;
     case 'shield':
       car.shield = 10;
-      if (!car.shieldMesh) { car.shieldMesh = new T.Mesh(new T.SphereGeometry(2.9, 20, 14), new T.MeshBasicMaterial({ color: 0x80d8ff, transparent: true, opacity: 0.22, depthWrite: false })); scene.add(car.shieldMesh); }
+      if (!car.shieldMesh) { car.shieldMesh = netMark(new T.Mesh(new T.SphereGeometry(2.9, 20, 14), new T.MeshBasicMaterial({ color: 0x80d8ff, transparent: true, opacity: 0.22, depthWrite: false })), 'shield'); scene.add(car.shieldMesh); }
       car.shieldMesh.visible = true; tone(880, 0.3, 'triangle', 0.07, 300); break;
     case 'ram': car.ram = 3.5; car.vel.x += f.x * 18; car.vel.y += f.z * 18; tone(150, 0.6, 'sawtooth', 0.09, 300); break;
   }

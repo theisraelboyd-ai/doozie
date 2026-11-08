@@ -84,7 +84,7 @@ function makeFlagMesh() {
 function dropFlagMesh() { if (flag.g) { scene.remove(flag.g); flag.g = null; } flag.holder = null; }
 function placeFlag(i, lat) {
   const k = ((i % N) + N) % N;
-  if (!flag.g) { flag.g = makeFlagMesh(); scene.add(flag.g); }
+  if (!flag.g) { flag.g = netMark(makeFlagMesh(), 'flag'); scene.add(flag.g); }
   flag.holder = null; flag.x = P[k].x + NRM[k].x * lat; flag.z = P[k].z + NRM[k].z * lat; flag.cd = 0.6;
 }
 function dropFlag(car) {

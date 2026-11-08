@@ -39,27 +39,68 @@
   body.playing #toast { top: auto; bottom: 60px; }
   body.playing.touchplay #toast { top: 64px; bottom: auto; font-size: 16px; }
   #help { position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 13px; opacity: .75; text-shadow: 0 1px 3px #000; pointer-events: none; }
-  #menu, #pause { position: fixed; inset: 0; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(13,27,42,.55), rgba(13,27,42,.92)); }
+  #menu, #pause { position: fixed; inset: 0; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(ellipse at 50% 60%, rgba(13,27,42,.35), rgba(8,16,28,.9)); }
   #pause { display: none; }
-  h1 { margin: 0; font-size: clamp(56px, 10vw, 120px); font-weight: 900; letter-spacing: 4px; color: #ffca28; text-shadow: 0 6px 0 #c62828, 0 10px 20px rgba(0,0,0,.5); transform: rotate(-3deg); }
+  #menu { justify-content: flex-start; padding: 22px 28px 18px; gap: 0; }
+  h1 { margin: 0; font-size: clamp(56px, 9vw, 112px); font-weight: 900; letter-spacing: 4px; color: #ffca28; text-shadow: 0 6px 0 #c62828, 0 10px 20px rgba(0,0,0,.5); transform: rotate(-3deg); line-height: 1; }
   .tag { margin: 6px 0 22px; font-size: 20px; font-weight: 700; opacity: .9; }
-  #slots { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
-  .slot { width: 190px; padding: 14px 10px; background: rgba(255,255,255,.08); border: 3px solid; border-radius: 14px; color: #fff; font: inherit; cursor: pointer; transition: transform .1s, background .1s; }
-  .slot:hover { transform: translateY(-3px); background: rgba(255,255,255,.16); }
-  .slot.off { opacity: .45; }
-  .slot .sw { width: 54px; height: 30px; border-radius: 8px; margin: 0 auto 8px; box-shadow: inset 0 -6px 0 rgba(0,0,0,.25); }
-  .slot .nm { font-weight: 900; font-size: 18px; }
-  .slot .ty { font-weight: 800; font-size: 13px; margin-top: 4px; letter-spacing: 1px; color: #ffca28; }
-  .slot .ks { font-size: 12px; margin-top: 6px; opacity: .85; min-height: 30px; }
-  .opts { display: flex; gap: 12px; margin: 22px 0 10px; flex-wrap: wrap; justify-content: center; }
-  .opt { background: rgba(255,255,255,.1); border: 2px solid rgba(255,255,255,.3); border-radius: 10px; color: #fff; font: inherit; padding: 8px 14px; cursor: pointer; font-size: 14px; }
-  .opt b { color: #ffca28; margin-left: 6px; }
-  #go { margin-top: 14px; font: inherit; font-size: 26px; font-weight: 900; letter-spacing: 2px; padding: 12px 46px; border-radius: 14px; border: 0; background: #ffca28; color: #222; cursor: pointer; box-shadow: 0 6px 0 #c49000; }
-  #go:hover { transform: translateY(-2px); }
-  .rules { margin-top: 18px; max-width: 760px; text-align: center; font-size: 14px; opacity: .85; line-height: 1.5; }
-
+  .lb-top { width: 100%; max-width: 1180px; display: flex; justify-content: space-between; align-items: flex-start; }
+  .lb-logo { padding: 6px 0 0 6px; }
+  .lb-sub { margin: 10px 0 0 26px; font-size: 18px; font-style: italic; font-weight: 700; color: #ffe082; opacity: .85; transform: rotate(-3deg); letter-spacing: .5px; }
+  #netBanner { display: none; margin-top: 8px; padding: 8px 18px; border-radius: 999px; background: rgba(41,121,255,.25); border: 2px solid rgba(130,177,255,.6); font-weight: 800; font-size: 15px; }
+  body.netclient #netBanner { display: block; }
+  #slots { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 26px; }
+  .slot { --c: #888; position: relative; width: 210px; padding: 0 0 12px; background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.04)); border: 2px solid rgba(255,255,255,.14); border-radius: 18px; color: #fff; font: inherit; cursor: pointer; overflow: hidden; transition: transform .12s, border-color .12s, background .12s; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  .slot:hover { transform: translateY(-4px); border-color: var(--c); }
+  .slot .st-band { background: var(--c); color: #fff; font-weight: 900; font-size: 18px; letter-spacing: 3px; padding: 7px 0 6px; text-shadow: 0 2px 0 rgba(0,0,0,.25); }
+  .slot .st-car { font-size: 52px; line-height: 1; margin: 14px 0 4px; filter: drop-shadow(0 4px 6px rgba(0,0,0,.4)); }
+  .slot .st-carname { display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 900; font-size: 17px; }
+  .slot .st-carname span { display: inline-flex; width: 28px; height: 28px; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,.12); font-size: 20px; line-height: 1; }
+  .slot .st-carname span:hover { background: rgba(255,255,255,.3); }
+  .slot .st-blurb { font-size: 12px; opacity: .7; margin-top: 3px; min-height: 15px; }
+  .slot .st-who { margin: 12px auto 0; display: inline-block; padding: 4px 12px; border-radius: 999px; background: rgba(0,0,0,.3); font-size: 12px; font-weight: 900; letter-spacing: 1.5px; color: #ffca28; }
+  .slot .st-keys { font-size: 11px; margin-top: 6px; opacity: .65; min-height: 14px; padding: 0 8px; }
+  .slot.off { background: rgba(255,255,255,.03); border-style: dashed; box-shadow: none; }
+  .slot.off .st-band { background: rgba(255,255,255,.08); color: rgba(255,255,255,.5); }
+  .slot.off .st-add { margin: 40px 0 48px; font-size: 15px; font-weight: 800; opacity: .55; }
+  .slot.me { box-shadow: 0 0 0 3px #fff, 0 10px 30px rgba(0,0,0,.3); }
+  body.netclient .slot { cursor: default; } body.netclient .slot:hover { transform: none; }
+  .lb-picks { display: flex; gap: 16px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+  .pick { display: flex; align-items: stretch; width: 430px; max-width: 92vw; border-radius: 16px; background: rgba(10,20,35,.6); border: 2px solid rgba(255,255,255,.14); overflow: hidden; }
+  .pick .arr { width: 52px; border: 0; background: rgba(255,255,255,.06); color: #fff; font-size: 34px; cursor: pointer; font-family: inherit; }
+  .pick .arr:hover { background: rgba(255,202,40,.25); }
+  .pk-body { flex: 1; padding: 10px 12px; text-align: center; cursor: pointer; }
+  .pk-lbl { font-size: 11px; font-weight: 900; letter-spacing: 3px; opacity: .55; }
+  .pk-val { font-size: 24px; font-weight: 900; color: #ffca28; margin-top: 2px; }
+  .pk-sub { font-size: 13px; opacity: .8; margin-top: 3px; min-height: 17px; }
+  body.netclient .pick .arr { visibility: hidden; } body.netclient .pk-body { cursor: default; }
+  #go { margin-top: 22px; font: inherit; font-size: 30px; font-weight: 900; letter-spacing: 6px; padding: 14px 70px; border-radius: 18px; border: 0; background: linear-gradient(180deg, #ffd54f, #ffb300); color: #2a1c00; cursor: pointer; box-shadow: 0 7px 0 #b37800, 0 14px 30px rgba(255,179,0,.25); }
+  #go:hover { transform: translateY(-2px); } #go:active { transform: translateY(4px); box-shadow: 0 3px 0 #b37800; }
+  .lb-hint { margin-top: 14px; font-size: 13px; opacity: .6; } .lb-hint b { color: #ffca28; font-weight: 800; }
+  .lb-bar { position: fixed; left: 18px; bottom: 16px; display: flex; gap: 10px; }
+  .lb-btn { font: inherit; font-size: 14px; font-weight: 800; padding: 9px 16px; border-radius: 12px; border: 2px solid rgba(255,255,255,.18); background: rgba(10,20,35,.7); color: #fff; cursor: pointer; }
+  .lb-btn:hover { border-color: #ffca28; color: #ffca28; }
+  #btnLeave { display: none; } body.netclient #btnLeave { display: inline-block; } body.netclient #btnJoin, body.netclient #phoneJoin { display: none; }
+  #drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 340px; max-width: 92vw; z-index: 40; background: rgba(10,18,30,.97); border-left: 2px solid rgba(255,255,255,.12); padding: 16px 18px 24px; overflow-y: auto; transform: translateX(105%); transition: transform .22s ease; box-shadow: -20px 0 40px rgba(0,0,0,.4); }
+  #drawer.open { transform: none; }
+  .dr-head { display: flex; justify-content: space-between; align-items: center; font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+  .dr-head button { border: 0; background: rgba(255,255,255,.1); color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 16px; cursor: pointer; }
+  .dr-group { font-size: 11px; font-weight: 900; letter-spacing: 3px; opacity: .5; margin: 16px 0 6px; text-transform: uppercase; }
+  .opt { display: flex; width: 100%; justify-content: space-between; align-items: center; margin: 0 0 6px; background: rgba(255,255,255,.06); border: 0; border-radius: 10px; color: #fff; font: inherit; padding: 11px 14px; cursor: pointer; font-size: 15px; text-align: left; }
+  .opt:hover { background: rgba(255,255,255,.14); }
+  .opt b { color: #ffca28; margin-left: 10px; }
+  body.netclient #drawer .opt.hostonly { display: none; }
+  .dr-help { margin-top: 18px; font-size: 13px; line-height: 1.5; opacity: .9; } .dr-help summary { cursor: pointer; font-weight: 800; font-size: 15px; } .dr-help p { margin: 8px 0; }
+  #joinDlg { position: fixed; inset: 0; z-index: 45; display: none; align-items: center; justify-content: center; background: rgba(5,10,18,.7); }
+  .jd-box { width: 380px; max-width: 92vw; background: #13233a; border: 2px solid rgba(255,255,255,.15); border-radius: 18px; padding: 22px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
+  .jd-title { font-size: 26px; font-weight: 900; } .jd-sub { font-size: 14px; opacity: .75; margin: 4px 0 14px; }
+  #joinCode { width: 220px; font: inherit; font-size: 40px; font-weight: 900; letter-spacing: 12px; text-align: center; text-transform: uppercase; padding: 8px; border-radius: 12px; border: 2px solid rgba(255,202,40,.6); background: rgba(0,0,0,.3); color: #ffca28; outline: none; user-select: text; }
+  .jd-btns { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
+  .jd-btns button { font: inherit; font-size: 18px; font-weight: 900; padding: 10px 26px; border-radius: 12px; border: 0; cursor: pointer; background: #ffca28; color: #222; }
+  .jd-btns button + button { background: rgba(255,255,255,.15); color: #fff; }
+  #joinStatus { margin-top: 12px; font-size: 13px; opacity: .85; min-height: 18px; }
   /* ---- phone join panel ---- */
-  #phoneJoin { position: absolute; top: 14px; right: 14px; display: flex; gap: 10px; align-items: center; background: rgba(10,20,35,.75); border: 2px solid rgba(255,255,255,.25); border-radius: 12px; padding: 8px 12px 8px 8px; font-size: 13px; line-height: 1.35; }
+  #phoneJoin { display: flex; gap: 10px; align-items: center; background: rgba(10,20,35,.75); border: 2px solid rgba(255,255,255,.25); border-radius: 12px; padding: 8px 12px 8px 8px; font-size: 13px; line-height: 1.35; }
   #phoneJoin:empty { display: none; }
   .pj-qr { width: 104px; height: 104px; background: #fff; border-radius: 6px; padding: 2px; }
   .pj-qr svg { width: 100%; height: 100%; display: block; }
@@ -91,12 +132,10 @@
   /* ---- small screens ---- */
   @media (max-height: 520px), (max-width: 700px) {
     h1 { font-size: 46px; } .tag { margin: 2px 0 8px; font-size: 14px; }
-    .slot { width: 128px; padding: 8px 6px; } .slot .sw { width: 38px; height: 20px; margin-bottom: 4px; } .slot .nm { font-size: 14px; } .slot .ks { min-height: 0; font-size: 11px; }
-    .opts { margin: 10px 0 4px; gap: 6px; } .opt { padding: 5px 9px; font-size: 12px; }
-    #go { font-size: 18px; padding: 8px 26px; } .rules { display: none; }
+    #menu { padding: 8px 10px 12px; } .lb-sub { font-size: 12px; margin: 4px 0 0 12px; } #slots { margin-top: 8px; gap: 8px; } .slot { width: 150px; padding-bottom: 6px; } .slot .st-band { font-size: 13px; padding: 4px 0; } .slot .st-car { font-size: 30px; margin: 6px 0 2px; } .slot .st-carname { font-size: 13px; } .slot .st-who { margin-top: 6px; font-size: 10px; } .slot .st-keys, .slot .st-blurb { display: none; } .slot.off .st-add { margin: 18px 0; } .lb-picks { margin-top: 8px; gap: 8px; } .pick { width: 300px; } .pk-val { font-size: 17px; } .pk-sub { display: none; } .lb-hint { display: none; } .lb-bar { position: static; margin-top: 10px; flex-wrap: wrap; justify-content: center; } .lb-btn, #btnTouch { padding: 6px 10px; font-size: 12px; margin-top: 0; }
+    #go { font-size: 20px; padding: 8px 36px; margin-top: 10px; }
     body.is-touch #phoneJoin { display: none; }
     #phoneJoin { top: 6px; right: 6px; padding: 4px; } .pj-qr { width: 78px; height: 78px; } .pj-txt { display: none; }
-    #menu { justify-content: flex-start; padding-top: 8px; overflow-y: auto; }
     #hud { gap: 5px; top: 6px; } .card { min-width: 74px; padding: 3px 6px 5px; border-width: 2px; } .card .nm { font-size: 11px; } .card .pts { font-size: 18px; } .card .pips span { width: 6px; height: 6px; } .card .lbl { display: none; }
     #bigT { font-size: 40px; } #bigS { font-size: 15px; }
   }
@@ -151,31 +190,57 @@
 <div id="big"><div id="bigT"></div><div id="bigS"></div></div>
 <div id="toast"></div>
 <div id="menu">
-  <div id="phoneJoin"></div>
-  <h1>DOOZIE!</h1>
-  <div class="tag" id="modeTag">Last car on screen wins</div>
-  <div id="slots"></div>
-  <div class="opts">
-    <button class="opt" id="btnMode">Mode<b id="optMode"></b></button>
-    <button class="opt" id="btnSound">Sound<b id="optSound"></b></button>
-    <button class="opt" id="btnTrack">Track<b id="optTrack"></b></button>
-    <button class="opt" id="btnCreatures">Creatures<b id="optCreatures"></b></button>
-    <button class="opt" id="btnWeapons">Weapons<b id="optWeapons"></b></button>
-    <button class="opt" id="btnTarget">Points to win<b id="optTarget"></b></button>
-    <button class="opt" id="btnSkill">Computer skill<b id="optSkill"></b></button>
-    <button class="opt" id="btnCam">Camera<b id="optCam"></b></button>
-    <button class="opt" id="btnAuto">Auto-accelerate<b id="optAuto"></b></button>
-    <button class="opt" id="btnGfx">Graphics<b id="optGfx"></b></button>
-    <button class="opt" id="btnGun">Mouse rockets<b id="optGun"></b></button>
-    <button class="opt" id="btnWater">Edges<b id="optWater"></b></button>
+  <div class="lb-top">
+    <div class="lb-logo"><h1>DOOZIE!</h1><div class="lb-sub">that's a Duesy.</div></div>
+    <div id="phoneJoin"></div>
   </div>
-  <button id="btnTouch" class="touchonly">📱 Play on this phone</button>
-  <button id="go">START (Enter / ☰ Start)</button>
-  <div class="rules"><b style="color:#ffca28">Controllers:</b> press A to join · LB/RB to change car · B to leave · START to begin.<br>Click a slot to switch it between Keyboard, Computer and Empty · click the car name to change car.<br>
-    Stay on screen! Fall behind the camera or get shunted off the edge and you're out.
-    Last car left wins the round (+2), second gets +1, first out loses 1. First to the target wins.<br>
-    Drive through <b>?</b> crates to grab a weapon, press FIRE to use it. Each player has a boost. Esc pauses. B / Z call Bigfoot / the Ghost car. V switches Fancy / Simple graphics, C changes the camera.<br>
-    <b style="color:#ce93d8">Mouse rockets:</b> anyone can click on the track to fire a rocket. Click near a car and it locks on.</div>
+  <div id="netBanner"></div>
+  <div id="slots"></div>
+  <div class="lb-picks">
+    <div class="pick" id="pickTrack"><button class="arr" id="trackPrev" aria-label="Previous track">&#8249;</button><div class="pk-body" id="btnTrack"><div class="pk-lbl">TRACK</div><div class="pk-val" id="optTrack"></div><div class="pk-sub" id="trackSub"></div></div><button class="arr" id="trackNext" aria-label="Next track">&#8250;</button></div>
+    <div class="pick" id="pickMode"><button class="arr" id="modePrev" aria-label="Previous mode">&#8249;</button><div class="pk-body" id="btnMode"><div class="pk-lbl">MODE</div><div class="pk-val" id="optMode"></div><div class="pk-sub" id="modeTag"></div></div><button class="arr" id="modeNext" aria-label="Next mode">&#8250;</button></div>
+  </div>
+  <button id="go">START</button>
+  <div class="lb-hint" id="lbHint">Controllers: <b>A</b> to join · <b>LB / RB</b> change car · <b>START</b> to begin</div>
+  <div class="lb-bar">
+    <button class="lb-btn" id="btnSettings">&#9881; Settings</button>
+    <button class="lb-btn" id="btnJoin">&#128279; Join a game</button>
+    <button class="lb-btn" id="btnLeave">&#10005; Leave game</button>
+    <button id="btnTouch" class="lb-btn touchonly">&#128241; Play on this phone</button>
+  </div>
+</div>
+<div id="drawer">
+  <div class="dr-head"><span>Settings</span><button id="drClose" aria-label="Close">&#10005;</button></div>
+  <div class="dr-group">Game</div>
+  <button class="opt" id="btnTarget">Points to win<b id="optTarget"></b></button>
+  <button class="opt" id="btnWeapons">Weapons<b id="optWeapons"></b></button>
+  <button class="opt" id="btnCreatures">Creatures<b id="optCreatures"></b></button>
+  <button class="opt" id="btnWater">Edges<b id="optWater"></b></button>
+  <button class="opt" id="btnSkill">Computer skill<b id="optSkill"></b></button>
+  <button class="opt" id="btnAuto">Auto-accelerate<b id="optAuto"></b></button>
+  <button class="opt" id="btnGun">Mouse rockets<b id="optGun"></b></button>
+  <div class="dr-group">Screen &amp; sound</div>
+  <button class="opt" id="btnGfx">Graphics<b id="optGfx"></b></button>
+  <button class="opt" id="btnCam">Camera<b id="optCam"></b></button>
+  <button class="opt" id="btnSound">Sound<b id="optSound"></b></button>
+  <details class="dr-help"><summary>How to play</summary>
+    <p>Stay on screen! Fall behind the camera or get shunted off the edge and you're out. Last car left wins the round (+2), second gets +1, first out loses 1.</p>
+    <p>Drive through <b>?</b> crates to grab a weapon and press FIRE to use it. Everyone has a boost.</p>
+    <p><b>Keyboard:</b> Red W A S D, boost Q, fire E · Blue arrows, boost Right Shift, fire / · Green I J K L, boost U, fire O · Gold T F G H, boost R, fire Y.</p>
+    <p><b>Controllers:</b> stick or D-pad steers, RT or A accelerates, LT or B brakes, X or RB fires, Y or LB boosts, START pauses.</p>
+    <p><b>Mouse rockets:</b> anyone can click the track to fire a rocket; click near a car and it locks on.</p>
+    <p><b>Phones:</b> scan the code to drive or to watch and mess with the players. <b>Laptops:</b> press Join a game and type the room code.</p>
+    <p><b>Keys:</b> Esc pause · V graphics · C camera · N frame rate · B / Z call Bigfoot / the Ghost car.</p>
+  </details>
+</div>
+<div id="joinDlg">
+  <div class="jd-box">
+    <div class="jd-title">Join a game</div>
+    <div class="jd-sub">Type the room code shown on the other screen</div>
+    <input id="joinCode" maxlength="4" autocomplete="off" spellcheck="false" placeholder="ABCD">
+    <div class="jd-btns"><button id="joinGo">Join</button><button id="joinCancel">Cancel</button></div>
+    <div id="joinStatus"></div>
+  </div>
 </div>
 <div id="pause"><h1 style="font-size:72px">PAUSED</h1><div class="tag">Esc or START to carry on · M or B for menu</div><div class="bigbtns"><button data-act="resume">Resume</button><button data-act="menu">Menu</button></div></div>
 <div id="touchpad"></div>

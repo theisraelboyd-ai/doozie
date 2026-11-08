@@ -6,29 +6,31 @@ const touchInput = { st: 0, thr: 0, boost: false, fire: false };
 const CHEERS = ['👏', '😂', '😱', '🔥', '👻', '🦶'];
 const POWER_CD = { rocket: 12, boost: 10, bigfoot: 20, ghost: 20 };
 
-function slotTaken(t) { return t === 'pad' || t === 'phone' || t === 'touch'; }
+function slotTaken(t) { return t === 'pad' || t === 'phone' || t === 'touch' || t === 'net'; }
+function remoteSlot(t) { return t === 'phone' || t === 'net'; }
 function phoneForSlot(s) { for (const p of phones.values()) if (p.slot === s && p.role === 'player') return p; return null; }
 function phoneSend(p, m) { try { if (p && p.conn && p.conn.open) p.conn.send(m); } catch (e) {} }
 function freeCars() { return settings.slots.filter(t => !slotTaken(t)).length; }
 function viewers() { return [...phones.values()].filter(p => p.role === 'viewer' && p.conn); }
 
 function seatPhone(p) {
-  if (p.slot >= 0 && settings.slots[p.slot] === 'phone') { sayHello(p); return; } // already seated (reconnect)
+  if (p.slot >= 0 && remoteSlot(settings.slots[p.slot])) { sayHello(p); return; } // already seated (reconnect)
   const s = settings.slots.findIndex(t => !slotTaken(t));
   if (s < 0) { phoneSend(p, { t: 'full' }); return; }
-  settings.slots[s] = 'phone'; settings.padOf[s] = null; p.slot = s; p.role = 'player';
+  settings.slots[s] = p.net ? 'net' : 'phone'; settings.padOf[s] = null; p.slot = s; p.role = 'player';
   sayHello(p);
-  audio(); tone(520, 0.08, 'square', 0.08); setTimeout(() => tone(780, 0.1, 'square', 0.08), 90);
-  toast(`A phone is driving <b style="color:${COLORS[s].css}">${COLORS[s].name}</b>`);
+  audio(); tone(520, 0.08, 'square', 0.08); setTimeout(() => tone(780, 0.1, 'square', 0.08), 90); setJoinPanelCount();
+  toast(`${p.net ? 'A laptop' : 'A phone'} is driving <b style="color:${COLORS[s].css}">${COLORS[s].name}</b>`);
   buildMenu();
 }
 function sayHello(p) {
   if (p.role === 'viewer') phoneSend(p, { t: 'hello', role: 'viewer', name: 'VIEWER ' + p.viewerNo, css: '#7e57c2' });
   else phoneSend(p, { t: 'hello', role: 'player', name: COLORS[p.slot].name, css: COLORS[p.slot].css });
   phoneSend(p, { t: 'state', s: state, free: freeCars(), viewers: viewers().length });
+  if (p.net) { phoneSend(p, netLobbyMsg()); if (state !== 'menu') netSendSetup(p); }
 }
 function unseatPhone(p, kicked) {
-  if (p.slot >= 0 && settings.slots[p.slot] === 'phone') { settings.slots[p.slot] = 'cpu'; toast(`<b style="color:${COLORS[p.slot].css}">${COLORS[p.slot].name}</b>'s phone left`); }
+  if (p.slot >= 0 && remoteSlot(settings.slots[p.slot])) { settings.slots[p.slot] = 'cpu'; toast(`<b style="color:${COLORS[p.slot].css}">${COLORS[p.slot].name}</b>'s ${p.net ? 'laptop' : 'phone'} left`); }
   if (kicked) phoneSend(p, { t: 'kicked' });
   p.slot = -1; buildMenu();
 }
@@ -42,16 +44,18 @@ function makeViewer(p) {
 function onPhoneMessage(p, m) {
   if (!m || typeof m !== 'object') return;
   if (m.t === 'join' || m.t === 'role') {
+    if (m.net) p.net = true;
     if (m.role === 'viewer') { makeViewer(p); return; }
-    if (p.slot >= 0 && settings.slots[p.slot] === 'phone') { p.role = 'player'; sayHello(p); return; }
+    if (p.slot >= 0 && remoteSlot(settings.slots[p.slot])) { p.role = 'player'; sayHello(p); return; }
     p.role = 'player';
     if (state === 'menu' || state === 'matchEnd') seatPhone(p);
-    else { if (!phoneWaiting.includes(p)) phoneWaiting.push(p); phoneSend(p, { t: 'wait' }); }
+    else { if (!phoneWaiting.includes(p)) phoneWaiting.push(p); phoneSend(p, { t: 'wait' }); if (p.net) { phoneSend(p, netLobbyMsg()); netSendSetup(p); } }
   } else if (m.t === 'in') {
     p.inp.st = Math.max(-1, Math.min(1, Number(m.st) || 0)); p.inp.thr = Math.max(-1, Math.min(1, Number(m.thr) || 0)); p.inp.boost = !!m.boost; p.inp.fire = !!m.fire;
     p.lastIn = performance.now();
   } else if (m.t === 'start') { if (state === 'menu' || state === 'matchEnd') startMatch(); }
   else if (m.t === 'pause') { if (p.role === 'player') togglePause(); }
+  else if (m.t === 'car') { if (p.slot >= 0 && state === 'menu') cycleCar(p.slot, m.dir < 0 ? -1 : 1); }
   else if (m.t === 'cheer') { if (CHEERS.includes(m.e)) showCheer(m.e, p); }
   else if (m.t === 'power' && p.role === 'viewer') viewerPower(p, m.k);
 }
@@ -97,18 +101,18 @@ function setJoinPanel(mode) {
   if (mode === 'ready' && location.protocol !== 'file:') {
     const qr = qrcode(0, 'M'); qr.addData(joinLink()); qr.make();
     el.innerHTML = `<div class="pj-qr">${qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}</div>
-      <div class="pj-txt"><b>Join with your phone</b><br>Drive or watch<br>Room <span class="pj-code">${roomCode}</span><br><span id="pj-count"></span></div>`;
+      <div class="pj-txt"><b>Join this game</b><br>Phones: scan the code<br>Laptops: Join a game, then<br>room <span class="pj-code">${roomCode}</span><br><span id="pj-count"></span></div>`;
     setJoinPanelCount();
   } else if (mode === 'ready') {
-    el.innerHTML = `<div class="pj-txt"><b>Phone controller</b><br>Room <span class="pj-code">${roomCode}</span><br><small>QR works on the hosted site</small></div>`;
+    el.innerHTML = `<div class="pj-txt"><b>Join this game</b><br>Room <span class="pj-code">${roomCode}</span><br><small>QR works on the hosted site</small></div>`;
   } else if (mode === 'connecting') el.innerHTML = `<div class="pj-txt"><b>Phone controller</b><br>Opening a room…</div>`;
   else el.innerHTML = `<div class="pj-txt"><b>Phone controller</b><br>Offline – needs internet</div>`;
 }
 function phoneRumble(s, ms) { const p = phoneForSlot(s); if (p) phoneSend(p, { t: 'buzz', ms: Math.round(ms) }); }
 function setJoinPanelCount() {
   const el = document.getElementById('pj-count'); if (!el) return;
-  const v = viewers().length, d = [...phones.values()].filter(p => p.role === 'player' && p.conn).length;
-  el.textContent = (d || v) ? `📱 ${d} driving · 👀 ${v} watching` : '';
+  const v = viewers().length, d = [...phones.values()].filter(p => p.role === 'player' && p.conn && !p.net).length, l = [...phones.values()].filter(p => p.net && p.conn).length;
+  el.textContent = (d || v || l) ? [l ? `💻 ${l} laptop${l > 1 ? 's' : ''}` : '', d ? `📱 ${d} driving` : '', v ? `👀 ${v} watching` : ''].filter(Boolean).join(' · ') : '';
 }
 function phonesTick(dt) {
   // wall-clock timer, so slow frames never starve the phones of updates
@@ -146,6 +150,7 @@ document.getElementById('btnTouch').onclick = () => { audio(); toggleTouchPlayer
 document.getElementById('tpPause').onclick = () => togglePause();
 document.addEventListener('click', e => {
   const a = e.target.closest('[data-act]'); if (!a) return;
+  if (netClient) { if (a.dataset.act === 'again') netSend({ t: 'start' }); if (a.dataset.act === 'resume') netSend({ t: 'pause' }); if (a.dataset.act === 'menu') leaveNet('You left the game'); return; }
   if (a.dataset.act === 'again') startMatch();
   if (a.dataset.act === 'menu') toMenu();
   if (a.dataset.act === 'resume') togglePause();

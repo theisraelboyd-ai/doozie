@@ -55,21 +55,28 @@ function spawnBigfoot() {
   const b = makeBigfoot();
   const from = trackPoint(idx, side * edge), to = trackPoint(idx, -side * edge);
   b.g.scale.setScalar(1.5); b.g.position.copy(from); b.g.lookAt(to.x, 0, to.z);
-  scene.add(b.g);
+  netMark(b.g, 'bigfoot'); scene.add(b.g);
   creature = { kind: 'bigfoot', ...b, from, to, t: 0, dur: 4.5, R: 3.2, hit: new Set() };
   noise(0.9, 0.35, 220); tone(90, 0.9, 'sawtooth', 0.12, -40);
   return true;
 }
 
 // ----- Ghost car: a see-through phantom that races through the pack -----
-function spawnGhost() {
-  if (creature || state !== 'race') return false;
-  const back = backCar(); if (!back) return false;
+function makeGhostMesh() {
   const m = makeCarMesh(0xffffff);
   const mat = new T.MeshBasicMaterial({ color: 0xc8fff4, transparent: true, opacity: 0.38, depthWrite: false });
   m.group.traverse(o => { if (o.isMesh) { o.material = mat; o.castShadow = false; } });
+  const hl = m.group.userData.headlight; if (hl) m.group.remove(hl);
   const glow = new T.PointLight(0x9effe5, 60, 18, 2); glow.position.y = 1.5; m.group.add(glow);
-  scene.add(m.group);
+  m.group.userData.mat = mat;
+  return m.group;
+}
+function spawnGhost() {
+  if (creature || state !== 'race') return false;
+  const back = backCar(); if (!back) return false;
+  const g = netMark(makeGhostMesh(), 'ghost'), mat = g.userData.mat;
+  scene.add(g);
+  const m = { group: g };
   const startIdx = back.idx - Math.round(30 / SPACING);
   creature = { kind: 'ghost', g: m.group, mat, prog: startIdx, t: 0, dur: 9, R: 2.6, hit: new Set(), phase: Math.random() * 6 };
   tone(660, 1.2, 'sine', 0.08, -420); setTimeout(() => tone(520, 1.0, 'sine', 0.06, -300), 250);

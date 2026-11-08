@@ -33,8 +33,9 @@ function startMatch() {
   audio();
   cars.forEach((c, i) => {
     const s = settings.slots[i];
-    c.active = s !== 'off'; c.human = s === 'keys' || s === 'pad' || s === 'phone' || s === 'touch'; c.points = 0; c.alive = false;
+    c.active = s !== 'off'; c.human = s === 'keys' || s === 'pad' || s === 'phone' || s === 'touch' || s === 'net'; c.points = 0; c.alive = false;
   });
+  if (netClient) { netSend({ t: 'start' }); return; }
   if (activeCars().length < 2) { flashMsg('Need at least 2 cars', 1.5); return; }
   if (settings.mode === 'teams' && new Set(activeCars().map(teamOf)).size < 2) { flashMsg('Teams needs a car on each side (Red/Gold vs Blue/Green)', 2.5); return; }
   teamPts = [0, 0];
@@ -49,6 +50,7 @@ function startMatch() {
   document.body.classList.add('playing');
   buildHud();
   newRound(0);
+  netSendSetup();
 }
 
 function newRound(atIdx) {

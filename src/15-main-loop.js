@@ -4,7 +4,8 @@ function frame(now) {
   requestAnimationFrame(frame);
   let rdt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now; wt += rdt;
   pollPads(); fpsTick(rdt); soundTick(rdt);
-  phonesTick(rdt);
+  phonesTick(rdt); netHostTick();
+  if (netClient && netClient.live) { if (toastT > 0) { toastT -= rdt; if (toastT <= 0) document.getElementById('toast').style.opacity = 0; } netClientFrame(rdt); return; }
   if (toastT > 0) { toastT -= rdt; if (toastT <= 0) document.getElementById('toast').style.opacity = 0; }
   if (state === 'paused' || state === 'menu') {
     if (state === 'menu') updateMenuCamera(rdt, Math.floor((wt * 25) % N)); // idle flyover

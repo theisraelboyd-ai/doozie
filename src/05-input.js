@@ -42,6 +42,7 @@ function rumble(car, strong, weak, ms) {
 }
 // Called every frame: menu joining, Start/pause, play-again
 function pollPads() {
+  if (netClient) return; // a joined laptop's controller drives its car on the host instead
   const ps = navigator.getGamepads ? navigator.getGamepads() : [];
   for (let i = 0; i < (ps ? ps.length : 0); i++) {
     const p = ps[i]; if (!p || !p.connected) continue;
@@ -82,7 +83,7 @@ function humanInput(car) {
       fire = pressed(p, 2) || pressed(p, 5);   // X or RB
       boost = pressed(p, 3) || pressed(p, 4);  // Y or LB
     }
-  } else if (settings.slots[car.i] === 'phone') {
+  } else if (settings.slots[car.i] === 'phone' || settings.slots[car.i] === 'net') {
     const p = phoneForSlot(car.i);
     // phone gone quiet (dropped signal, screen locked): the computer drives until it's back
     if (!p || !p.conn || performance.now() - p.lastIn > 1500) return aiInput(car, 1 / 60);
