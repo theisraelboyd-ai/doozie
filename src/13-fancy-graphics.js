@@ -15,7 +15,9 @@ function applyGfx() {
   sun.castShadow = fancy;
   sun.intensity = fancy ? 2.4 : 1.4;
   hemi.intensity = fancy ? 0.35 : 1.6;
-  scene.fog.color.setHex(fancy ? 0xbfdcf0 : 0x9fd3f0); scene.background.setHex(fancy ? 0xbfdcf0 : 0x9fd3f0);
+  const sky = (curTrack && curTrack.sky) || { fancy: 0xbfdcf0, simple: 0x9fd3f0, fogNear: 180, fogFar: 420 };
+  scene.fog.color.setHex(fancy ? sky.fancy : sky.simple); scene.background.setHex(fancy ? sky.fancy : sky.simple);
+  scene.fog.near = sky.fogNear; scene.fog.far = sky.fogFar;
   renderer.setPixelRatio(fancy ? Math.min(window.devicePixelRatio || 1, 1.25) : 1);
   resize();
 }

@@ -124,8 +124,9 @@
   .pc-cheers { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
   .pc-cheer { font-size: 38px; width: 70px; height: 64px; border-radius: 16px; border: 0; background: rgba(255,255,255,.12); transition: transform .1s; }
   .pc-cheer.pop { transform: scale(1.25); }
-  .pc-powers { display: flex; gap: 14px; }
-  .pc-power { width: min(42vw, 280px); padding: 12px; border-radius: 16px; border: 3px solid #b39ddb; background: rgba(126,87,194,.35); color: #fff; font: inherit; font-size: 30px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .pc-powers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; max-width: 900px; }
+  @media (orientation: portrait) { .pc-powers { grid-template-columns: repeat(2, 1fr); } }
+  .pc-power { padding: 10px 6px; border-radius: 16px; border: 3px solid #b39ddb; background: rgba(126,87,194,.35); color: #fff; font: inherit; font-size: 30px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .pc-power b { font-size: 16px; } .pc-power i { font-style: normal; font-size: 13px; opacity: .85; }
   .pc-power.cooling { opacity: .45; }
   .pc-soon { font-size: 13px; opacity: .7; }
@@ -144,18 +145,19 @@
   <div class="tag">Last car on screen wins</div>
   <div id="slots"></div>
   <div class="opts">
+    <button class="opt" id="btnTrack">Track<b id="optTrack"></b></button>
     <button class="opt" id="btnTarget">Points to win<b id="optTarget"></b></button>
     <button class="opt" id="btnSkill">Computer skill<b id="optSkill"></b></button>
     <button class="opt" id="btnCam">Camera<b id="optCam"></b></button>
     <button class="opt" id="btnAuto">Auto-accelerate<b id="optAuto"></b></button>
     <button class="opt" id="btnGfx">Graphics<b id="optGfx"></b></button>
     <button class="opt" id="btnGun">Mouse rockets<b id="optGun"></b></button>
-    <button class="opt" id="btnWater">Harbour edges<b id="optWater"></b></button>
+    <button class="opt" id="btnWater">Edges<b id="optWater"></b></button>
   </div>
   <button id="btnTouch" class="touchonly">📱 Play on this phone</button>
   <button id="go">START (Enter / ☰ Start)</button>
   <div class="rules"><b style="color:#ffca28">Controllers:</b> press A to join · B to leave · START to begin.<br>Click a car to switch it between Keyboard, Computer and Empty.<br>
-    Stay on screen! Fall behind the camera or get shunted into the harbour and you're out.
+    Stay on screen! Fall behind the camera or get shunted off the edge and you're out.
     Last car left wins the round (+2), second gets +1, first out loses 1. First to the target wins.<br>
     Each player has a boost. Esc pauses. V switches Fancy / Simple graphics, C changes the camera.<br>
     <b style="color:#ce93d8">Mouse rockets:</b> anyone can click on the track to fire a rocket. Click near a car and it locks on.</div>

@@ -65,8 +65,10 @@ function runController() {
       <div class="pc-powers">
         <button class="pc-power" data-k="rocket">🚀<b>Rocket the leader</b><i></i></button>
         <button class="pc-power" data-k="boost">⚡<b>Boost the back car</b><i></i></button>
+        <button class="pc-power" data-k="bigfoot">🦶<b>Bigfoot</b><i></i></button>
+        <button class="pc-power" data-k="ghost">👻<b>Ghost car</b><i></i></button>
       </div>
-      <div class="pc-soon">Coming soon: Bigfoot, the Ghost car and more…</div>
+      <div class="pc-soon">More creatures coming: the Kraken, a UFO, Nessie…</div>
       <button id="pc-toplayer" class="pc-link">Switch to player</button>
     </div>
     <div id="pc-rotate">Turn your phone sideways ↻</div>`;
@@ -76,7 +78,7 @@ function runController() {
   try { cid = sessionStorage.getItem('doozie-cid') || ''; } catch (e) {}
   if (!cid) { cid = Math.random().toString(36).slice(2, 10); try { sessionStorage.setItem('doozie-cid', cid); } catch (e) {} }
   let peer = null, conn = null, role = null, lastHeard = 0, lastTry = 0, hello = false, firstTap = true;
-  const cool = { rocket: 0, boost: 0 };
+  const cool = { rocket: 0, boost: 0, bigfoot: 0, ghost: 0 };
 
   function show(which) {
     $('pc-choose').style.display = which === 'choose' ? 'flex' : 'none';

@@ -21,6 +21,7 @@ const settings = {
   gunner: true, // mouse rocket launcher player
   gfx: 'fancy', // fancy | simple
   cam: 'cinematic', // cinematic | classic | calm
+  track: 'harbour', // a TRACKS id, or 'random'
 };
 const SKILL_NAMES = ['Easy', 'Normal', 'Hard'];
 const SKILL_SPEED = [0.84, 0.93, 1.0];

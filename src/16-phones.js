@@ -4,7 +4,7 @@ const phoneWaiting = [];     // players who joined mid-match
 let roomCode = '', peerHost = null, phoneStateT = 0, viewerCount = 0;
 const touchInput = { st: 0, thr: 0, boost: false };
 const CHEERS = ['👏', '😂', '😱', '🔥', '👻', '🦶'];
-const POWER_CD = { rocket: 12, boost: 10 };
+const POWER_CD = { rocket: 12, boost: 10, bigfoot: 20, ghost: 20 };
 
 function slotTaken(t) { return t === 'pad' || t === 'phone' || t === 'touch'; }
 function phoneForSlot(s) { for (const p of phones.values()) if (p.slot === s && p.role === 'player') return p; return null; }
@@ -184,7 +184,11 @@ function viewerPower(p, k) {
   const alive = activeCars().filter(c => c.alive && !c.falling);
   if (!alive.length) return;
   const who = `<b style="color:#b39ddb">Viewer ${p.viewerNo}</b>`;
-  if (k === 'rocket') {
+  if (k === 'bigfoot' || k === 'ghost') {
+    if (creature) { phoneSend(p, { t: 'msg', text: 'Another creature is on the track – try again in a moment' }); return; }
+    if (!(k === 'bigfoot' ? spawnBigfoot() : spawnGhost())) return;
+    toast(k === 'bigfoot' ? `${who} sent in <b>BIGFOOT</b>!` : `${who} summoned the <b>Ghost car</b>!`);
+  } else if (k === 'rocket') {
     const lead = alive.reduce((a, b) => (b.prog > a.prog ? b : a));
     spawnRocket(lead, null, false, 0x7e57c2, 0x651fff, 0.9);
     toast(`${who} fired a rocket at <b style="color:${lead.color.css}">${lead.color.name}</b>!`);

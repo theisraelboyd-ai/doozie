@@ -36,6 +36,9 @@ function startMatch() {
     c.active = s !== 'off'; c.human = s === 'keys' || s === 'pad' || s === 'phone' || s === 'touch'; c.points = 0; c.alive = false;
   });
   if (activeCars().length < 2) { flashMsg('Need at least 2 cars', 1.5); return; }
+  // pick the track (Random chooses a different one each match)
+  const want = settings.track === 'random' ? TRACKS[Math.floor(Math.random() * TRACKS.length)].id : settings.track;
+  if (!curTrack || curTrack.id !== want) buildTrack(want);
   roundNo = 0; lastWinner = null; gun.hits = 0; gun.cd = 0;
   document.getElementById('menu').style.display = 'none';
   document.getElementById('hud').style.display = 'flex';
@@ -46,6 +49,7 @@ function startMatch() {
 
 function newRound(atIdx) {
   roundNo++;
+  clearCreature();
   outOrder = [];
   placeCars(atIdx);
   const lead = activeCars()[0];

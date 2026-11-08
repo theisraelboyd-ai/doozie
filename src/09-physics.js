@@ -8,7 +8,8 @@ function driveCar(car, inp, dt) {
   const lat = (car.pos.x - P[car.idx].x) * NRM[car.idx].x + (car.pos.z - P[car.idx].z) * NRM[car.idx].z;
   const onVerge = Math.abs(lat) > ROAD_W;
   const skillMul = car.human ? 1 : SKILL_SPEED[settings.skill];
-  const maxv = (onVerge ? 22 : MAXV) * skillMul;
+  const inMud = !onVerge && MUD[car.idx] > 0.5;
+  const maxv = (onVerge ? 22 : inMud ? 17 : MAXV) * skillMul;
   if (inp.thr > 0) vf += ACC * inp.thr * dt * (vf < maxv ? 1 : 0);
   else if (inp.thr < 0) vf += (vf > 0 ? -BRAKE : -ACC * 0.6) * -inp.thr * dt;
   if (vf < -12) vf = -12;
@@ -64,7 +65,7 @@ function edgeCheck(car, dt) {
       if (vn * s > 0) { car.vel.x -= NRM[k].x * vn * 1.6; car.vel.y -= NRM[k].z * vn * 1.6; }
     } else if (!car.falling) {
       car.falling = true; car.vy = 2;
-      knockOut(car, 'went for a swim');
+      knockOut(car, curTrack.fallText || 'fell off');
     }
   }
 }

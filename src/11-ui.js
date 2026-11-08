@@ -64,7 +64,8 @@ function buildMenu() {
   });
   document.getElementById('optTarget').textContent = settings.target;
   document.getElementById('optSkill').textContent = SKILL_NAMES[settings.skill];
-  document.getElementById('optWater').textContent = settings.water === 'deadly' ? 'Splash = out' : 'Bouncy edges';
+  document.getElementById('optWater').textContent = settings.water === 'deadly' ? 'Fall = out' : 'Bouncy';
+  document.getElementById('optTrack').textContent = settings.track === 'random' ? 'Random' : (TRACKS.find(t => t.id === settings.track) || TRACKS[0]).name;
   document.getElementById('optGun').textContent = settings.gunner ? 'On' : 'Off';
   document.getElementById('optGfx').textContent = settings.gfx === 'fancy' ? 'Fancy' : 'Simple';
   document.getElementById('optAuto').textContent = settings.autoGas ? 'On' : 'Off';
@@ -75,6 +76,13 @@ document.getElementById('btnSkill').onclick = () => { settings.skill = (settings
 document.getElementById('btnWater').onclick = () => { settings.water = settings.water === 'deadly' ? 'bouncy' : 'deadly'; buildMenu(); };
 document.getElementById('btnGfx').onclick = () => { settings.gfx = settings.gfx === 'fancy' ? 'simple' : 'fancy'; applyGfx(); buildMenu(); };
 document.getElementById('btnGun').onclick = () => { settings.gunner = !settings.gunner; buildMenu(); };
+function cycleTrack() {
+  const ids = [...TRACKS.map(t => t.id), 'random'];
+  settings.track = ids[(ids.indexOf(settings.track) + 1) % ids.length];
+  if (settings.track !== 'random') buildTrack(settings.track);
+  buildMenu();
+}
+document.getElementById('btnTrack').onclick = () => { audio(); cycleTrack(); };
 function cycleCam() { settings.cam = CAM_STYLES[(CAM_STYLES.indexOf(settings.cam) + 1) % CAM_STYLES.length]; buildMenu(); }
 document.getElementById('btnCam').onclick = cycleCam;
 document.getElementById('btnAuto').onclick = () => { settings.autoGas = !settings.autoGas; buildMenu(); };
@@ -86,6 +94,7 @@ function togglePause() {
   else if (state !== 'menu' && state !== 'matchEnd') { prevState = state; state = 'paused'; document.getElementById('pause').style.display = 'flex'; }
 }
 function toMenu() {
+  clearCreature();
   state = 'menu'; bigMsg('', '');
   document.getElementById('menu').style.display = 'flex';
   document.getElementById('hud').style.display = 'none';

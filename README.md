@@ -14,7 +14,7 @@ A shared-screen toy-car knockout party game that runs in the browser. Inspired b
 | Green (keyboard) | I J K L | U |
 | Gold (keyboard) | T F G H | R |
 | Phone as controller | Scan the QR code on the start screen, choose **Player**; big ◀ ▶ GO / BRAKE buttons | BOOST button |
-| Phone as viewer | Scan the QR code, choose **Viewer**: send emoji cheers to the TV, *Rocket the leader*, *Boost the back car* | — |
+| Phone as viewer | Scan the QR code, choose **Viewer**: emoji cheers on the TV, *Rocket the leader*, *Boost the back car*, **Bigfoot** and the **Ghost car** | — |
 | Phone as the screen | Tap **📱 Play on this phone** on the start screen (turn the phone sideways) | BOOST button |
 | Rocket player | Mouse: click the track to fire; click near a car to lock on | — |
 
@@ -23,6 +23,15 @@ A shared-screen toy-car knockout party game that runs in the browser. Inspired b
 - **Phones:** the start screen shows a QR code and a 4-letter room code. Scan it and your phone becomes a controller (it needs internet; phones and screen don't need to be on the same Wi-Fi, but it's quickest if they are). Press START on any phone to begin. A green dot on the phone means it's connected; if the link drops it reconnects by itself and keeps your car (the computer drives it meanwhile, for up to 30 seconds).
 - **Esc / P** pauses, **V** switches Fancy / Simple graphics, **C** changes the camera (Cinematic, Classic, Calm).
 - **Auto-accelerate** (start screen) makes cars drive forward on their own, so younger players only need to steer.
+
+## Tracks
+
+| Track | Theme | Watch out for |
+| --- | --- | --- |
+| Harbour Dash | Harbour, containers, cranes, boats | Two narrow piers; fall in and you're out |
+| Bigfoot Woods | Pine forest on rock stacks above a misty ravine | Two log bridges, two mud patches, Bigfoot |
+
+Pick a track (or Random) on the start screen. Tracks are plain data in `src/03-a-tracks-data.js`: a loop of points the road passes through, tagged zones (`narrow`, `mud`) and a theme kit that dresses it. Adding a layout means adding an entry there.
 
 ## Project layout
 
@@ -47,8 +56,8 @@ This writes `docs/index.html`, a single file with no outside dependencies. It ca
 1. ✅ Core knockout loop, keyboard and mouse rockets, Fancy graphics
 2. ✅ Controller support
 3. ✅ Swinging cinematic camera (Cinematic / Classic / Calm)
-4. Track data format and grey-box builder
-5. ✅ Phone controllers (QR join) and touch play · next: spectators (Bigfoot, Ghost car and friends)
+4. ✅ Track data format, theme kits, second track (Bigfoot Woods)
+5. ✅ Phone controllers (QR join), touch play, viewers with cheers, Bigfoot and the Ghost car
 6. Themed tracks (Haunted Harbour, Bigfoot Woods, Loch Road …)
 7. Art polish: proper models, baked lighting, sound
 8. Mini PC plug-and-play set-up

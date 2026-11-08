@@ -31,7 +31,7 @@ function frame(now) {
     if (c.falling) {
       c.vy -= 30 * dt; c.y += c.vy * dt; c.pos.x += c.vel.x * dt * 0.5; c.pos.z += c.vel.y * dt * 0.5;
       c.mesh.group.rotation.x += dt * 2;
-      if (c.y < -6) { c.falling = false; c.mesh.group.visible = c.mesh.shadow.visible = c.mesh.ring.visible = false; }
+      if (c.y < (curTrack.theme === 'forest' ? -40 : -6)) { c.falling = false; c.mesh.group.visible = c.mesh.shadow.visible = c.mesh.ring.visible = false; }
     } else if (c.alive || (c === lastWinner && state !== 'race')) {
       let inp = { thr: 0, st: 0, boost: false };
       if (state === 'race') inp = c.human ? humanInput(c) : aiInput(c, dt);
@@ -45,6 +45,7 @@ function frame(now) {
     }
   }
   if (state === 'race') collide();
+  if (state === 'race' || state === 'roundEnd') updateCreature(dt);
 
   // knock-out by camera
   updateCamera(rdt);
@@ -100,8 +101,9 @@ function frame(now) {
   draw();
 }
 function animateWorld(dt) {
-  waterNormal.offset.x += dt * 0.004; waterNormal.offset.y += dt * 0.0025;
-  for (const b of bobbers) { b.ph += dt; b.m.position.y = -0.9 + Math.sin(b.ph * 1.5) * 0.15; b.m.rotation.z = Math.sin(b.ph) * 0.05; }
+  if (waterNormal) { waterNormal.offset.x += dt * 0.004; waterNormal.offset.y += dt * 0.0025; }
+  for (const b of bobbers) { b.ph += dt; b.m.position.y = b.y + Math.sin(b.ph * 1.5) * 0.15; b.m.rotation.z = Math.sin(b.ph) * 0.05; }
+  if (themeTick) themeTick(dt, wt);
 }
 camTarget.copy(P[0]);
 applyGfx();
