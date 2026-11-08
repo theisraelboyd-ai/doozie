@@ -77,7 +77,7 @@
   body.is-touch .touchonly { display: inline-block; }
   #btnTouch { margin-top: 10px; font: inherit; font-size: 18px; font-weight: 800; padding: 10px 22px; border-radius: 12px; border: 2px solid #ffca28; background: rgba(255,202,40,.12); color: #ffca28; }
   #rotate { display: none; }
-  @media (orientation: portrait) { body.touchplay #rotate, body.controller #pc-rotate { display: flex; } }
+  @media (orientation: portrait) { body.touchplay #rotate, body.controller.pc-is-player #pc-rotate { display: flex; } }
   #rotate, #pc-rotate { position: fixed; inset: 0; z-index: 50; align-items: center; justify-content: center; background: rgba(13,27,42,.95); font-size: 26px; font-weight: 900; color: #ffca28; text-align: center; padding: 20px; }
   /* ---- small screens ---- */
   @media (max-height: 520px), (max-width: 700px) {
@@ -85,7 +85,8 @@
     .slot { width: 128px; padding: 8px 6px; } .slot .sw { width: 38px; height: 20px; margin-bottom: 4px; } .slot .nm { font-size: 14px; } .slot .ks { min-height: 0; font-size: 11px; }
     .opts { margin: 10px 0 4px; gap: 6px; } .opt { padding: 5px 9px; font-size: 12px; }
     #go { font-size: 18px; padding: 8px 26px; } .rules { display: none; }
-    #phoneJoin { display: none; }
+    body.is-touch #phoneJoin { display: none; }
+    #phoneJoin { top: 6px; right: 6px; padding: 4px; } .pj-qr { width: 78px; height: 78px; } .pj-txt { display: none; }
     #menu { justify-content: flex-start; padding-top: 8px; overflow-y: auto; }
     #hud { gap: 5px; top: 6px; } .card { min-width: 74px; padding: 3px 6px 5px; border-width: 2px; } .card .nm { font-size: 11px; } .card .pts { font-size: 18px; } .card .pips span { width: 6px; height: 6px; } .card .lbl { display: none; }
     #bigT { font-size: 40px; } #bigS { font-size: 15px; }
@@ -105,6 +106,31 @@
   #pc-pad .tp-boost { width: min(40vw, 330px); height: min(16vh, 70px); }
   #pc-pad .tp-right { justify-content: center; }
   #pc-rotate { display: none; }
+
+  /* ---- viewer cheers on the big screen ---- */
+  .cheer { position: fixed; bottom: -60px; font-size: 54px; z-index: 30; pointer-events: none; animation: cheerUp 2.5s ease-out forwards; }
+  @keyframes cheerUp { 0% { transform: translate(0, 0) scale(.6); opacity: 0; } 15% { opacity: 1; transform: translate(0, -120px) scale(1.15); } 100% { transform: translate(var(--drift), -75vh) scale(.9); opacity: 0; } }
+  /* ---- phone controller extras ---- */
+  #pc-top { z-index: 5; background: rgba(13,27,42,.35); }
+  #pc-pad { pointer-events: none; } #pc-pad .tp-btn { pointer-events: auto; }
+  #pc-dot { width: 12px; height: 12px; border-radius: 50%; background: #888; flex: none; }
+  #pc-dot.ok { background: #43a047; box-shadow: 0 0 8px #43a047; } #pc-dot.warn { background: #fbc02d; } #pc-dot.bad { background: #e53935; }
+  .pc-panel { position: fixed; inset: 64px 0 0 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 10px 16px; }
+  .pc-q { font-size: 20px; font-weight: 800; text-align: center; }
+  .pc-choices { display: flex; gap: 16px; }
+  .pc-choice { width: min(40vw, 260px); padding: 18px 10px; border-radius: 18px; border: 3px solid rgba(255,255,255,.5); background: rgba(255,255,255,.1); color: #fff; font: inherit; font-size: 24px; font-weight: 900; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .pc-choice span { font-size: 44px; } .pc-choice small { font-size: 14px; font-weight: 600; opacity: .85; }
+  .pc-free { font-size: 14px; opacity: .8; }
+  .pc-cheers { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .pc-cheer { font-size: 38px; width: 70px; height: 64px; border-radius: 16px; border: 0; background: rgba(255,255,255,.12); transition: transform .1s; }
+  .pc-cheer.pop { transform: scale(1.25); }
+  .pc-powers { display: flex; gap: 14px; }
+  .pc-power { width: min(42vw, 280px); padding: 12px; border-radius: 16px; border: 3px solid #b39ddb; background: rgba(126,87,194,.35); color: #fff; font: inherit; font-size: 30px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .pc-power b { font-size: 16px; } .pc-power i { font-style: normal; font-size: 13px; opacity: .85; }
+  .pc-power.cooling { opacity: .45; }
+  .pc-soon { font-size: 13px; opacity: .7; }
+  .pc-link { background: none; border: 0; color: #ffca28; font: inherit; font-weight: 800; text-decoration: underline; }
+  body.controller #pc-pause { display: none; } body.controller.pc-is-player #pc-pause { display: inline-block; }
 </style>
 </head>
 <body>

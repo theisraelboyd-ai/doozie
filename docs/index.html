@@ -77,7 +77,7 @@
   body.is-touch .touchonly { display: inline-block; }
   #btnTouch { margin-top: 10px; font: inherit; font-size: 18px; font-weight: 800; padding: 10px 22px; border-radius: 12px; border: 2px solid #ffca28; background: rgba(255,202,40,.12); color: #ffca28; }
   #rotate { display: none; }
-  @media (orientation: portrait) { body.touchplay #rotate, body.controller #pc-rotate { display: flex; } }
+  @media (orientation: portrait) { body.touchplay #rotate, body.controller.pc-is-player #pc-rotate { display: flex; } }
   #rotate, #pc-rotate { position: fixed; inset: 0; z-index: 50; align-items: center; justify-content: center; background: rgba(13,27,42,.95); font-size: 26px; font-weight: 900; color: #ffca28; text-align: center; padding: 20px; }
   /* ---- small screens ---- */
   @media (max-height: 520px), (max-width: 700px) {
@@ -85,7 +85,8 @@
     .slot { width: 128px; padding: 8px 6px; } .slot .sw { width: 38px; height: 20px; margin-bottom: 4px; } .slot .nm { font-size: 14px; } .slot .ks { min-height: 0; font-size: 11px; }
     .opts { margin: 10px 0 4px; gap: 6px; } .opt { padding: 5px 9px; font-size: 12px; }
     #go { font-size: 18px; padding: 8px 26px; } .rules { display: none; }
-    #phoneJoin { display: none; }
+    body.is-touch #phoneJoin { display: none; }
+    #phoneJoin { top: 6px; right: 6px; padding: 4px; } .pj-qr { width: 78px; height: 78px; } .pj-txt { display: none; }
     #menu { justify-content: flex-start; padding-top: 8px; overflow-y: auto; }
     #hud { gap: 5px; top: 6px; } .card { min-width: 74px; padding: 3px 6px 5px; border-width: 2px; } .card .nm { font-size: 11px; } .card .pts { font-size: 18px; } .card .pips span { width: 6px; height: 6px; } .card .lbl { display: none; }
     #bigT { font-size: 40px; } #bigS { font-size: 15px; }
@@ -105,6 +106,31 @@
   #pc-pad .tp-boost { width: min(40vw, 330px); height: min(16vh, 70px); }
   #pc-pad .tp-right { justify-content: center; }
   #pc-rotate { display: none; }
+
+  /* ---- viewer cheers on the big screen ---- */
+  .cheer { position: fixed; bottom: -60px; font-size: 54px; z-index: 30; pointer-events: none; animation: cheerUp 2.5s ease-out forwards; }
+  @keyframes cheerUp { 0% { transform: translate(0, 0) scale(.6); opacity: 0; } 15% { opacity: 1; transform: translate(0, -120px) scale(1.15); } 100% { transform: translate(var(--drift), -75vh) scale(.9); opacity: 0; } }
+  /* ---- phone controller extras ---- */
+  #pc-top { z-index: 5; background: rgba(13,27,42,.35); }
+  #pc-pad { pointer-events: none; } #pc-pad .tp-btn { pointer-events: auto; }
+  #pc-dot { width: 12px; height: 12px; border-radius: 50%; background: #888; flex: none; }
+  #pc-dot.ok { background: #43a047; box-shadow: 0 0 8px #43a047; } #pc-dot.warn { background: #fbc02d; } #pc-dot.bad { background: #e53935; }
+  .pc-panel { position: fixed; inset: 64px 0 0 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 10px 16px; }
+  .pc-q { font-size: 20px; font-weight: 800; text-align: center; }
+  .pc-choices { display: flex; gap: 16px; }
+  .pc-choice { width: min(40vw, 260px); padding: 18px 10px; border-radius: 18px; border: 3px solid rgba(255,255,255,.5); background: rgba(255,255,255,.1); color: #fff; font: inherit; font-size: 24px; font-weight: 900; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .pc-choice span { font-size: 44px; } .pc-choice small { font-size: 14px; font-weight: 600; opacity: .85; }
+  .pc-free { font-size: 14px; opacity: .8; }
+  .pc-cheers { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .pc-cheer { font-size: 38px; width: 70px; height: 64px; border-radius: 16px; border: 0; background: rgba(255,255,255,.12); transition: transform .1s; }
+  .pc-cheer.pop { transform: scale(1.25); }
+  .pc-powers { display: flex; gap: 14px; }
+  .pc-power { width: min(42vw, 280px); padding: 12px; border-radius: 16px; border: 3px solid #b39ddb; background: rgba(126,87,194,.35); color: #fff; font: inherit; font-size: 30px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .pc-power b { font-size: 16px; } .pc-power i { font-style: normal; font-size: 13px; opacity: .85; }
+  .pc-power.cooling { opacity: .45; }
+  .pc-soon { font-size: 13px; opacity: .7; }
+  .pc-link { background: none; border: 0; color: #ffca28; font: inherit; font-weight: 800; text-decoration: underline; }
+  body.controller #pc-pause { display: none; } body.controller.pc-is-player #pc-pause { display: inline-block; }
 </style>
 </head>
 <body>
@@ -4164,45 +4190,119 @@ function runController() {
   document.title = 'DOOZIE! controller';
   document.body.className = 'controller';
   document.body.innerHTML = `
-    <div id="pc-top"><span id="pc-who">DOOZIE!</span><span id="pc-status">Connecting to room ${JOIN_CODE}…</span>
+    <div id="pc-top"><span id="pc-dot"></span><span id="pc-who">DOOZIE!</span><span id="pc-status">Connecting to room ${JOIN_CODE}…</span>
       <button id="pc-start" class="pc-small">START</button><button id="pc-pause" class="pc-small">II</button></div>
+    <div id="pc-choose" class="pc-panel">
+      <div class="pc-q">Room <b>${JOIN_CODE}</b> – how do you want to join?</div>
+      <div class="pc-choices">
+        <button class="pc-choice" data-role="player"><span>🏎️</span>Player<small>drive a car</small></button>
+        <button class="pc-choice" data-role="viewer"><span>👻</span>Viewer<small>watch &amp; cause chaos</small></button>
+      </div>
+      <div class="pc-free" id="pc-free"></div>
+    </div>
     <div id="pc-pad"></div>
+    <div id="pc-view" class="pc-panel">
+      <div class="pc-cheers">${['👏', '😂', '😱', '🔥', '👻', '🦶'].map(e => `<button class="pc-cheer" data-e="${e}">${e}</button>`).join('')}</div>
+      <div class="pc-powers">
+        <button class="pc-power" data-k="rocket">🚀<b>Rocket the leader</b><i></i></button>
+        <button class="pc-power" data-k="boost">⚡<b>Boost the back car</b><i></i></button>
+      </div>
+      <div class="pc-soon">Coming soon: Bigfoot, the Ghost car and more…</div>
+      <button id="pc-toplayer" class="pc-link">Switch to player</button>
+    </div>
     <div id="pc-rotate">Turn your phone sideways ↻</div>`;
-  const status = t => { document.getElementById('pc-status').textContent = t; };
-  let conn = null, sendT = 0, wake = null, first = true;
-  const state = makeTouchPad(document.getElementById('pc-pad'), () => send(), {
-    tap: () => {
-      if (!first) return; first = false;
-      try { if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {}
-      try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(w => { wake = w; }).catch(() => {}); } catch (e) {}
-    },
-  });
-  function send() { if (conn && conn.open) conn.send({ t: 'in', st: state.st, thr: state.thr, boost: state.boost }); }
-  setInterval(send, 100); // heartbeat so a lost packet never leaves a button stuck
-  document.getElementById('pc-start').onclick = () => conn && conn.open && conn.send({ t: 'start' });
-  document.getElementById('pc-pause').onclick = () => conn && conn.open && conn.send({ t: 'pause' });
-  if (!JOIN_CODE) { status('No room code – scan the QR code on the big screen'); return; }
-  const peer = new Peer(undefined, peerOptions());
-  peer.on('open', () => {
-    conn = peer.connect('doozie-' + JOIN_CODE, { serialization: 'json' });
-    conn.on('open', () => { status('Connected – joining…'); conn.send({ t: 'join' }); });
-    conn.on('data', m => {
-      if (m.t === 'hello') {
-        document.getElementById('pc-who').textContent = m.name;
-        document.body.style.setProperty('--car', m.css);
-        status(m.note || 'You\'re in!');
-      } else if (m.t === 'wait') status('Match in progress – you\'ll join the next one');
-      else if (m.t === 'full') status('All four cars are taken – try again later');
-      else if (m.t === 'state') {
-        const labels = { menu: 'On the start screen – press START when everyone\'s in', countdown: 'Get ready…', race: 'GO GO GO!', roundEnd: 'Round over', matchEnd: 'Match over – press START to play again', paused: 'Paused' };
+  const $ = id => document.getElementById(id);
+  const status = t => { $('pc-status').textContent = t; };
+  let cid = '';
+  try { cid = sessionStorage.getItem('doozie-cid') || ''; } catch (e) {}
+  if (!cid) { cid = Math.random().toString(36).slice(2, 10); try { sessionStorage.setItem('doozie-cid', cid); } catch (e) {} }
+  let peer = null, conn = null, role = null, lastHeard = 0, lastTry = 0, hello = false, firstTap = true;
+  const cool = { rocket: 0, boost: 0 };
+
+  function show(which) {
+    $('pc-choose').style.display = which === 'choose' ? 'flex' : 'none';
+    $('pc-pad').style.display = which === 'player' ? 'flex' : 'none';
+    $('pc-view').style.display = which === 'viewer' ? 'flex' : 'none';
+    document.body.classList.toggle('pc-is-player', which === 'player');
+  }
+  show('choose');
+  function grabScreen() {
+    if (!firstTap) return; firstTap = false;
+    try { if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {}
+    try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
+  }
+  const pad = makeTouchPad($('pc-pad'), () => sendInput(), { tap: grabScreen });
+  function send(m) { try { if (conn && conn.open) { conn.send(m); return true; } } catch (e) {} return false; }
+  function sendInput() { if (role === 'player') send({ t: 'in', st: pad.st, thr: pad.thr, boost: pad.boost }); }
+  function sendJoin() { if (role) send({ t: 'join', role, cid }); }
+  setInterval(sendInput, 100); // heartbeat so a lost packet never leaves a button stuck
+
+  document.querySelectorAll('.pc-choice').forEach(b => b.onclick = () => { grabScreen(); role = b.dataset.role; hello = false; show(role); status('Joining…'); sendJoin(); });
+  $('pc-toplayer').onclick = () => { role = 'player'; hello = false; show('player'); status('Joining as a player…'); send({ t: 'role', role, cid }); };
+  document.querySelectorAll('.pc-cheer').forEach(b => b.onclick = () => { send({ t: 'cheer', e: b.dataset.e }); b.classList.add('pop'); setTimeout(() => b.classList.remove('pop'), 200); });
+  document.querySelectorAll('.pc-power').forEach(b => b.onclick = () => { if (cool[b.dataset.k] > Date.now()) return; send({ t: 'power', k: b.dataset.k }); });
+  $('pc-start').onclick = () => { grabScreen(); send({ t: 'start' }); };
+  $('pc-pause').onclick = () => send({ t: 'pause' });
+
+  function onData(m) {
+    lastHeard = Date.now();
+    if (!m || typeof m !== 'object') return;
+    if (m.t === 'hello') {
+      hello = true; role = m.role; show(m.role);
+      $('pc-who').textContent = m.name;
+      document.body.style.setProperty('--car', m.css || '#7e57c2');
+      status(m.note || (m.role === 'viewer' ? 'Watching – cheer or cause chaos!' : 'You\'re in!'));
+    } else if (m.t === 'wait') { hello = true; status('Match in progress – you\'ll drive in the next one'); }
+    else if (m.t === 'full') { hello = true; role = 'viewer'; status('All four cars are taken – joining as a viewer'); sendJoin(); }
+    else if (m.t === 'state') {
+      if (role === 'player' && hello) {
+        const labels = { menu: 'Start screen – press START when everyone\'s in', countdown: 'Get ready…', race: 'GO GO GO!', roundEnd: 'Round over', matchEnd: 'Match over – START to play again', paused: 'Paused' };
         status(labels[m.s] || m.s);
-        document.getElementById('pc-start').style.display = (m.s === 'menu' || m.s === 'matchEnd') ? '' : 'none';
-      } else if (m.t === 'buzz') { try { navigator.vibrate && navigator.vibrate(m.ms); } catch (e) {} }
-      else if (m.t === 'kicked') status('You were removed from the car – reload to join again');
+      }
+      $('pc-start').style.display = (m.s === 'menu' || m.s === 'matchEnd') ? '' : 'none';
+      if ($('pc-free')) $('pc-free').textContent = `${m.free} car${m.free === 1 ? '' : 's'} free · ${m.viewers} watching`;
+    } else if (m.t === 'buzz') { try { navigator.vibrate && navigator.vibrate(m.ms); } catch (e) {} }
+    else if (m.t === 'cool') {
+      cool[m.k] = Date.now() + m.s * 1000;
+    } else if (m.t === 'msg') status(m.text);
+    else if (m.t === 'kicked') { role = null; hello = false; show('choose'); status('You were taken out of the car – choose again'); }
+  }
+  // power buttons count down while cooling
+  setInterval(() => {
+    document.querySelectorAll('.pc-power').forEach(b => {
+      const left = Math.ceil((cool[b.dataset.k] - Date.now()) / 1000);
+      b.classList.toggle('cooling', left > 0); b.querySelector('i').textContent = left > 0 ? left + 's' : 'ready';
     });
-    conn.on('close', () => status('Disconnected – reload this page to rejoin'));
+  }, 250);
+
+  function connect() {
+    lastTry = Date.now();
+    try { if (conn) conn.close(); } catch (e) {}
+    conn = peer.connect('doozie-' + JOIN_CODE, { serialization: 'json', reliable: true });
+    conn.on('open', () => { lastHeard = Date.now(); send({ t: 'ping', cid }); if (!role) status('Connected – choose Player or Viewer'); sendJoin(); });
+    conn.on('data', onData);
+    conn.on('close', () => { if (Date.now() - lastTry > 1500) connect(); });
+    conn.on('error', () => {});
+  }
+  // watchdog: the big screen talks every half second; if it goes quiet, reconnect
+  setInterval(() => {
+    const dot = $('pc-dot'), quiet = Date.now() - lastHeard;
+    dot.className = conn && conn.open && quiet < 2000 ? 'ok' : quiet < 6000 ? 'warn' : 'bad';
+    if (!peer || peer.destroyed) return;
+    if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} return; }
+    // give a new link plenty of time to open (mobile data via a relay can take several seconds)
+    if (peer.open && (!conn || !conn.open) && Date.now() - lastTry > 12000) { status('Still trying to reach the big screen…'); connect(); }
+    else if (conn && conn.open && quiet > 6000 && Date.now() - lastTry > 6000) { status('Reconnecting…'); connect(); }
+    else if (conn && conn.open && role && !hello && Date.now() - lastTry > 2500) { sendJoin(); lastTry = Date.now(); }
+  }, 1000);
+
+  if (!JOIN_CODE) { status('No room code – scan the QR code on the big screen'); return; }
+  peer = new Peer(undefined, peerOptions());
+  peer.on('open', () => connect());
+  peer.on('error', e => {
+    if (e.type === 'peer-unavailable') status(`Room ${JOIN_CODE} not found – check the code on the big screen`);
+    else status('Connection hiccup (' + e.type + ') – retrying…');
   });
-  peer.on('error', e => status(e.type === 'peer-unavailable' ? `Room ${JOIN_CODE} not found – check the big screen` : 'Connection problem: ' + e.type));
 }
 
 if (JOIN_CODE) { runController(); return; }
@@ -4566,7 +4666,10 @@ function humanInput(car) {
       boost = pressed(p, 2) || pressed(p, 3) || pressed(p, 5) || pressed(p, 4);
     }
   } else if (settings.slots[car.i] === 'phone') {
-    const p = phoneForSlot(car.i); if (p) { st = p.inp.st; thr = p.inp.thr; boost = p.inp.boost; }
+    const p = phoneForSlot(car.i);
+    // phone gone quiet (dropped signal, screen locked): the computer drives until it's back
+    if (!p || !p.conn || performance.now() - p.lastIn > 1500) return aiInput(car, 1 / 60);
+    st = p.inp.st; thr = p.inp.thr; boost = p.inp.boost;
   } else if (settings.slots[car.i] === 'touch') {
     st = touchInput.st; thr = touchInput.thr; boost = touchInput.boost;
   } else {
@@ -5031,14 +5134,18 @@ function fireRocket() {
   if (!settings.gunner || state !== 'race' || gun.cd > 0) return;
   if (!aimUpdate()) return;
   gun.cd = GUN_CD;
-  const m = new T.Mesh(rocketGeo, new T.MeshStandardMaterial({ color: 0xab47bc, emissive: 0xd500f9, emissiveIntensity: 2.5 }));
+  spawnRocket(gun.lock, gun.aim.clone(), true);
+}
+// A rocket from the sky; byGun = fired by the mouse player (counts towards their hits)
+function spawnRocket(target, point, byGun, color = 0xab47bc, glow = 0xd500f9, dur = 0.7) {
+  const m = new T.Mesh(rocketGeo, new T.MeshStandardMaterial({ color, emissive: glow, emissiveIntensity: 2.5 }));
   const start = camera.position.clone().add(new T.Vector3((Math.random() - 0.5) * 20, 10, 0));
   m.position.copy(start); scene.add(m);
-  rockets.push({ m, target: gun.lock, point: gun.aim.clone(), t: 0, dur: 0.7 });
+  rockets.push({ m, target, point: point || (target ? target.pos.clone() : camTarget.clone()), t: 0, dur, byGun });
   tone(900, 0.5, 'sawtooth', 0.06, -600);
 }
 const rTmp = new T.Vector3();
-function explode(x, z) {
+function explode(x, z, byGun = true) {
   burst(x, 1, z, 0xff6f00, 24, 12, 12, 0.8);
   burst(x, 1, z, 0xffeb3b, 16, 9, 10, 0.6);
   burst(x, 1, z, 0x616161, 10, 5, 6, 1.2);
@@ -5055,7 +5162,7 @@ function explode(x, z) {
     hitNames.push(`<b style="color:${c.color.css}">${c.color.name}</b>`);
     rumble(c, 0.5 + 0.5 * s, 0.8, 300);
   }
-  if (hitNames.length) { gun.hits += hitNames.length; toast(`Rocket hit ${hitNames.join(' & ')}!`); }
+  if (hitNames.length) { if (byGun) gun.hits += hitNames.length; toast(`Rocket hit ${hitNames.join(' & ')}!`); }
 }
 function updateGun(dt) {
   if (gun.cd > 0) gun.cd -= dt;
@@ -5080,7 +5187,7 @@ function updateGun(dt) {
     r.m.position.lerp(tgt, step);
     if (Math.random() < 0.8) burst(r.m.position.x, r.m.position.y, r.m.position.z, 0xbdbdbd, 1, 1, 0, 0.4);
     if (r.t >= r.dur) {
-      explode(r.m.position.x, r.m.position.z);
+      explode(r.m.position.x, r.m.position.z, r.byGun);
       scene.remove(r.m); rockets.splice(k, 1);
     }
   }
@@ -5333,31 +5440,62 @@ window.__shunt = { screen: (x, z) => { const v = new T.Vector3(x, 0.5, z).projec
 
 // ===== src/16-phones.js =====
 // ---------- Phones: QR join + play-on-this-screen touch ----------
-const phones = new Map();   // peer connection id -> { conn, slot, inp }
-const phoneWaiting = [];     // connections that joined mid-match
-let roomCode = '', peerHost = null, phoneStateT = 0;
+const phones = new Map();   // client id -> { cid, conn, role, slot, inp, lastIn, goneAt, viewerNo, cd }
+const phoneWaiting = [];     // players who joined mid-match
+let roomCode = '', peerHost = null, phoneStateT = 0, viewerCount = 0;
 const touchInput = { st: 0, thr: 0, boost: false };
+const CHEERS = ['👏', '😂', '😱', '🔥', '👻', '🦶'];
+const POWER_CD = { rocket: 12, boost: 10 };
 
 function slotTaken(t) { return t === 'pad' || t === 'phone' || t === 'touch'; }
-function phoneForSlot(s) { for (const p of phones.values()) if (p.slot === s) return p; return null; }
-function phoneSend(p, m) { try { if (p && p.conn.open) p.conn.send(m); } catch (e) {} }
+function phoneForSlot(s) { for (const p of phones.values()) if (p.slot === s && p.role === 'player') return p; return null; }
+function phoneSend(p, m) { try { if (p && p.conn && p.conn.open) p.conn.send(m); } catch (e) {} }
+function freeCars() { return settings.slots.filter(t => !slotTaken(t)).length; }
+function viewers() { return [...phones.values()].filter(p => p.role === 'viewer' && p.conn); }
 
 function seatPhone(p) {
+  if (p.slot >= 0 && settings.slots[p.slot] === 'phone') { sayHello(p); return; } // already seated (reconnect)
   const s = settings.slots.findIndex(t => !slotTaken(t));
   if (s < 0) { phoneSend(p, { t: 'full' }); return; }
-  settings.slots[s] = 'phone'; settings.padOf[s] = null; p.slot = s;
-  phoneSend(p, { t: 'hello', name: COLORS[s].name, css: COLORS[s].css });
-  phoneSend(p, { t: 'state', s: state });
+  settings.slots[s] = 'phone'; settings.padOf[s] = null; p.slot = s; p.role = 'player';
+  sayHello(p);
   audio(); tone(520, 0.08, 'square', 0.08); setTimeout(() => tone(780, 0.1, 'square', 0.08), 90);
   toast(`A phone is driving <b style="color:${COLORS[s].css}">${COLORS[s].name}</b>`);
   buildMenu();
+}
+function sayHello(p) {
+  if (p.role === 'viewer') phoneSend(p, { t: 'hello', role: 'viewer', name: 'VIEWER ' + p.viewerNo, css: '#7e57c2' });
+  else phoneSend(p, { t: 'hello', role: 'player', name: COLORS[p.slot].name, css: COLORS[p.slot].css });
+  phoneSend(p, { t: 'state', s: state, free: freeCars(), viewers: viewers().length });
 }
 function unseatPhone(p, kicked) {
   if (p.slot >= 0 && settings.slots[p.slot] === 'phone') { settings.slots[p.slot] = 'cpu'; toast(`<b style="color:${COLORS[p.slot].css}">${COLORS[p.slot].name}</b>'s phone left`); }
   if (kicked) phoneSend(p, { t: 'kicked' });
   p.slot = -1; buildMenu();
 }
-function seatWaitingPhones() { while (phoneWaiting.length) { const p = phoneWaiting.shift(); if (p.conn.open) seatPhone(p); } }
+function seatWaitingPhones() { while (phoneWaiting.length) { const p = phoneWaiting.shift(); if (p.conn && p.role === 'player') seatPhone(p); } }
+function makeViewer(p) {
+  if (p.slot >= 0) unseatPhone(p, false);
+  p.role = 'viewer'; if (!p.viewerNo) p.viewerNo = ++viewerCount;
+  sayHello(p); setJoinPanelCount();
+}
+
+function onPhoneMessage(p, m) {
+  if (!m || typeof m !== 'object') return;
+  if (m.t === 'join' || m.t === 'role') {
+    if (m.role === 'viewer') { makeViewer(p); return; }
+    if (p.slot >= 0 && settings.slots[p.slot] === 'phone') { p.role = 'player'; sayHello(p); return; }
+    p.role = 'player';
+    if (state === 'menu' || state === 'matchEnd') seatPhone(p);
+    else { if (!phoneWaiting.includes(p)) phoneWaiting.push(p); phoneSend(p, { t: 'wait' }); }
+  } else if (m.t === 'in') {
+    p.inp.st = Math.max(-1, Math.min(1, Number(m.st) || 0)); p.inp.thr = Math.max(-1, Math.min(1, Number(m.thr) || 0)); p.inp.boost = !!m.boost;
+    p.lastIn = performance.now();
+  } else if (m.t === 'start') { if (state === 'menu' || state === 'matchEnd') startMatch(); }
+  else if (m.t === 'pause') { if (p.role === 'player') togglePause(); }
+  else if (m.t === 'cheer') { if (CHEERS.includes(m.e)) showCheer(m.e, p); }
+  else if (m.t === 'power' && p.role === 'viewer') viewerPower(p, m.k);
+}
 
 function startRoom(tries = 0) {
   if (typeof Peer === 'undefined') return;
@@ -5370,23 +5508,24 @@ function startRoom(tries = 0) {
   peer.on('error', e => {
     if (e.type === 'unavailable-id' && tries < 3) { peer.destroy(); startRoom(tries + 1); return; }
     if (e.type === 'peer-unavailable') return;
-    setJoinPanel('offline');
+    if (!peer.open) setJoinPanel('offline');
   });
-  peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
+  peer.on('disconnected', () => { setTimeout(() => { try { if (!peer.destroyed) peer.reconnect(); } catch (e) {} }, 1000); });
   peer.on('connection', conn => {
-    const p = { conn, slot: -1, inp: { st: 0, thr: 0, boost: false } };
-    phones.set(conn.connectionId, p);
+    let p = null;
     conn.on('data', m => {
-      if (!m || typeof m !== 'object') return;
-      if (m.t === 'join') {
-        if (p.slot >= 0) return;
-        if (state === 'menu' || state === 'matchEnd') seatPhone(p); else { phoneWaiting.push(p); phoneSend(p, { t: 'wait' }); }
-      } else if (m.t === 'in') {
-        p.inp.st = Math.max(-1, Math.min(1, Number(m.st) || 0)); p.inp.thr = Math.max(-1, Math.min(1, Number(m.thr) || 0)); p.inp.boost = !!m.boost;
-      } else if (m.t === 'start') { if (state === 'menu' || state === 'matchEnd') startMatch(); }
-      else if (m.t === 'pause') togglePause();
+      if (!p) {
+        // first message identifies the phone; a returning phone gets its old car back
+        const cid = (m && typeof m.cid === 'string') ? m.cid.slice(0, 16) : conn.connectionId;
+        p = phones.get(cid);
+        if (!p) { p = { cid, conn: null, role: null, slot: -1, inp: { st: 0, thr: 0, boost: false }, lastIn: 0, goneAt: 0, viewerNo: 0, cd: { rocket: 0, boost: 0 } }; phones.set(cid, p); }
+        if (p.conn && p.conn !== conn) { try { p.conn.close(); } catch (e) {} }
+        p.conn = conn; p.goneAt = 0;
+      }
+      onPhoneMessage(p, m);
     });
-    conn.on('close', () => { unseatPhone(p, false); phones.delete(conn.connectionId); const w = phoneWaiting.indexOf(p); if (w >= 0) phoneWaiting.splice(w, 1); });
+    conn.on('close', () => { if (p && p.conn === conn) { p.conn = null; p.goneAt = performance.now(); setJoinPanelCount(); } });
+    conn.on('error', () => {});
   });
 }
 function joinLink() {
@@ -5399,16 +5538,30 @@ function setJoinPanel(mode) {
   if (mode === 'ready' && location.protocol !== 'file:') {
     const qr = qrcode(0, 'M'); qr.addData(joinLink()); qr.make();
     el.innerHTML = `<div class="pj-qr">${qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}</div>
-      <div class="pj-txt"><b>Phone controller</b><br>Scan to join<br>Room <span class="pj-code">${roomCode}</span></div>`;
+      <div class="pj-txt"><b>Join with your phone</b><br>Drive or watch<br>Room <span class="pj-code">${roomCode}</span><br><span id="pj-count"></span></div>`;
+    setJoinPanelCount();
   } else if (mode === 'ready') {
     el.innerHTML = `<div class="pj-txt"><b>Phone controller</b><br>Room <span class="pj-code">${roomCode}</span><br><small>QR works on the hosted site</small></div>`;
   } else if (mode === 'connecting') el.innerHTML = `<div class="pj-txt"><b>Phone controller</b><br>Opening a room…</div>`;
   else el.innerHTML = `<div class="pj-txt"><b>Phone controller</b><br>Offline – needs internet</div>`;
 }
 function phoneRumble(s, ms) { const p = phoneForSlot(s); if (p) phoneSend(p, { t: 'buzz', ms: Math.round(ms) }); }
+function setJoinPanelCount() {
+  const el = document.getElementById('pj-count'); if (!el) return;
+  const v = viewers().length, d = [...phones.values()].filter(p => p.role === 'player' && p.conn).length;
+  el.textContent = (d || v) ? `📱 ${d} driving · 👀 ${v} watching` : '';
+}
 function phonesTick(dt) {
-  phoneStateT -= dt;
-  if (phoneStateT <= 0) { phoneStateT = 0.5; for (const p of phones.values()) if (p.slot >= 0) phoneSend(p, { t: 'state', s: state }); }
+  // wall-clock timer, so slow frames never starve the phones of updates
+  if (performance.now() >= phoneStateT) {
+    phoneStateT = performance.now() + 500;
+    const msg = { t: 'state', s: state, free: freeCars(), viewers: viewers().length };
+    for (const p of phones.values()) {
+      if (p.conn) phoneSend(p, msg);
+      // a phone that has been gone for 30 s gives its car back to the computer
+      else if (p.goneAt && performance.now() - p.goneAt > 30000) { if (p.slot >= 0) unseatPhone(p, false); phones.delete(p.cid); setJoinPanelCount(); }
+    }
+  }
   // touchscreen pad shows only while racing with a touch player
   const touchOn = settings.slots.includes('touch') && state !== 'menu';
   if (touchOn !== document.body.classList.contains('touchplay')) {
@@ -5454,6 +5607,40 @@ function applyViewShift() {
   else camera.clearViewOffset();
 }
 window.addEventListener('resize', applyViewShift);
+
+// ----- Viewer fun -----
+function showCheer(e, p) {
+  const el = document.createElement('div');
+  el.className = 'cheer'; el.textContent = e;
+  el.style.left = (8 + Math.random() * 84) + '%';
+  el.style.setProperty('--drift', ((Math.random() - 0.5) * 120) + 'px');
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2600);
+}
+function viewerPower(p, k) {
+  if (!(k in POWER_CD)) return;
+  const now = performance.now() / 1000;
+  if (p.cd[k] > now) return;
+  if (state !== 'race') { phoneSend(p, { t: 'msg', text: 'Powers work during a race' }); return; }
+  const alive = activeCars().filter(c => c.alive && !c.falling);
+  if (!alive.length) return;
+  const who = `<b style="color:#b39ddb">Viewer ${p.viewerNo}</b>`;
+  if (k === 'rocket') {
+    const lead = alive.reduce((a, b) => (b.prog > a.prog ? b : a));
+    spawnRocket(lead, null, false, 0x7e57c2, 0x651fff, 0.9);
+    toast(`${who} fired a rocket at <b style="color:${lead.color.css}">${lead.color.name}</b>!`);
+  } else if (k === 'boost') {
+    const back = alive.reduce((a, b) => (b.prog < a.prog ? b : a));
+    back.vel.x += Math.sin(back.h) * 22; back.vel.y += Math.cos(back.h) * 22;
+    burst(back.pos.x, 1, back.pos.z, 0xb388ff, 18, 6, 4, 0.6);
+    tone(300, 0.4, 'sawtooth', 0.07, 500); rumble(back, 0.3, 0.6, 200);
+    toast(`${who} boosted <b style="color:${back.color.css}">${back.color.name}</b>!`);
+  }
+  p.cd[k] = now + POWER_CD[k];
+  phoneSend(p, { t: 'cool', k, s: POWER_CD[k] });
+}
+
+window.__phones = phones;
 
 })();
 </script>

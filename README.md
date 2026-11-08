@@ -13,13 +13,14 @@ A shared-screen toy-car knockout party game that runs in the browser. Inspired b
 | Blue (keyboard) | Arrow keys | Right Shift |
 | Green (keyboard) | I J K L | U |
 | Gold (keyboard) | T F G H | R |
-| Phone as controller | Scan the QR code on the start screen; big ◀ ▶ GO / BRAKE buttons | BOOST button |
+| Phone as controller | Scan the QR code on the start screen, choose **Player**; big ◀ ▶ GO / BRAKE buttons | BOOST button |
+| Phone as viewer | Scan the QR code, choose **Viewer**: send emoji cheers to the TV, *Rocket the leader*, *Boost the back car* | — |
 | Phone as the screen | Tap **📱 Play on this phone** on the start screen (turn the phone sideways) | BOOST button |
 | Rocket player | Mouse: click the track to fire; click near a car to lock on | — |
 
 - **Controllers:** press **A** on the start screen to join (cars are taken in order Red, Blue, Green, Gold), **B** to leave, **Start** to begin or pause.
 - **Keyboard:** click a car on the start screen to switch it between Keyboard, Computer and Empty.
-- **Phones:** the start screen shows a QR code and a 4-letter room code. Scan it and your phone becomes a controller (it needs internet; phones and screen don't need to be on the same Wi-Fi, but it's quickest if they are). Press START on any phone to begin.
+- **Phones:** the start screen shows a QR code and a 4-letter room code. Scan it and your phone becomes a controller (it needs internet; phones and screen don't need to be on the same Wi-Fi, but it's quickest if they are). Press START on any phone to begin. A green dot on the phone means it's connected; if the link drops it reconnects by itself and keeps your car (the computer drives it meanwhile, for up to 30 seconds).
 - **Esc / P** pauses, **V** switches Fancy / Simple graphics, **C** changes the camera (Cinematic, Classic, Calm).
 - **Auto-accelerate** (start screen) makes cars drive forward on their own, so younger players only need to steer.
 

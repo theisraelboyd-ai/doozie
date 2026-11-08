@@ -49,45 +49,119 @@ function runController() {
   document.title = 'DOOZIE! controller';
   document.body.className = 'controller';
   document.body.innerHTML = `
-    <div id="pc-top"><span id="pc-who">DOOZIE!</span><span id="pc-status">Connecting to room ${JOIN_CODE}…</span>
+    <div id="pc-top"><span id="pc-dot"></span><span id="pc-who">DOOZIE!</span><span id="pc-status">Connecting to room ${JOIN_CODE}…</span>
       <button id="pc-start" class="pc-small">START</button><button id="pc-pause" class="pc-small">II</button></div>
+    <div id="pc-choose" class="pc-panel">
+      <div class="pc-q">Room <b>${JOIN_CODE}</b> – how do you want to join?</div>
+      <div class="pc-choices">
+        <button class="pc-choice" data-role="player"><span>🏎️</span>Player<small>drive a car</small></button>
+        <button class="pc-choice" data-role="viewer"><span>👻</span>Viewer<small>watch &amp; cause chaos</small></button>
+      </div>
+      <div class="pc-free" id="pc-free"></div>
+    </div>
     <div id="pc-pad"></div>
+    <div id="pc-view" class="pc-panel">
+      <div class="pc-cheers">${['👏', '😂', '😱', '🔥', '👻', '🦶'].map(e => `<button class="pc-cheer" data-e="${e}">${e}</button>`).join('')}</div>
+      <div class="pc-powers">
+        <button class="pc-power" data-k="rocket">🚀<b>Rocket the leader</b><i></i></button>
+        <button class="pc-power" data-k="boost">⚡<b>Boost the back car</b><i></i></button>
+      </div>
+      <div class="pc-soon">Coming soon: Bigfoot, the Ghost car and more…</div>
+      <button id="pc-toplayer" class="pc-link">Switch to player</button>
+    </div>
     <div id="pc-rotate">Turn your phone sideways ↻</div>`;
-  const status = t => { document.getElementById('pc-status').textContent = t; };
-  let conn = null, sendT = 0, wake = null, first = true;
-  const state = makeTouchPad(document.getElementById('pc-pad'), () => send(), {
-    tap: () => {
-      if (!first) return; first = false;
-      try { if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {}
-      try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(w => { wake = w; }).catch(() => {}); } catch (e) {}
-    },
-  });
-  function send() { if (conn && conn.open) conn.send({ t: 'in', st: state.st, thr: state.thr, boost: state.boost }); }
-  setInterval(send, 100); // heartbeat so a lost packet never leaves a button stuck
-  document.getElementById('pc-start').onclick = () => conn && conn.open && conn.send({ t: 'start' });
-  document.getElementById('pc-pause').onclick = () => conn && conn.open && conn.send({ t: 'pause' });
-  if (!JOIN_CODE) { status('No room code – scan the QR code on the big screen'); return; }
-  const peer = new Peer(undefined, peerOptions());
-  peer.on('open', () => {
-    conn = peer.connect('doozie-' + JOIN_CODE, { serialization: 'json' });
-    conn.on('open', () => { status('Connected – joining…'); conn.send({ t: 'join' }); });
-    conn.on('data', m => {
-      if (m.t === 'hello') {
-        document.getElementById('pc-who').textContent = m.name;
-        document.body.style.setProperty('--car', m.css);
-        status(m.note || 'You\'re in!');
-      } else if (m.t === 'wait') status('Match in progress – you\'ll join the next one');
-      else if (m.t === 'full') status('All four cars are taken – try again later');
-      else if (m.t === 'state') {
-        const labels = { menu: 'On the start screen – press START when everyone\'s in', countdown: 'Get ready…', race: 'GO GO GO!', roundEnd: 'Round over', matchEnd: 'Match over – press START to play again', paused: 'Paused' };
+  const $ = id => document.getElementById(id);
+  const status = t => { $('pc-status').textContent = t; };
+  let cid = '';
+  try { cid = sessionStorage.getItem('doozie-cid') || ''; } catch (e) {}
+  if (!cid) { cid = Math.random().toString(36).slice(2, 10); try { sessionStorage.setItem('doozie-cid', cid); } catch (e) {} }
+  let peer = null, conn = null, role = null, lastHeard = 0, lastTry = 0, hello = false, firstTap = true;
+  const cool = { rocket: 0, boost: 0 };
+
+  function show(which) {
+    $('pc-choose').style.display = which === 'choose' ? 'flex' : 'none';
+    $('pc-pad').style.display = which === 'player' ? 'flex' : 'none';
+    $('pc-view').style.display = which === 'viewer' ? 'flex' : 'none';
+    document.body.classList.toggle('pc-is-player', which === 'player');
+  }
+  show('choose');
+  function grabScreen() {
+    if (!firstTap) return; firstTap = false;
+    try { if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {}
+    try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
+  }
+  const pad = makeTouchPad($('pc-pad'), () => sendInput(), { tap: grabScreen });
+  function send(m) { try { if (conn && conn.open) { conn.send(m); return true; } } catch (e) {} return false; }
+  function sendInput() { if (role === 'player') send({ t: 'in', st: pad.st, thr: pad.thr, boost: pad.boost }); }
+  function sendJoin() { if (role) send({ t: 'join', role, cid }); }
+  setInterval(sendInput, 100); // heartbeat so a lost packet never leaves a button stuck
+
+  document.querySelectorAll('.pc-choice').forEach(b => b.onclick = () => { grabScreen(); role = b.dataset.role; hello = false; show(role); status('Joining…'); sendJoin(); });
+  $('pc-toplayer').onclick = () => { role = 'player'; hello = false; show('player'); status('Joining as a player…'); send({ t: 'role', role, cid }); };
+  document.querySelectorAll('.pc-cheer').forEach(b => b.onclick = () => { send({ t: 'cheer', e: b.dataset.e }); b.classList.add('pop'); setTimeout(() => b.classList.remove('pop'), 200); });
+  document.querySelectorAll('.pc-power').forEach(b => b.onclick = () => { if (cool[b.dataset.k] > Date.now()) return; send({ t: 'power', k: b.dataset.k }); });
+  $('pc-start').onclick = () => { grabScreen(); send({ t: 'start' }); };
+  $('pc-pause').onclick = () => send({ t: 'pause' });
+
+  function onData(m) {
+    lastHeard = Date.now();
+    if (!m || typeof m !== 'object') return;
+    if (m.t === 'hello') {
+      hello = true; role = m.role; show(m.role);
+      $('pc-who').textContent = m.name;
+      document.body.style.setProperty('--car', m.css || '#7e57c2');
+      status(m.note || (m.role === 'viewer' ? 'Watching – cheer or cause chaos!' : 'You\'re in!'));
+    } else if (m.t === 'wait') { hello = true; status('Match in progress – you\'ll drive in the next one'); }
+    else if (m.t === 'full') { hello = true; role = 'viewer'; status('All four cars are taken – joining as a viewer'); sendJoin(); }
+    else if (m.t === 'state') {
+      if (role === 'player' && hello) {
+        const labels = { menu: 'Start screen – press START when everyone\'s in', countdown: 'Get ready…', race: 'GO GO GO!', roundEnd: 'Round over', matchEnd: 'Match over – START to play again', paused: 'Paused' };
         status(labels[m.s] || m.s);
-        document.getElementById('pc-start').style.display = (m.s === 'menu' || m.s === 'matchEnd') ? '' : 'none';
-      } else if (m.t === 'buzz') { try { navigator.vibrate && navigator.vibrate(m.ms); } catch (e) {} }
-      else if (m.t === 'kicked') status('You were removed from the car – reload to join again');
+      }
+      $('pc-start').style.display = (m.s === 'menu' || m.s === 'matchEnd') ? '' : 'none';
+      if ($('pc-free')) $('pc-free').textContent = `${m.free} car${m.free === 1 ? '' : 's'} free · ${m.viewers} watching`;
+    } else if (m.t === 'buzz') { try { navigator.vibrate && navigator.vibrate(m.ms); } catch (e) {} }
+    else if (m.t === 'cool') {
+      cool[m.k] = Date.now() + m.s * 1000;
+    } else if (m.t === 'msg') status(m.text);
+    else if (m.t === 'kicked') { role = null; hello = false; show('choose'); status('You were taken out of the car – choose again'); }
+  }
+  // power buttons count down while cooling
+  setInterval(() => {
+    document.querySelectorAll('.pc-power').forEach(b => {
+      const left = Math.ceil((cool[b.dataset.k] - Date.now()) / 1000);
+      b.classList.toggle('cooling', left > 0); b.querySelector('i').textContent = left > 0 ? left + 's' : 'ready';
     });
-    conn.on('close', () => status('Disconnected – reload this page to rejoin'));
+  }, 250);
+
+  function connect() {
+    lastTry = Date.now();
+    try { if (conn) conn.close(); } catch (e) {}
+    conn = peer.connect('doozie-' + JOIN_CODE, { serialization: 'json', reliable: true });
+    conn.on('open', () => { lastHeard = Date.now(); send({ t: 'ping', cid }); if (!role) status('Connected – choose Player or Viewer'); sendJoin(); });
+    conn.on('data', onData);
+    conn.on('close', () => { if (Date.now() - lastTry > 1500) connect(); });
+    conn.on('error', () => {});
+  }
+  // watchdog: the big screen talks every half second; if it goes quiet, reconnect
+  setInterval(() => {
+    const dot = $('pc-dot'), quiet = Date.now() - lastHeard;
+    dot.className = conn && conn.open && quiet < 2000 ? 'ok' : quiet < 6000 ? 'warn' : 'bad';
+    if (!peer || peer.destroyed) return;
+    if (peer.disconnected) { try { peer.reconnect(); } catch (e) {} return; }
+    // give a new link plenty of time to open (mobile data via a relay can take several seconds)
+    if (peer.open && (!conn || !conn.open) && Date.now() - lastTry > 12000) { status('Still trying to reach the big screen…'); connect(); }
+    else if (conn && conn.open && quiet > 6000 && Date.now() - lastTry > 6000) { status('Reconnecting…'); connect(); }
+    else if (conn && conn.open && role && !hello && Date.now() - lastTry > 2500) { sendJoin(); lastTry = Date.now(); }
+  }, 1000);
+
+  if (!JOIN_CODE) { status('No room code – scan the QR code on the big screen'); return; }
+  peer = new Peer(undefined, peerOptions());
+  peer.on('open', () => connect());
+  peer.on('error', e => {
+    if (e.type === 'peer-unavailable') status(`Room ${JOIN_CODE} not found – check the code on the big screen`);
+    else status('Connection hiccup (' + e.type + ') – retrying…');
   });
-  peer.on('error', e => status(e.type === 'peer-unavailable' ? `Room ${JOIN_CODE} not found – check the big screen` : 'Connection problem: ' + e.type));
 }
 
 if (JOIN_CODE) { runController(); return; }

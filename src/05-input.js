@@ -79,7 +79,10 @@ function humanInput(car) {
       boost = pressed(p, 2) || pressed(p, 3) || pressed(p, 5) || pressed(p, 4);
     }
   } else if (settings.slots[car.i] === 'phone') {
-    const p = phoneForSlot(car.i); if (p) { st = p.inp.st; thr = p.inp.thr; boost = p.inp.boost; }
+    const p = phoneForSlot(car.i);
+    // phone gone quiet (dropped signal, screen locked): the computer drives until it's back
+    if (!p || !p.conn || performance.now() - p.lastIn > 1500) return aiInput(car, 1 / 60);
+    st = p.inp.st; thr = p.inp.thr; boost = p.inp.boost;
   } else if (settings.slots[car.i] === 'touch') {
     st = touchInput.st; thr = touchInput.thr; boost = touchInput.boost;
   } else {

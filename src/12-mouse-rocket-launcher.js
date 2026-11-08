@@ -42,14 +42,18 @@ function fireRocket() {
   if (!settings.gunner || state !== 'race' || gun.cd > 0) return;
   if (!aimUpdate()) return;
   gun.cd = GUN_CD;
-  const m = new T.Mesh(rocketGeo, new T.MeshStandardMaterial({ color: 0xab47bc, emissive: 0xd500f9, emissiveIntensity: 2.5 }));
+  spawnRocket(gun.lock, gun.aim.clone(), true);
+}
+// A rocket from the sky; byGun = fired by the mouse player (counts towards their hits)
+function spawnRocket(target, point, byGun, color = 0xab47bc, glow = 0xd500f9, dur = 0.7) {
+  const m = new T.Mesh(rocketGeo, new T.MeshStandardMaterial({ color, emissive: glow, emissiveIntensity: 2.5 }));
   const start = camera.position.clone().add(new T.Vector3((Math.random() - 0.5) * 20, 10, 0));
   m.position.copy(start); scene.add(m);
-  rockets.push({ m, target: gun.lock, point: gun.aim.clone(), t: 0, dur: 0.7 });
+  rockets.push({ m, target, point: point || (target ? target.pos.clone() : camTarget.clone()), t: 0, dur, byGun });
   tone(900, 0.5, 'sawtooth', 0.06, -600);
 }
 const rTmp = new T.Vector3();
-function explode(x, z) {
+function explode(x, z, byGun = true) {
   burst(x, 1, z, 0xff6f00, 24, 12, 12, 0.8);
   burst(x, 1, z, 0xffeb3b, 16, 9, 10, 0.6);
   burst(x, 1, z, 0x616161, 10, 5, 6, 1.2);
@@ -66,7 +70,7 @@ function explode(x, z) {
     hitNames.push(`<b style="color:${c.color.css}">${c.color.name}</b>`);
     rumble(c, 0.5 + 0.5 * s, 0.8, 300);
   }
-  if (hitNames.length) { gun.hits += hitNames.length; toast(`Rocket hit ${hitNames.join(' & ')}!`); }
+  if (hitNames.length) { if (byGun) gun.hits += hitNames.length; toast(`Rocket hit ${hitNames.join(' & ')}!`); }
 }
 function updateGun(dt) {
   if (gun.cd > 0) gun.cd -= dt;
@@ -91,7 +95,7 @@ function updateGun(dt) {
     r.m.position.lerp(tgt, step);
     if (Math.random() < 0.8) burst(r.m.position.x, r.m.position.y, r.m.position.z, 0xbdbdbd, 1, 1, 0, 0.4);
     if (r.t >= r.dur) {
-      explode(r.m.position.x, r.m.position.z);
+      explode(r.m.position.x, r.m.position.z, r.byGun);
       scene.remove(r.m); rockets.splice(k, 1);
     }
   }
