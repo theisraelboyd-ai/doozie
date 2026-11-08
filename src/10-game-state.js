@@ -33,7 +33,7 @@ function startMatch() {
   audio();
   cars.forEach((c, i) => {
     const s = settings.slots[i];
-    c.active = s !== 'off'; c.human = s === 'keys' || s === 'pad'; c.points = 0; c.alive = false;
+    c.active = s !== 'off'; c.human = s === 'keys' || s === 'pad' || s === 'phone' || s === 'touch'; c.points = 0; c.alive = false;
   });
   if (activeCars().length < 2) { flashMsg('Need at least 2 cars', 1.5); return; }
   roundNo = 0; lastWinner = null; gun.hits = 0; gun.cd = 0;
@@ -50,6 +50,7 @@ function newRound(atIdx) {
   placeCars(atIdx);
   const lead = activeCars()[0];
   camTarget.copy(lead.pos); camLook.copy(lead.pos); camDist = 40; camFocus = null;
+  camYaw = settings.cam === 'classic' ? Math.PI : trackYaw(atIdx + Math.round(20 / SPACING)); camPitch = settings.cam === 'calm' ? 0.95 : 0.85;
   state = 'countdown'; stateT = 3.2; timeScale = 1; raceT = 0;
   bigMsg(`Round ${roundNo}`, 'Get ready…');
 }
@@ -104,6 +105,6 @@ function endMatch(champ) {
   const order = activeCars().slice().sort((a, b) => b.points - a.points);
   bigMsg(`<span style="color:${champ.color.css}">${champ.color.name}</span> is the CHAMPION!`,
     order.map((c, k) => `<span style="color:${c.color.css}">${k + 1}. ${c.color.name} ${c.points}</span>`).join(' &nbsp; ') +
-    '<br><small>ENTER or A to play again · M or B for menu</small>');
+    '<br><small>ENTER or A to play again · M or B for menu</small><div class="bigbtns"><button data-act="again">Play again</button><button data-act="menu">Menu</button></div>');
   [523, 659, 784, 1046, 784, 1046].forEach((f, k) => setTimeout(() => tone(f, 0.22, 'triangle', 0.12), k * 160));
 }

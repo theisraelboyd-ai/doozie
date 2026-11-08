@@ -4,13 +4,10 @@ function frame(now) {
   requestAnimationFrame(frame);
   let rdt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now; wt += rdt;
   pollPads();
+  phonesTick(rdt);
+  if (toastT > 0) { toastT -= rdt; if (toastT <= 0) document.getElementById('toast').style.opacity = 0; }
   if (state === 'paused' || state === 'menu') {
-    if (state === 'menu') { // idle flyover
-      const k = Math.floor((wt * 25) % N);
-      camTarget.lerp(P[k], 0.02); camDist += (55 - camDist) * 0.02;
-      camera.position.set(camTarget.x, Math.sin(CAM_PITCH) * camDist, camTarget.z + Math.cos(CAM_PITCH) * camDist);
-      camera.lookAt(camTarget);
-    }
+    if (state === 'menu') updateMenuCamera(rdt, Math.floor((wt * 25) % N)); // idle flyover
     animateWorld(rdt);
     draw();
     return;
@@ -57,7 +54,8 @@ function frame(now) {
       tmpV.set(c.pos.x, 1, c.pos.z).project(camera);
       const e = Math.max(Math.abs(tmpV.x), Math.abs(tmpV.y));
       c.warn = e > 0.84 ? Math.min(1, (e - 0.84) / 0.16 + c.off) : 0;
-      if (e > 1.0) c.off += dt; else c.off = Math.max(0, c.off - dt * 2);
+      // while the camera is swinging round a bend, the timer runs slower so it stays fair
+      if (e > 1.0) c.off += dt * (camSwing > 0.4 ? 0.45 : 1); else c.off = Math.max(0, c.off - dt * 2);
       if (c.warn > 0 && Math.floor(wt * 3) !== c.wb) { c.wb = Math.floor(wt * 3); rumble(c, 0.15, 0.35, 90); }
       if (c.off > 1.2) knockOut(c, 'got left behind');
       if (state !== 'race') break;
@@ -98,7 +96,6 @@ function frame(now) {
   updateGun(dt);
   updateParts(dt);
   animateWorld(rdt);
-  if (toastT > 0) { toastT -= rdt; if (toastT <= 0) document.getElementById('toast').style.opacity = 0; }
   hudT -= rdt; if (hudT <= 0) { hudT = 0.1; updateHud(false); }
   draw();
 }

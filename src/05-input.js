@@ -17,7 +17,7 @@ function padSlot(index) { return settings.padOf.findIndex((x, s) => x === index 
 function joinPad(index) {
   if (padSlot(index) >= 0) return;
   // controllers take the cars in order (RED, BLUE, GREEN, GOLD), skipping cars other controllers hold
-  const s = settings.slots.findIndex(t => t !== 'pad');
+  const s = settings.slots.findIndex(t => !slotTaken(t));
   if (s < 0) { toast('All four cars are taken'); return; }
   settings.slots[s] = 'pad'; settings.padOf[s] = index;
   audio(); tone(520, 0.08, 'square', 0.08); setTimeout(() => tone(780, 0.1, 'square', 0.08), 90);
@@ -34,7 +34,12 @@ function rumblePad(index, strong, weak, ms) {
   const p = getPad(index); const a = p && p.vibrationActuator;
   if (a && a.playEffect) { try { a.playEffect('dual-rumble', { duration: ms, strongMagnitude: Math.min(1, strong), weakMagnitude: Math.min(1, weak) }).catch(() => {}); } catch (e) {} }
 }
-function rumble(car, strong, weak, ms) { if (car && settings.slots[car.i] === 'pad' && settings.padOf[car.i] !== null) rumblePad(settings.padOf[car.i], strong, weak, ms); }
+function rumble(car, strong, weak, ms) {
+  if (!car) return;
+  if (settings.slots[car.i] === 'pad' && settings.padOf[car.i] !== null) rumblePad(settings.padOf[car.i], strong, weak, ms);
+  else if (settings.slots[car.i] === 'phone') phoneRumble(car.i, ms * (0.5 + strong));
+  else if (settings.slots[car.i] === 'touch') { try { navigator.vibrate && navigator.vibrate(Math.round(ms * (0.5 + strong))); } catch (e) {} }
+}
 // Called every frame: menu joining, Start/pause, play-again
 function pollPads() {
   const ps = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -73,6 +78,10 @@ function humanInput(car) {
       thr = gas - brk;
       boost = pressed(p, 2) || pressed(p, 3) || pressed(p, 5) || pressed(p, 4);
     }
+  } else if (settings.slots[car.i] === 'phone') {
+    const p = phoneForSlot(car.i); if (p) { st = p.inp.st; thr = p.inp.thr; boost = p.inp.boost; }
+  } else if (settings.slots[car.i] === 'touch') {
+    st = touchInput.st; thr = touchInput.thr; boost = touchInput.boost;
   } else {
     const ks = KEYSETS[car.i];
     thr = (keys[ks.up] ? 1 : 0) - (keys[ks.down] ? 1 : 0);

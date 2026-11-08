@@ -12,7 +12,7 @@ function buildHud() {
     const d = document.createElement('div');
     d.className = 'card'; d.id = 'card' + c.i;
     d.style.borderColor = c.color.css;
-    d.innerHTML = `<div class="nm" style="color:${c.color.css}">${c.color.name}${settings.slots[c.i] === 'pad' ? ' <small>PAD ' + (settings.padOf[c.i] + 1) + '</small>' : c.human ? '' : ' <small>CPU</small>'}</div>
+    d.innerHTML = `<div class="nm" style="color:${c.color.css}">${c.color.name}${settings.slots[c.i] === 'pad' ? ' <small>PAD ' + (settings.padOf[c.i] + 1) + '</small>' : settings.slots[c.i] === 'phone' ? ' <small>PHONE</small>' : settings.slots[c.i] === 'touch' ? ' <small>YOU</small>' : c.human ? '' : ' <small>CPU</small>'}</div>
       <div class="pts"></div><div class="pips"></div><div class="bst"><i></i></div><div class="out">OUT</div>`;
     hud.appendChild(d);
   }
@@ -51,9 +51,15 @@ function buildMenu() {
     const d = document.createElement('button');
     d.className = 'slot ' + s; d.style.borderColor = c.css;
     d.innerHTML = `<div class="sw" style="background:${c.css}"></div><div class="nm">${c.name}</div>
-      <div class="ty">${s === 'keys' ? 'KEYBOARD' : s === 'pad' ? 'CONTROLLER ' + (settings.padOf[i] + 1) : s === 'cpu' ? 'COMPUTER' : 'EMPTY'}</div>
-      <div class="ks">${s === 'keys' ? KEYSETS[i].label : s === 'pad' ? 'B to leave' : s === 'cpu' ? 'drives itself' : 'click to add'}</div>`;
-    d.onclick = () => { audio(); if (s === 'pad') settings.padOf[i] = null; settings.slots[i] = s === 'keys' ? 'cpu' : s === 'cpu' ? 'off' : s === 'pad' ? 'cpu' : 'keys'; tone(660, 0.05, 'square', 0.06); buildMenu(); };
+      <div class="ty">${s === 'keys' ? 'KEYBOARD' : s === 'pad' ? 'CONTROLLER ' + (settings.padOf[i] + 1) : s === 'phone' ? 'PHONE' : s === 'touch' ? 'THIS SCREEN' : s === 'cpu' ? 'COMPUTER' : 'EMPTY'}</div>
+      <div class="ks">${s === 'keys' ? KEYSETS[i].label : s === 'pad' ? 'B to leave' : s === 'phone' ? 'click to remove' : s === 'touch' ? 'touch buttons' : s === 'cpu' ? 'drives itself' : 'click to add'}</div>`;
+    d.onclick = () => {
+      audio(); tone(660, 0.05, 'square', 0.06);
+      if (s === 'phone') { const p = phoneForSlot(i); if (p) unseatPhone(p, true); return; }
+      if (s === 'pad') settings.padOf[i] = null;
+      settings.slots[i] = s === 'keys' ? 'cpu' : s === 'cpu' ? 'off' : (s === 'pad' || s === 'touch') ? 'cpu' : (IS_TOUCH ? 'cpu' : 'keys');
+      buildMenu();
+    };
     wrap.appendChild(d);
   });
   document.getElementById('optTarget').textContent = settings.target;
@@ -62,12 +68,15 @@ function buildMenu() {
   document.getElementById('optGun').textContent = settings.gunner ? 'On' : 'Off';
   document.getElementById('optGfx').textContent = settings.gfx === 'fancy' ? 'Fancy' : 'Simple';
   document.getElementById('optAuto').textContent = settings.autoGas ? 'On' : 'Off';
+  document.getElementById('optCam').textContent = CAM_NAMES[settings.cam];
 }
 document.getElementById('btnTarget').onclick = () => { const o = [3, 5, 8, 10]; settings.target = o[(o.indexOf(settings.target) + 1) % o.length]; buildMenu(); };
 document.getElementById('btnSkill').onclick = () => { settings.skill = (settings.skill + 1) % 3; buildMenu(); };
 document.getElementById('btnWater').onclick = () => { settings.water = settings.water === 'deadly' ? 'bouncy' : 'deadly'; buildMenu(); };
 document.getElementById('btnGfx').onclick = () => { settings.gfx = settings.gfx === 'fancy' ? 'simple' : 'fancy'; applyGfx(); buildMenu(); };
 document.getElementById('btnGun').onclick = () => { settings.gunner = !settings.gunner; buildMenu(); };
+function cycleCam() { settings.cam = CAM_STYLES[(CAM_STYLES.indexOf(settings.cam) + 1) % CAM_STYLES.length]; buildMenu(); }
+document.getElementById('btnCam').onclick = cycleCam;
 document.getElementById('btnAuto').onclick = () => { settings.autoGas = !settings.autoGas; buildMenu(); };
 document.getElementById('go').onclick = () => startMatch();
 buildMenu();
@@ -82,10 +91,12 @@ function toMenu() {
   document.getElementById('hud').style.display = 'none';
   document.body.classList.remove('playing');
   document.getElementById('pause').style.display = 'none';
+  seatWaitingPhones();
 }
 
 function onKey(code) {
-  if (code === 'KeyG') { settings.gfx = settings.gfx === 'fancy' ? 'simple' : 'fancy'; applyGfx(); buildMenu(); toast(`Graphics: <b>${settings.gfx === 'fancy' ? 'Fancy' : 'Simple'}</b>`); return; }
+  if (code === 'KeyC') { cycleCam(); toast(`Camera: <b>${CAM_NAMES[settings.cam]}</b>`); return; }
+  if (code === 'KeyV') { settings.gfx = settings.gfx === 'fancy' ? 'simple' : 'fancy'; applyGfx(); buildMenu(); toast(`Graphics: <b>${settings.gfx === 'fancy' ? 'Fancy' : 'Simple'}</b>`); return; }
   if (state === 'menu') { if (code === 'Enter' || code === 'Space') startMatch(); return; }
   if (state === 'matchEnd') {
     if (code === 'Enter') { document.getElementById('menu').style.display = 'none'; startMatch(); }

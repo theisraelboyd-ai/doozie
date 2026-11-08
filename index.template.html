@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>DOOZIE!</title>
 <style>
   * { box-sizing: border-box; }
@@ -29,8 +29,9 @@
   #bigS { margin-top: 10px; font-size: 22px; font-weight: 800; text-shadow: 0 2px 4px #000; }
   #toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 20; white-space: nowrap; background: rgba(10,20,35,.88); border-radius: 999px; padding: 8px 22px; font-size: 22px; font-weight: 800; transition: opacity .3s; opacity: 0; pointer-events: none; }
   body.playing #toast { top: auto; bottom: 60px; }
+  body.playing.touchplay #toast { top: 64px; bottom: auto; font-size: 16px; }
   #help { position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 13px; opacity: .75; text-shadow: 0 1px 3px #000; pointer-events: none; }
-  #menu, #pause { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(13,27,42,.55), rgba(13,27,42,.92)); }
+  #menu, #pause { position: fixed; inset: 0; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(13,27,42,.55), rgba(13,27,42,.92)); }
   #pause { display: none; }
   h1 { margin: 0; font-size: clamp(56px, 10vw, 120px); font-weight: 900; letter-spacing: 4px; color: #ffca28; text-shadow: 0 6px 0 #c62828, 0 10px 20px rgba(0,0,0,.5); transform: rotate(-3deg); }
   .tag { margin: 6px 0 22px; font-size: 20px; font-weight: 700; opacity: .9; }
@@ -48,6 +49,62 @@
   #go { margin-top: 14px; font: inherit; font-size: 26px; font-weight: 900; letter-spacing: 2px; padding: 12px 46px; border-radius: 14px; border: 0; background: #ffca28; color: #222; cursor: pointer; box-shadow: 0 6px 0 #c49000; }
   #go:hover { transform: translateY(-2px); }
   .rules { margin-top: 18px; max-width: 760px; text-align: center; font-size: 14px; opacity: .85; line-height: 1.5; }
+
+  /* ---- phone join panel ---- */
+  #phoneJoin { position: absolute; top: 14px; right: 14px; display: flex; gap: 10px; align-items: center; background: rgba(10,20,35,.75); border: 2px solid rgba(255,255,255,.25); border-radius: 12px; padding: 8px 12px 8px 8px; font-size: 13px; line-height: 1.35; }
+  #phoneJoin:empty { display: none; }
+  .pj-qr { width: 104px; height: 104px; background: #fff; border-radius: 6px; padding: 2px; }
+  .pj-qr svg { width: 100%; height: 100%; display: block; }
+  .pj-code { font-size: 20px; font-weight: 900; letter-spacing: 3px; color: #ffca28; }
+  /* ---- buttons in messages ---- */
+  .bigbtns { display: flex; gap: 14px; justify-content: center; margin-top: 14px; }
+  .bigbtns button { pointer-events: auto; font: inherit; font-size: 20px; font-weight: 800; padding: 10px 26px; border-radius: 12px; border: 0; background: #ffca28; color: #222; cursor: pointer; }
+  .bigbtns button + button { background: rgba(255,255,255,.18); color: #fff; }
+  /* ---- touch pad (shared by the screen's own touch mode and the phone controller page) ---- */
+  #touchpad, #tpPause { display: none; }
+  body.touchplay #touchpad { display: flex; position: fixed; inset: auto 0 0 0; height: 46vh; pointer-events: none; z-index: 15; }
+  body.touchplay #tpPause { display: block; position: fixed; top: 10px; left: 10px; z-index: 16; width: 46px; height: 46px; border-radius: 50%; border: 0; background: rgba(10,20,35,.7); color: #fff; font-weight: 900; font-size: 16px; }
+  .tp-left, .tp-right { flex: 1; display: flex; align-items: flex-end; gap: 12px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
+  .tp-right { flex-direction: column; align-items: flex-end; justify-content: flex-end; }
+  .tp-row { display: flex; gap: 12px; }
+  .tp-btn { pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; border: 3px solid rgba(255,255,255,.5); border-radius: 22px; background: rgba(10,20,35,.45); color: #fff; font: inherit; font-weight: 900; font-size: 22px; }
+  .tp-btn.on { background: rgba(255,255,255,.45); transform: scale(.96); }
+  .tp-steer { width: min(22vw, 140px); height: min(22vw, 140px); font-size: 40px; }
+  .tp-gas { width: min(24vw, 150px); height: min(24vw, 130px); background: rgba(46,125,50,.6); }
+  .tp-brake { width: min(18vw, 110px); height: min(24vw, 130px); background: rgba(198,40,40,.55); font-size: 18px; }
+  .tp-boost { width: min(30vw, 270px); height: 54px; background: rgba(239,108,0,.6); font-size: 18px; }
+  .touchonly { display: none; }
+  body.is-touch .touchonly { display: inline-block; }
+  #btnTouch { margin-top: 10px; font: inherit; font-size: 18px; font-weight: 800; padding: 10px 22px; border-radius: 12px; border: 2px solid #ffca28; background: rgba(255,202,40,.12); color: #ffca28; }
+  #rotate { display: none; }
+  @media (orientation: portrait) { body.touchplay #rotate, body.controller #pc-rotate { display: flex; } }
+  #rotate, #pc-rotate { position: fixed; inset: 0; z-index: 50; align-items: center; justify-content: center; background: rgba(13,27,42,.95); font-size: 26px; font-weight: 900; color: #ffca28; text-align: center; padding: 20px; }
+  /* ---- small screens ---- */
+  @media (max-height: 520px), (max-width: 700px) {
+    h1 { font-size: 46px; } .tag { margin: 2px 0 8px; font-size: 14px; }
+    .slot { width: 128px; padding: 8px 6px; } .slot .sw { width: 38px; height: 20px; margin-bottom: 4px; } .slot .nm { font-size: 14px; } .slot .ks { min-height: 0; font-size: 11px; }
+    .opts { margin: 10px 0 4px; gap: 6px; } .opt { padding: 5px 9px; font-size: 12px; }
+    #go { font-size: 18px; padding: 8px 26px; } .rules { display: none; }
+    #phoneJoin { display: none; }
+    #menu { justify-content: flex-start; padding-top: 8px; overflow-y: auto; }
+    #hud { gap: 5px; top: 6px; } .card { min-width: 74px; padding: 3px 6px 5px; border-width: 2px; } .card .nm { font-size: 11px; } .card .pts { font-size: 18px; } .card .pips span { width: 6px; height: 6px; } .card .lbl { display: none; }
+    #bigT { font-size: 40px; } #bigS { font-size: 15px; }
+  }
+  /* ---- phone controller page ---- */
+  body.controller { --car: #555; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--car) 55%, #0d1b2a), #0d1b2a); touch-action: none; overscroll-behavior: none; }
+  #pc-top { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 12px; padding: 10px 14px; font-weight: 800; }
+  #pc-who { font-size: 26px; font-weight: 900; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
+  #pc-status { flex: 1; font-size: 15px; opacity: .9; }
+  .pc-small { font: inherit; font-weight: 900; font-size: 16px; padding: 10px 16px; border-radius: 12px; border: 0; background: #ffca28; color: #222; }
+  #pc-pause { background: rgba(255,255,255,.2); color: #fff; }
+  #pc-pad { position: fixed; inset: 64px 0 0 0; display: flex; }
+  #pc-pad .tp-left, #pc-pad .tp-right { align-items: center; }
+  #pc-pad .tp-steer { width: min(21vw, 190px); height: min(60vh, 260px); font-size: 56px; }
+  #pc-pad .tp-gas { width: min(23vw, 190px); height: min(42vh, 200px); font-size: 30px; }
+  #pc-pad .tp-brake { width: min(14vw, 120px); height: min(42vh, 200px); }
+  #pc-pad .tp-boost { width: min(40vw, 330px); height: min(16vh, 70px); }
+  #pc-pad .tp-right { justify-content: center; }
+  #pc-rotate { display: none; }
 </style>
 </head>
 <body>
@@ -56,26 +113,33 @@
 <div id="big"><div id="bigT"></div><div id="bigS"></div></div>
 <div id="toast"></div>
 <div id="menu">
+  <div id="phoneJoin"></div>
   <h1>DOOZIE!</h1>
   <div class="tag">Last car on screen wins</div>
   <div id="slots"></div>
   <div class="opts">
     <button class="opt" id="btnTarget">Points to win<b id="optTarget"></b></button>
     <button class="opt" id="btnSkill">Computer skill<b id="optSkill"></b></button>
+    <button class="opt" id="btnCam">Camera<b id="optCam"></b></button>
     <button class="opt" id="btnAuto">Auto-accelerate<b id="optAuto"></b></button>
     <button class="opt" id="btnGfx">Graphics<b id="optGfx"></b></button>
     <button class="opt" id="btnGun">Mouse rockets<b id="optGun"></b></button>
     <button class="opt" id="btnWater">Harbour edges<b id="optWater"></b></button>
   </div>
+  <button id="btnTouch" class="touchonly">📱 Play on this phone</button>
   <button id="go">START (Enter / ☰ Start)</button>
   <div class="rules"><b style="color:#ffca28">Controllers:</b> press A to join · B to leave · START to begin.<br>Click a car to switch it between Keyboard, Computer and Empty.<br>
     Stay on screen! Fall behind the camera or get shunted into the harbour and you're out.
     Last car left wins the round (+2), second gets +1, first out loses 1. First to the target wins.<br>
-    Each player has a boost. Esc pauses. G switches Fancy / Simple graphics.<br>
+    Each player has a boost. Esc pauses. V switches Fancy / Simple graphics, C changes the camera.<br>
     <b style="color:#ce93d8">Mouse rockets:</b> anyone can click on the track to fire a rocket. Click near a car and it locks on.</div>
 </div>
-<div id="pause"><h1 style="font-size:72px">PAUSED</h1><div class="tag">Esc or START to carry on · M or B for menu</div></div>
+<div id="pause"><h1 style="font-size:72px">PAUSED</h1><div class="tag">Esc or START to carry on · M or B for menu</div><div class="bigbtns"><button data-act="resume">Resume</button><button data-act="menu">Menu</button></div></div>
+<div id="touchpad"></div>
+<button id="tpPause">II</button>
+<div id="rotate">Turn your phone sideways ↻</div>
 <script>/*THREE*/</script>
+<script>/*NET*/</script>
 <script>/*GAME*/</script>
 </body>
 </html>

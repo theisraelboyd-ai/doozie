@@ -20,6 +20,10 @@ const settings = {
   water: 'deadly', // deadly | bouncy
   gunner: true, // mouse rocket launcher player
   gfx: 'fancy', // fancy | simple
+  cam: 'cinematic', // cinematic | classic | calm
 };
 const SKILL_NAMES = ['Easy', 'Normal', 'Hard'];
 const SKILL_SPEED = [0.84, 0.93, 1.0];
+const CAM_STYLES = ['cinematic', 'classic', 'calm'];
+const CAM_NAMES = { cinematic: 'Cinematic', classic: 'Classic', calm: 'Calm' };
+const IS_TOUCH = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
