@@ -71,16 +71,17 @@ node build.mjs
 
 This writes `docs/index.html`, a single file with no outside dependencies. It can be opened straight from disk or served by GitHub Pages (Settings → Pages → Deploy from branch → `main` / `docs`).
 
-## Network play (laptops)
+## Network play (laptops and phones)
 
-Play across several laptops, on the same Wi-Fi or anywhere on the internet.
+Play across several laptops or phones, on the same Wi-Fi or anywhere on the internet.
 
-1. On the **host** screen (the one with the TV or the main laptop), the top-right panel shows a 4-letter **room code**.
-2. On each other laptop, open the game, press **Join a game** and type the code. Or send a link: `…/doozie/?room=ABCD` joins straight away.
-3. Each laptop takes the next free car (shown as **LAPTOP** on the host and **YOU** on the laptop). Its own keyboard (WASD or arrows, boost Q/Shift/Space, fire E or / or F) or controller drives it, and it can change its own car in the lobby.
-4. Anyone can press START. The host picks the track and mode.
+1. The host screen shows its **room code** (top of the lobby). It stays the same each time you open the game on that device.
+2. Press **Share link to play** and send the link: tapping it joins straight away. Or, on the other device, press **Join a game**, enter your name and the code.
+3. Each player takes the next free car and the host sees "*Jo* joined – driving BLUE". Anyone joining mid-race is told to wait and the host sees "*Jo* is waiting". They drop in next match.
+4. Laptops drive with their keyboard (WASD or arrows, boost Q/Shift/Space, fire E or / or F) or a controller; phones get on-screen buttons under the picture, in portrait.
+5. Anyone can press START. The host picks the track and mode.
 
-The host runs the game; laptops draw what the host sends about 30 times a second (cars, camera, weapons, creatures, effects and sounds), so everyone sees the same shared camera. Graphics level is set per laptop. Company networks sometimes block the peer-to-peer link: if a join hangs, try a phone hotspot.
+The host runs the game; others draw what the host sends about 30 times a second. Switching apps on a phone pauses the page; coming back reconnects. Company networks sometimes block the direct link: if a join hangs, try a phone hotspot.
 
 ## Game modes
 

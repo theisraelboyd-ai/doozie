@@ -20,7 +20,7 @@ function seatPhone(p) {
   settings.slots[s] = p.net ? 'net' : 'phone'; settings.padOf[s] = null; p.slot = s; p.role = 'player';
   sayHello(p);
   audio(); tone(520, 0.08, 'square', 0.08); setTimeout(() => tone(780, 0.1, 'square', 0.08), 90); setJoinPanelCount();
-  toast(`${p.net ? 'A laptop' : 'A phone'} is driving <b style="color:${COLORS[s].css}">${COLORS[s].name}</b>`);
+  toast(`${p.net ? (p.name ? '<b>' + p.name + '</b>' : 'A player') + ' joined –' : 'A phone is'} driving <b style="color:${COLORS[s].css}">${COLORS[s].name}</b>`);
   buildMenu();
 }
 function sayHello(p) {
@@ -44,12 +44,16 @@ function makeViewer(p) {
 function onPhoneMessage(p, m) {
   if (!m || typeof m !== 'object') return;
   if (m.t === 'join' || m.t === 'role') {
-    if (m.net) p.net = true;
+    if (m.net) { p.net = true; p.name = String(m.name || '').replace(/[^\w '\-]/g, '').slice(0, 12); }
     if (m.role === 'viewer') { makeViewer(p); return; }
     if (p.slot >= 0 && remoteSlot(settings.slots[p.slot])) { p.role = 'player'; sayHello(p); return; }
     p.role = 'player';
     if (state === 'menu' || state === 'matchEnd') seatPhone(p);
-    else { if (!phoneWaiting.includes(p)) phoneWaiting.push(p); phoneSend(p, { t: 'wait' }); if (p.net) { phoneSend(p, netLobbyMsg()); netSendSetup(p); } }
+    else {
+      if (!phoneWaiting.includes(p)) phoneWaiting.push(p);
+      phoneSend(p, { t: 'wait' });
+      if (p.net) { phoneSend(p, netLobbyMsg()); netSendSetup(p); toast(`<b>${p.name || 'A player'}</b> is waiting – they'll join the next match`); tone(660, 0.1, 'triangle', 0.08); setJoinPanelCount(); }
+    }
   } else if (m.t === 'in') {
     p.inp.st = Math.max(-1, Math.min(1, Number(m.st) || 0)); p.inp.thr = Math.max(-1, Math.min(1, Number(m.thr) || 0)); p.inp.boost = !!m.boost; p.inp.fire = !!m.fire;
     p.lastIn = performance.now();
@@ -60,16 +64,20 @@ function onPhoneMessage(p, m) {
   else if (m.t === 'power' && p.role === 'viewer') viewerPower(p, m.k);
 }
 
-function startRoom(tries = 0) {
+function newRoomCode() { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; return Array.from({ length: 4 }, () => A[Math.floor(Math.random() * A.length)]).join(''); }
+function startRoom(tries = 0, code) {
   if (typeof Peer === 'undefined') return;
-  const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-  roomCode = Array.from({ length: 4 }, () => A[Math.floor(Math.random() * A.length)]).join('');
+  // keep the same room code between visits, so a code you've already shared still works
+  if (!code) { try { code = localStorage.getItem('doozie-room'); } catch (e) {} }
+  if (!code || !/^[A-Z]{4}$/.test(code)) code = newRoomCode();
+  roomCode = code; try { localStorage.setItem('doozie-room', code); } catch (e) {}
   setJoinPanel('connecting');
   const peer = new Peer('doozie-' + roomCode, peerOptions());
   peerHost = peer;
   peer.on('open', () => setJoinPanel('ready'));
   peer.on('error', e => {
-    if (e.type === 'unavailable-id' && tries < 3) { peer.destroy(); startRoom(tries + 1); return; }
+    // the code may still be held for a moment by this screen's last visit: wait, then try again
+    if (e.type === 'unavailable-id' && tries < 4) { peer.destroy(); setTimeout(() => startRoom(tries + 1, tries < 2 ? code : newRoomCode()), tries < 2 ? 2500 : 0); return; }
     if (e.type === 'peer-unavailable') return;
     if (!peer.open) setJoinPanel('offline');
   });
@@ -91,6 +99,23 @@ function startRoom(tries = 0) {
     conn.on('error', () => {});
   });
 }
+// coming back to the page (after sharing the code in another app, say): make sure the room is still open
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || !peerHost) return;
+  if (peerHost.destroyed) startRoom(0, roomCode);
+  else if (peerHost.disconnected) { try { peerHost.reconnect(); } catch (e) {} }
+});
+function roomLink() {
+  const q = new URLSearchParams({ room: roomCode });
+  if (URLQ.get('peerhost')) { q.set('peerhost', URLQ.get('peerhost')); q.set('peerport', URLQ.get('peerport') || '9000'); }
+  return location.origin + location.pathname + '?' + q.toString();
+}
+function shareRoom() {
+  const url = roomLink(), text = `Join my Doozie! game – room ${roomCode}`;
+  if (navigator.share) navigator.share({ title: 'Doozie!', text, url }).catch(() => {});
+  else if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => toast('Link copied – send it to a friend'), () => toast('Room code: <b>' + roomCode + '</b>'));
+  else toast('Room code: <b>' + roomCode + '</b>');
+}
 function joinLink() {
   const q = new URLSearchParams({ join: roomCode });
   if (URLQ.get('peerhost')) { q.set('peerhost', URLQ.get('peerhost')); q.set('peerport', URLQ.get('peerport') || '9000'); }
@@ -98,21 +123,21 @@ function joinLink() {
 }
 function setJoinPanel(mode) {
   const el = document.getElementById('phoneJoin'); if (!el) return;
-  if (mode === 'ready' && location.protocol !== 'file:') {
-    const qr = qrcode(0, 'M'); qr.addData(joinLink()); qr.make();
-    el.innerHTML = `<div class="pj-qr">${qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}</div>
-      <div class="pj-txt"><b>Join this game</b><br>Phones: scan the code<br>Laptops: Join a game, then<br>room <span class="pj-code">${roomCode}</span><br><span id="pj-count"></span></div>`;
+  if (mode === 'ready') {
+    let qrHtml = '';
+    if (location.protocol !== 'file:') { const qr = qrcode(0, 'M'); qr.addData(joinLink()); qr.make(); qrHtml = `<div class="pj-qr">${qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}</div>`; }
+    el.innerHTML = `${qrHtml}<div class="pj-txt"><b>Room <span class="pj-code">${roomCode}</span></b><br><span class="pj-long">Scan to use a phone as a controller<br></span><button class="pj-share" id="pjShare">Share link to play</button><br><span id="pj-count"></span></div>`;
+    document.getElementById('pjShare').onclick = e => { e.stopPropagation(); audio(); shareRoom(); };
     setJoinPanelCount();
-  } else if (mode === 'ready') {
-    el.innerHTML = `<div class="pj-txt"><b>Join this game</b><br>Room <span class="pj-code">${roomCode}</span><br><small>QR works on the hosted site</small></div>`;
   } else if (mode === 'connecting') el.innerHTML = `<div class="pj-txt"><b>Phone controller</b><br>Opening a room…</div>`;
   else el.innerHTML = `<div class="pj-txt"><b>Phone controller</b><br>Offline – needs internet</div>`;
 }
 function phoneRumble(s, ms) { const p = phoneForSlot(s); if (p) phoneSend(p, { t: 'buzz', ms: Math.round(ms) }); }
 function setJoinPanelCount() {
   const el = document.getElementById('pj-count'); if (!el) return;
-  const v = viewers().length, d = [...phones.values()].filter(p => p.role === 'player' && p.conn && !p.net).length, l = [...phones.values()].filter(p => p.net && p.conn).length;
-  el.textContent = (d || v || l) ? [l ? `💻 ${l} laptop${l > 1 ? 's' : ''}` : '', d ? `📱 ${d} driving` : '', v ? `👀 ${v} watching` : ''].filter(Boolean).join(' · ') : '';
+  const v = viewers().length, d = [...phones.values()].filter(p => p.role === 'player' && p.conn && !p.net).length;
+  const online = [...phones.values()].filter(p => p.net && p.conn), w = online.filter(p => phoneWaiting.includes(p)).length;
+  el.textContent = (d || v || online.length) ? [online.length ? `🌐 ${online.map(p => p.name || 'player').join(', ')}${w ? ` (${w} waiting)` : ''}` : '', d ? `📱 ${d} driving` : '', v ? `👀 ${v} watching` : ''].filter(Boolean).join(' · ') : '';
 }
 function phonesTick(dt) {
   // wall-clock timer, so slow frames never starve the phones of updates
@@ -126,10 +151,10 @@ function phonesTick(dt) {
     }
   }
   // touchscreen pad shows only while racing with a touch player
-  const touchOn = settings.slots.includes('touch') && state !== 'menu';
+  const touchOn = (settings.slots.includes('touch') || (netClient && netClient.live && IS_TOUCH)) && state !== 'menu';
   if (touchOn !== document.body.classList.contains('touchplay')) {
     document.body.classList.toggle('touchplay', touchOn);
-    applyViewShift();
+    resize(); applyViewShift();
   }
 }
 
@@ -141,7 +166,7 @@ function toggleTouchPlayer() {
     const free = settings.slots.findIndex(t => !slotTaken(t));
     if (free < 0) { toast('All four cars are taken'); return; }
     settings.slots[free] = 'touch'; settings.padOf[free] = null;
-    toast(`You're driving <b style="color:${COLORS[free].css}">${COLORS[free].name}</b> – turn your phone sideways`);
+    toast(`You're driving <b style="color:${COLORS[free].css}">${COLORS[free].name}</b>`);
   }
   buildMenu();
 }
@@ -167,7 +192,7 @@ startRoom();
 // so the cars sit in the clear upper part (the knock-out edge moves with it, so it stays fair)
 function applyViewShift() {
   const w = window.innerWidth, h = window.innerHeight;
-  if (document.body.classList.contains('touchplay')) camera.setViewOffset(w, h, 0, h * 0.18, w, h);
+  if (document.body.classList.contains('touchplay') && w > h) camera.setViewOffset(w, h, 0, h * 0.18, w, h);
   else camera.clearViewOffset();
 }
 window.addEventListener('resize', applyViewShift);

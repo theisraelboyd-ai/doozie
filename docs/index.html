@@ -94,6 +94,7 @@
   #joinDlg { position: fixed; inset: 0; z-index: 45; display: none; align-items: center; justify-content: center; background: rgba(5,10,18,.7); }
   .jd-box { width: 380px; max-width: 92vw; background: #13233a; border: 2px solid rgba(255,255,255,.15); border-radius: 18px; padding: 22px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
   .jd-title { font-size: 26px; font-weight: 900; } .jd-sub { font-size: 14px; opacity: .75; margin: 4px 0 14px; }
+  #joinName { display: block; width: 220px; margin: 0 auto 10px; font: inherit; font-size: 18px; font-weight: 800; text-align: center; padding: 8px; border-radius: 10px; border: 2px solid rgba(255,255,255,.25); background: rgba(0,0,0,.3); color: #fff; outline: none; user-select: text; }
   #joinCode { width: 220px; font: inherit; font-size: 40px; font-weight: 900; letter-spacing: 12px; text-align: center; text-transform: uppercase; padding: 8px; border-radius: 12px; border: 2px solid rgba(255,202,40,.6); background: rgba(0,0,0,.3); color: #ffca28; outline: none; user-select: text; }
   .jd-btns { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
   .jd-btns button { font: inherit; font-size: 18px; font-weight: 900; padding: 10px 26px; border-radius: 12px; border: 0; cursor: pointer; background: #ffca28; color: #222; }
@@ -102,6 +103,8 @@
   /* ---- phone join panel ---- */
   #phoneJoin { display: flex; gap: 10px; align-items: center; background: rgba(10,20,35,.75); border: 2px solid rgba(255,255,255,.25); border-radius: 12px; padding: 8px 12px 8px 8px; font-size: 13px; line-height: 1.35; }
   #phoneJoin:empty { display: none; }
+  .pj-share { margin-top: 4px; font: inherit; font-size: 12px; font-weight: 900; padding: 5px 10px; border-radius: 8px; border: 0; background: #ffca28; color: #222; cursor: pointer; }
+  body.netclient #btnTouch { display: none !important; }
   .pj-qr { width: 104px; height: 104px; background: #fff; border-radius: 6px; padding: 2px; }
   .pj-qr svg { width: 100%; height: 100%; display: block; }
   .pj-code { font-size: 20px; font-weight: 900; letter-spacing: 3px; color: #ffca28; }
@@ -126,16 +129,33 @@
   .touchonly { display: none; }
   body.is-touch .touchonly { display: inline-block; }
   #btnTouch { margin-top: 10px; font: inherit; font-size: 18px; font-weight: 800; padding: 10px 22px; border-radius: 12px; border: 2px solid #ffca28; background: rgba(255,202,40,.12); color: #ffca28; }
-  #rotate { display: none; }
-  @media (orientation: portrait) { body.touchplay #rotate, body.controller.pc-is-player #pc-rotate { display: flex; } }
+  #rotate, #pc-rotate { display: none !important; }
+  /* portrait: the game fills the top of the screen, a solid control panel sits underneath */
+  @media (orientation: portrait) {
+    body.touchplay #touchpad { height: 38vh; background: linear-gradient(180deg, #0f1d30, #08111d); border-top: 2px solid rgba(255,255,255,.12); }
+    body.touchplay .tp-left { flex: 1; align-items: center; justify-content: center; padding: 10px 6px calc(10px + env(safe-area-inset-bottom)); gap: 10px; }
+    body.touchplay .tp-right { flex: 1.2; align-items: center; justify-content: center; padding: 10px 6px calc(10px + env(safe-area-inset-bottom)); gap: 10px; }
+    body.touchplay .tp-steer { width: 20vw; height: 22vh; font-size: 30px; }
+    body.touchplay .tp-gas { width: 25vw; height: 17vh; font-size: 20px; }
+    body.touchplay .tp-brake { width: 18vw; height: 17vh; font-size: 13px; }
+    body.touchplay .tp-boost, body.touchplay .tp-fire { width: 21.5vw; height: 7.5vh; font-size: 13px; }
+    body.touchplay #tpPause { top: auto; bottom: calc(38vh + 10px); left: 10px; width: 40px; height: 40px; }
+    body.playing.touchplay #toast { top: auto; bottom: calc(38vh + 12px); font-size: 14px; white-space: normal; max-width: 86vw; text-align: center; }
+    body.touchplay #big { top: 18%; }
+    #pc-pad .tp-left, #pc-pad .tp-right { flex-direction: row; flex-wrap: wrap; align-content: center; justify-content: center; padding: 10px 6px; }
+    #pc-pad .tp-right { flex-direction: column; }
+    #pc-pad .tp-steer { width: 21vw; height: 34vh; font-size: 40px; }
+    #pc-pad .tp-gas { width: 26vw; height: 26vh; font-size: 22px; }
+    #pc-pad .tp-brake { width: 18vw; height: 26vh; font-size: 14px; }
+    #pc-pad .tp-boost, #pc-pad .tp-fire { width: 22vw; height: 10vh; font-size: 15px; }
+  }
   #rotate, #pc-rotate { position: fixed; inset: 0; z-index: 50; align-items: center; justify-content: center; background: rgba(13,27,42,.95); font-size: 26px; font-weight: 900; color: #ffca28; text-align: center; padding: 20px; }
   /* ---- small screens ---- */
   @media (max-height: 520px), (max-width: 700px) {
     h1 { font-size: 46px; } .tag { margin: 2px 0 8px; font-size: 14px; }
     #menu { padding: 8px 10px 12px; } .lb-sub { font-size: 12px; margin: 4px 0 0 12px; } #slots { margin-top: 8px; gap: 8px; } .slot { width: 150px; padding-bottom: 6px; } .slot .st-band { font-size: 13px; padding: 4px 0; } .slot .st-car { font-size: 30px; margin: 6px 0 2px; } .slot .st-carname { font-size: 13px; } .slot .st-who { margin-top: 6px; font-size: 10px; } .slot .st-keys, .slot .st-blurb { display: none; } .slot.off .st-add { margin: 18px 0; } .lb-picks { margin-top: 8px; gap: 8px; } .pick { width: 300px; } .pk-val { font-size: 17px; } .pk-sub { display: none; } .lb-hint { display: none; } .lb-bar { position: static; margin-top: 10px; flex-wrap: wrap; justify-content: center; } .lb-btn, #btnTouch { padding: 6px 10px; font-size: 12px; margin-top: 0; }
     #go { font-size: 20px; padding: 8px 36px; margin-top: 10px; }
-    body.is-touch #phoneJoin { display: none; }
-    #phoneJoin { top: 6px; right: 6px; padding: 4px; } .pj-qr { width: 78px; height: 78px; } .pj-txt { display: none; }
+    .lb-top { flex-direction: column; align-items: center; gap: 8px; } .lb-logo { padding: 0; text-align: center; } #phoneJoin { padding: 5px 8px; font-size: 11px; } .pj-qr { width: 70px; height: 70px; } body.is-touch .pj-qr, .pj-long { display: none; } .pj-code { font-size: 16px; }
     #hud { gap: 5px; top: 6px; } .card { min-width: 74px; padding: 3px 6px 5px; border-width: 2px; } .card .nm { font-size: 11px; } .card .pts { font-size: 18px; } .card .pips span { width: 6px; height: 6px; } .card .lbl { display: none; }
     #bigT { font-size: 40px; } #bigS { font-size: 15px; }
   }
@@ -237,6 +257,7 @@
   <div class="jd-box">
     <div class="jd-title">Join a game</div>
     <div class="jd-sub">Type the room code shown on the other screen</div>
+    <input id="joinName" maxlength="12" autocomplete="off" spellcheck="false" placeholder="Your name">
     <input id="joinCode" maxlength="4" autocomplete="off" spellcheck="false" placeholder="ABCD">
     <div class="jd-btns"><button id="joinGo">Join</button><button id="joinCancel">Cancel</button></div>
     <div id="joinStatus"></div>
@@ -4467,8 +4488,13 @@ const scene = new T.Scene();
 scene.background = new T.Color(0x9fd3f0);
 scene.fog = new T.Fog(0x9fd3f0, 180, 420);
 const camera = new T.PerspectiveCamera(50, 1, 1, 1000);
+function playHeight() {
+  const portraitPad = document.body.classList.contains('touchplay') && window.innerHeight > window.innerWidth;
+  return portraitPad ? Math.round(window.innerHeight * 0.62) : window.innerHeight;
+}
 function resize() {
-  const w = window.innerWidth, h = window.innerHeight;
+  const w = window.innerWidth, h = playHeight();
+  canvas.style.height = h + 'px';
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
@@ -5765,7 +5791,9 @@ let toastT = 0;
 function toast(h) { const el = document.getElementById('toast'); el.innerHTML = h; el.style.opacity = 1; toastT = 1.6; }
 function flashMsg(t, dur) { toast(t); toastT = dur; }
 
+let hudNames = ['', '', '', ''];
 function buildHud() {
+  if (!netClient && typeof seatNames === 'function') hudNames = seatNames();
   const hud = document.getElementById('hud');
   hud.innerHTML = '';
   for (const c of activeCars()) {
@@ -5773,7 +5801,7 @@ function buildHud() {
     d.className = 'card'; d.id = 'card' + c.i;
     d.style.borderColor = c.color.css;
     if (settings.mode === 'teams') d.style.background = TEAMS[teamOf(c)].bg;
-    d.innerHTML = `<div class="nm" style="color:${c.color.css}">${c.color.name}${settings.slots[c.i] === 'pad' ? ' <small>PAD ' + (settings.padOf[c.i] + 1) + '</small>' : settings.slots[c.i] === 'phone' ? ' <small>PHONE</small>' : settings.slots[c.i] === 'touch' ? ' <small>YOU</small>' : settings.slots[c.i] === 'net' ? ' <small>' + (netClient && netClient.slot === c.i ? 'YOU' : 'NET') + '</small>' : c.human ? '' : ' <small>CPU</small>'}</div>
+    d.innerHTML = `<div class="nm" style="color:${c.color.css}">${c.color.name}${settings.slots[c.i] === 'pad' ? ' <small>PAD ' + (settings.padOf[c.i] + 1) + '</small>' : settings.slots[c.i] === 'phone' ? ' <small>PHONE</small>' : settings.slots[c.i] === 'touch' ? ' <small>YOU</small>' : settings.slots[c.i] === 'net' ? ' <small>' + (netClient && netClient.slot === c.i ? 'YOU' : (hudNames[c.i] || 'ONLINE').toUpperCase()) + '</small>' : c.human ? '' : ' <small>CPU</small>'}</div>
       <div class="pts"></div><div class="pips"></div><div class="md"></div><div class="bst"><i></i></div><div class="itm"></div><div class="out">OUT</div>`;
     hud.appendChild(d);
   }
@@ -5823,13 +5851,14 @@ const TRACK_BLURB = {
   haunted: 'Night · lanterns, willows, ghosts and screams',
   random: 'A different track every match',
 };
-const WHO = { keys: 'KEYBOARD', pad: 'CONTROLLER', phone: 'PHONE', touch: 'THIS SCREEN', net: 'LAPTOP', cpu: 'COMPUTER', off: '' };
+const WHO = { keys: 'KEYBOARD', pad: 'CONTROLLER', phone: 'PHONE', touch: 'THIS SCREEN', net: 'ONLINE', cpu: 'COMPUTER', off: '' };
 function buildMenu() {
   const nc = netClient, lob = nc && nc.lobby;
   const slots = lob ? lob.slots : settings.slots, carOf = lob ? lob.carOf : settings.carOf;
   const wrap = document.getElementById('slots'); wrap.innerHTML = '';
   COLORS.forEach((c, i) => {
     const s = slots[i], ct = CAR_TYPES[carOf[i]] || CAR_TYPES.classic, mine = nc && nc.slot === i;
+    const who = lob ? (lob.names && lob.names[i]) : (s === 'net' || s === 'phone') && phoneForSlot(i) && phoneForSlot(i).name;
     const d = document.createElement('button');
     d.className = 'slot ' + s + (mine ? ' me' : ''); d.style.setProperty('--c', c.css);
     if (s === 'off') d.innerHTML = `<div class="st-band">${c.name}</div><div class="st-add">${nc ? 'Empty' : '+ Add a car'}</div>`;
@@ -5837,7 +5866,7 @@ function buildMenu() {
       <div class="st-car">${ct.icon}</div>
       <div class="st-carname">${!nc || mine ? '<span class="car-prev">&#8249;</span>' : ''}${ct.name}${!nc || mine ? '<span class="car-next">&#8250;</span>' : ''}</div>
       <div class="st-blurb">${ct.blurb}</div>
-      <div class="st-who">${mine ? 'YOU' : WHO[s]}${s === 'pad' && !lob ? ' ' + (settings.padOf[i] + 1) : ''}</div>
+      <div class="st-who">${mine ? 'YOU' : who ? who.toUpperCase() : WHO[s]}${s === 'pad' && !lob ? ' ' + (settings.padOf[i] + 1) : ''}</div>
       <div class="st-keys">${lob ? '' : s === 'keys' ? KEYSETS[i].label : s === 'pad' ? 'B to leave' : s === 'phone' || s === 'net' ? 'click to remove' : s === 'touch' ? 'touch buttons' : s === 'cpu' ? 'click to change' : ''}</div>`;
     d.onclick = e => {
       audio(); tone(660, 0.05, 'square', 0.06);
@@ -6347,7 +6376,7 @@ function seatPhone(p) {
   settings.slots[s] = p.net ? 'net' : 'phone'; settings.padOf[s] = null; p.slot = s; p.role = 'player';
   sayHello(p);
   audio(); tone(520, 0.08, 'square', 0.08); setTimeout(() => tone(780, 0.1, 'square', 0.08), 90); setJoinPanelCount();
-  toast(`${p.net ? 'A laptop' : 'A phone'} is driving <b style="color:${COLORS[s].css}">${COLORS[s].name}</b>`);
+  toast(`${p.net ? (p.name ? '<b>' + p.name + '</b>' : 'A player') + ' joined –' : 'A phone is'} driving <b style="color:${COLORS[s].css}">${COLORS[s].name}</b>`);
   buildMenu();
 }
 function sayHello(p) {
@@ -6371,12 +6400,16 @@ function makeViewer(p) {
 function onPhoneMessage(p, m) {
   if (!m || typeof m !== 'object') return;
   if (m.t === 'join' || m.t === 'role') {
-    if (m.net) p.net = true;
+    if (m.net) { p.net = true; p.name = String(m.name || '').replace(/[^\w '\-]/g, '').slice(0, 12); }
     if (m.role === 'viewer') { makeViewer(p); return; }
     if (p.slot >= 0 && remoteSlot(settings.slots[p.slot])) { p.role = 'player'; sayHello(p); return; }
     p.role = 'player';
     if (state === 'menu' || state === 'matchEnd') seatPhone(p);
-    else { if (!phoneWaiting.includes(p)) phoneWaiting.push(p); phoneSend(p, { t: 'wait' }); if (p.net) { phoneSend(p, netLobbyMsg()); netSendSetup(p); } }
+    else {
+      if (!phoneWaiting.includes(p)) phoneWaiting.push(p);
+      phoneSend(p, { t: 'wait' });
+      if (p.net) { phoneSend(p, netLobbyMsg()); netSendSetup(p); toast(`<b>${p.name || 'A player'}</b> is waiting – they'll join the next match`); tone(660, 0.1, 'triangle', 0.08); setJoinPanelCount(); }
+    }
   } else if (m.t === 'in') {
     p.inp.st = Math.max(-1, Math.min(1, Number(m.st) || 0)); p.inp.thr = Math.max(-1, Math.min(1, Number(m.thr) || 0)); p.inp.boost = !!m.boost; p.inp.fire = !!m.fire;
     p.lastIn = performance.now();
@@ -6387,16 +6420,20 @@ function onPhoneMessage(p, m) {
   else if (m.t === 'power' && p.role === 'viewer') viewerPower(p, m.k);
 }
 
-function startRoom(tries = 0) {
+function newRoomCode() { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; return Array.from({ length: 4 }, () => A[Math.floor(Math.random() * A.length)]).join(''); }
+function startRoom(tries = 0, code) {
   if (typeof Peer === 'undefined') return;
-  const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-  roomCode = Array.from({ length: 4 }, () => A[Math.floor(Math.random() * A.length)]).join('');
+  // keep the same room code between visits, so a code you've already shared still works
+  if (!code) { try { code = localStorage.getItem('doozie-room'); } catch (e) {} }
+  if (!code || !/^[A-Z]{4}$/.test(code)) code = newRoomCode();
+  roomCode = code; try { localStorage.setItem('doozie-room', code); } catch (e) {}
   setJoinPanel('connecting');
   const peer = new Peer('doozie-' + roomCode, peerOptions());
   peerHost = peer;
   peer.on('open', () => setJoinPanel('ready'));
   peer.on('error', e => {
-    if (e.type === 'unavailable-id' && tries < 3) { peer.destroy(); startRoom(tries + 1); return; }
+    // the code may still be held for a moment by this screen's last visit: wait, then try again
+    if (e.type === 'unavailable-id' && tries < 4) { peer.destroy(); setTimeout(() => startRoom(tries + 1, tries < 2 ? code : newRoomCode()), tries < 2 ? 2500 : 0); return; }
     if (e.type === 'peer-unavailable') return;
     if (!peer.open) setJoinPanel('offline');
   });
@@ -6418,6 +6455,23 @@ function startRoom(tries = 0) {
     conn.on('error', () => {});
   });
 }
+// coming back to the page (after sharing the code in another app, say): make sure the room is still open
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || !peerHost) return;
+  if (peerHost.destroyed) startRoom(0, roomCode);
+  else if (peerHost.disconnected) { try { peerHost.reconnect(); } catch (e) {} }
+});
+function roomLink() {
+  const q = new URLSearchParams({ room: roomCode });
+  if (URLQ.get('peerhost')) { q.set('peerhost', URLQ.get('peerhost')); q.set('peerport', URLQ.get('peerport') || '9000'); }
+  return location.origin + location.pathname + '?' + q.toString();
+}
+function shareRoom() {
+  const url = roomLink(), text = `Join my Doozie! game – room ${roomCode}`;
+  if (navigator.share) navigator.share({ title: 'Doozie!', text, url }).catch(() => {});
+  else if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => toast('Link copied – send it to a friend'), () => toast('Room code: <b>' + roomCode + '</b>'));
+  else toast('Room code: <b>' + roomCode + '</b>');
+}
 function joinLink() {
   const q = new URLSearchParams({ join: roomCode });
   if (URLQ.get('peerhost')) { q.set('peerhost', URLQ.get('peerhost')); q.set('peerport', URLQ.get('peerport') || '9000'); }
@@ -6425,21 +6479,21 @@ function joinLink() {
 }
 function setJoinPanel(mode) {
   const el = document.getElementById('phoneJoin'); if (!el) return;
-  if (mode === 'ready' && location.protocol !== 'file:') {
-    const qr = qrcode(0, 'M'); qr.addData(joinLink()); qr.make();
-    el.innerHTML = `<div class="pj-qr">${qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}</div>
-      <div class="pj-txt"><b>Join this game</b><br>Phones: scan the code<br>Laptops: Join a game, then<br>room <span class="pj-code">${roomCode}</span><br><span id="pj-count"></span></div>`;
+  if (mode === 'ready') {
+    let qrHtml = '';
+    if (location.protocol !== 'file:') { const qr = qrcode(0, 'M'); qr.addData(joinLink()); qr.make(); qrHtml = `<div class="pj-qr">${qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}</div>`; }
+    el.innerHTML = `${qrHtml}<div class="pj-txt"><b>Room <span class="pj-code">${roomCode}</span></b><br><span class="pj-long">Scan to use a phone as a controller<br></span><button class="pj-share" id="pjShare">Share link to play</button><br><span id="pj-count"></span></div>`;
+    document.getElementById('pjShare').onclick = e => { e.stopPropagation(); audio(); shareRoom(); };
     setJoinPanelCount();
-  } else if (mode === 'ready') {
-    el.innerHTML = `<div class="pj-txt"><b>Join this game</b><br>Room <span class="pj-code">${roomCode}</span><br><small>QR works on the hosted site</small></div>`;
   } else if (mode === 'connecting') el.innerHTML = `<div class="pj-txt"><b>Phone controller</b><br>Opening a room…</div>`;
   else el.innerHTML = `<div class="pj-txt"><b>Phone controller</b><br>Offline – needs internet</div>`;
 }
 function phoneRumble(s, ms) { const p = phoneForSlot(s); if (p) phoneSend(p, { t: 'buzz', ms: Math.round(ms) }); }
 function setJoinPanelCount() {
   const el = document.getElementById('pj-count'); if (!el) return;
-  const v = viewers().length, d = [...phones.values()].filter(p => p.role === 'player' && p.conn && !p.net).length, l = [...phones.values()].filter(p => p.net && p.conn).length;
-  el.textContent = (d || v || l) ? [l ? `💻 ${l} laptop${l > 1 ? 's' : ''}` : '', d ? `📱 ${d} driving` : '', v ? `👀 ${v} watching` : ''].filter(Boolean).join(' · ') : '';
+  const v = viewers().length, d = [...phones.values()].filter(p => p.role === 'player' && p.conn && !p.net).length;
+  const online = [...phones.values()].filter(p => p.net && p.conn), w = online.filter(p => phoneWaiting.includes(p)).length;
+  el.textContent = (d || v || online.length) ? [online.length ? `🌐 ${online.map(p => p.name || 'player').join(', ')}${w ? ` (${w} waiting)` : ''}` : '', d ? `📱 ${d} driving` : '', v ? `👀 ${v} watching` : ''].filter(Boolean).join(' · ') : '';
 }
 function phonesTick(dt) {
   // wall-clock timer, so slow frames never starve the phones of updates
@@ -6453,10 +6507,10 @@ function phonesTick(dt) {
     }
   }
   // touchscreen pad shows only while racing with a touch player
-  const touchOn = settings.slots.includes('touch') && state !== 'menu';
+  const touchOn = (settings.slots.includes('touch') || (netClient && netClient.live && IS_TOUCH)) && state !== 'menu';
   if (touchOn !== document.body.classList.contains('touchplay')) {
     document.body.classList.toggle('touchplay', touchOn);
-    applyViewShift();
+    resize(); applyViewShift();
   }
 }
 
@@ -6468,7 +6522,7 @@ function toggleTouchPlayer() {
     const free = settings.slots.findIndex(t => !slotTaken(t));
     if (free < 0) { toast('All four cars are taken'); return; }
     settings.slots[free] = 'touch'; settings.padOf[free] = null;
-    toast(`You're driving <b style="color:${COLORS[free].css}">${COLORS[free].name}</b> – turn your phone sideways`);
+    toast(`You're driving <b style="color:${COLORS[free].css}">${COLORS[free].name}</b>`);
   }
   buildMenu();
 }
@@ -6494,7 +6548,7 @@ startRoom();
 // so the cars sit in the clear upper part (the knock-out edge moves with it, so it stays fair)
 function applyViewShift() {
   const w = window.innerWidth, h = window.innerHeight;
-  if (document.body.classList.contains('touchplay')) camera.setViewOffset(w, h, 0, h * 0.18, w, h);
+  if (document.body.classList.contains('touchplay') && w > h) camera.setViewOffset(w, h, 0, h * 0.18, w, h);
   else camera.clearViewOffset();
 }
 window.addEventListener('resize', applyViewShift);
@@ -7380,15 +7434,16 @@ scream = netWrap('scream', scream); wail = netWrap('wail', wail); owl = netWrap(
 showCheer = netWrap('showCheer', showCheer, a => [a[0]]);
 boostSound = netWrap('boostSound', boostSound, a => [a[0].i]);
 
+function seatNames() { return COLORS.map((_, i) => { const p = phoneForSlot(i); return (p && p.name) || ''; }); }
 function netSetupMsg() {
   return {
     t: 'setup', track: curTrack.id, mode: settings.mode, target: settings.target, weapons: settings.weapons,
-    slots: settings.slots, types: cars.map(c => c.type), round: roundNo,
+    slots: settings.slots, types: cars.map(c => c.type), round: roundNo, names: seatNames(),
   };
 }
 function netSendSetup(p) { const m = netSetupMsg(); if (p) phoneSend(p, m); else for (const q of netPlayers()) phoneSend(q, m); }
 function netLobbyMsg() {
-  return { t: 'lobby', slots: settings.slots, carOf: settings.carOf, track: settings.track, mode: settings.mode, room: roomCode };
+  return { t: 'lobby', slots: settings.slots, carOf: settings.carOf, track: settings.track, mode: settings.mode, room: roomCode, names: seatNames() };
 }
 function carSnap(c) {
   const g = c.mesh.group, ring = c.mesh.ring;
@@ -7436,16 +7491,33 @@ function joinGame(code) {
   if (code === roomCode) { joinStatus("That's this screen's own room"); return; }
   if (!peerHost || !peerHost.open) { joinStatus('Not online yet – check the internet connection'); return; }
   joinStatus('Connecting to room ' + code + '…');
+  let name = ''; try { name = (document.getElementById('joinName').value || localStorage.getItem('doozie-name') || '').trim().slice(0, 12); localStorage.setItem('doozie-name', name); } catch (e) {}
   let cid; try { cid = sessionStorage.getItem('doozie-net-cid'); } catch (e) {}
   if (!cid) { cid = 'net-' + Math.random().toString(36).slice(2, 10); try { sessionStorage.setItem('doozie-net-cid', cid); } catch (e) {} }
   const conn = peerHost.connect('doozie-' + code, { reliable: true, serialization: 'json' });
   const failT = setTimeout(() => { if (!netClient || netClient.conn !== conn || !netClient.ok) { joinStatus("Couldn't reach room " + code + '. Is the code right, and is that game open?'); try { conn.close(); } catch (e) {} } }, 10000);
-  netClient = { conn, code, slot: -1, live: false, snap: null, lobby: null, objs: new Map(), inT: 0, ok: false, cid, lastMsg: performance.now() };
-  conn.on('open', () => { conn.send({ t: 'join', role: 'player', net: true, cid }); });
+  netClient = { conn, code, slot: -1, live: false, snap: null, lobby: null, objs: new Map(), inT: 0, ok: false, cid, name, lastMsg: performance.now() };
+  conn.on('open', () => { conn.send({ t: 'join', role: 'player', net: true, cid, name, dev: IS_TOUCH ? 'phone' : 'laptop' }); });
   conn.on('data', m => { if (netClient && netClient.conn === conn) { netClient.ok = true; netClient.lastMsg = performance.now(); clearTimeout(failT); onHostMessage(m); } });
-  conn.on('close', () => { if (netClient && netClient.conn === conn) leaveNet('The host closed the game'); });
+  conn.on('close', () => { if (netClient && netClient.conn === conn) retryJoin(); });
   conn.on('error', () => {});
 }
+function retryJoin() {
+  const nc = netClient; if (!nc) return;
+  nc.retries = (nc.retries || 0) + 1;
+  if (nc.retries > 4) { leaveNet('Lost the connection to the host'); return; }
+  toast('Reconnecting…');
+  setTimeout(() => {
+    if (netClient !== nc || !peerHost) return;
+    const c2 = peerHost.connect('doozie-' + nc.code, { reliable: true, serialization: 'json' });
+    nc.conn = c2; nc.lastMsg = performance.now();
+    c2.on('open', () => { nc.retries = 0; c2.send({ t: 'join', role: 'player', net: true, cid: nc.cid, name: nc.name || '', dev: IS_TOUCH ? 'phone' : 'laptop' }); });
+    c2.on('data', m => { if (netClient === nc && nc.conn === c2) { nc.lastMsg = performance.now(); onHostMessage(m); } });
+    c2.on('close', () => { if (netClient === nc && nc.conn === c2) retryJoin(); });
+    c2.on('error', () => {});
+  }, 1500);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && netClient) { netClient.lastMsg = performance.now(); if (!netClient.conn.open) retryJoin(); } });
 function joinStatus(t) { const el = document.getElementById('joinStatus'); if (el) el.textContent = t; }
 function leaveNet(why) {
   const nc = netClient; if (!nc) return;
@@ -7492,7 +7564,9 @@ function applySetup(m) {
   document.getElementById('hud').style.display = 'flex';
   document.body.classList.add('playing');
   // the HUD tags come from the host's seats
-  const keep = settings.slots; settings.slots = m.slots.slice(); buildHud(); settings.slots = keep;
+  hudNames = m.names || ['', '', '', ''];
+  // the host's own seats show without a tag here; only this player's car says YOU
+  const keep = settings.slots; settings.slots = m.slots.map(t => (t === 'touch' || t === 'keys') ? 'keys' : t); buildHud(); settings.slots = keep;
   netClient.live = true;
 }
 const nq = new T.Quaternion(), nv = new T.Vector3();
@@ -7568,6 +7642,7 @@ function readClientInput() {
     fire = fire || pressed(p, 2) || pressed(p, 5); boost = boost || pressed(p, 3) || pressed(p, 4);
     break;
   }
+  if (IS_TOUCH) { if (touchInput.st) st = touchInput.st; if (touchInput.thr) thr = touchInput.thr; boost = boost || touchInput.boost; fire = fire || touchInput.fire; }
   clientInput.st = st; clientInput.thr = thr; clientInput.boost = boost; clientInput.fire = fire;
 }
 let padStartPrev = false;
@@ -7579,7 +7654,7 @@ function netClientFrame(rdt) {
   const p0 = getPad(0), sp = !!(p0 && pressed(p0, 9));
   if (sp && !padStartPrev) netSend({ t: state === 'matchEnd' ? 'start' : 'pause' });
   padStartPrev = sp;
-  if (now - nc.lastMsg > 6000) { leaveNet('Lost the connection to the host'); return; }
+  if (now - nc.lastMsg > 6000 && !document.hidden) { nc.lastMsg = now; try { nc.conn.close(); } catch (e) {} retryJoin(); }
   const m = nc.snap;
   if (m) {
     const k = 1 - Math.exp(-rdt * 18);
@@ -7622,11 +7697,13 @@ function netSend(m) { if (netClient) try { netClient.conn.send(m); } catch (e) {
 // ===== the Join dialog =====
 function openJoinDialog() {
   const d = document.getElementById('joinDlg'); d.style.display = 'flex';
-  const inp = document.getElementById('joinCode'); inp.value = ''; joinStatus(roomCode ? `This screen's own room is ${roomCode}` : '');
-  setTimeout(() => inp.focus(), 50);
+  const inp = document.getElementById('joinCode'); inp.value = ''; joinStatus('');
+  const nm = document.getElementById('joinName'); try { nm.value = localStorage.getItem('doozie-name') || ''; } catch (e) {}
+  setTimeout(() => (nm.value ? inp : nm).focus(), 50);
 }
 function closeJoinDialog() { const d = document.getElementById('joinDlg'); if (d) d.style.display = 'none'; }
 document.getElementById('joinGo').onclick = () => { audio(); joinGame(document.getElementById('joinCode').value); };
+document.getElementById('joinName').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') document.getElementById('joinCode').focus(); });
 document.getElementById('joinCode').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') joinGame(e.target.value); if (e.key === 'Escape') closeJoinDialog(); });
 document.getElementById('joinCancel').onclick = () => closeJoinDialog();
 document.getElementById('btnJoin').onclick = () => { audio(); openJoinDialog(); };

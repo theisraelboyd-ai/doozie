@@ -5,7 +5,9 @@ let toastT = 0;
 function toast(h) { const el = document.getElementById('toast'); el.innerHTML = h; el.style.opacity = 1; toastT = 1.6; }
 function flashMsg(t, dur) { toast(t); toastT = dur; }
 
+let hudNames = ['', '', '', ''];
 function buildHud() {
+  if (!netClient && typeof seatNames === 'function') hudNames = seatNames();
   const hud = document.getElementById('hud');
   hud.innerHTML = '';
   for (const c of activeCars()) {
@@ -13,7 +15,7 @@ function buildHud() {
     d.className = 'card'; d.id = 'card' + c.i;
     d.style.borderColor = c.color.css;
     if (settings.mode === 'teams') d.style.background = TEAMS[teamOf(c)].bg;
-    d.innerHTML = `<div class="nm" style="color:${c.color.css}">${c.color.name}${settings.slots[c.i] === 'pad' ? ' <small>PAD ' + (settings.padOf[c.i] + 1) + '</small>' : settings.slots[c.i] === 'phone' ? ' <small>PHONE</small>' : settings.slots[c.i] === 'touch' ? ' <small>YOU</small>' : settings.slots[c.i] === 'net' ? ' <small>' + (netClient && netClient.slot === c.i ? 'YOU' : 'NET') + '</small>' : c.human ? '' : ' <small>CPU</small>'}</div>
+    d.innerHTML = `<div class="nm" style="color:${c.color.css}">${c.color.name}${settings.slots[c.i] === 'pad' ? ' <small>PAD ' + (settings.padOf[c.i] + 1) + '</small>' : settings.slots[c.i] === 'phone' ? ' <small>PHONE</small>' : settings.slots[c.i] === 'touch' ? ' <small>YOU</small>' : settings.slots[c.i] === 'net' ? ' <small>' + (netClient && netClient.slot === c.i ? 'YOU' : (hudNames[c.i] || 'ONLINE').toUpperCase()) + '</small>' : c.human ? '' : ' <small>CPU</small>'}</div>
       <div class="pts"></div><div class="pips"></div><div class="md"></div><div class="bst"><i></i></div><div class="itm"></div><div class="out">OUT</div>`;
     hud.appendChild(d);
   }
@@ -63,13 +65,14 @@ const TRACK_BLURB = {
   haunted: 'Night · lanterns, willows, ghosts and screams',
   random: 'A different track every match',
 };
-const WHO = { keys: 'KEYBOARD', pad: 'CONTROLLER', phone: 'PHONE', touch: 'THIS SCREEN', net: 'LAPTOP', cpu: 'COMPUTER', off: '' };
+const WHO = { keys: 'KEYBOARD', pad: 'CONTROLLER', phone: 'PHONE', touch: 'THIS SCREEN', net: 'ONLINE', cpu: 'COMPUTER', off: '' };
 function buildMenu() {
   const nc = netClient, lob = nc && nc.lobby;
   const slots = lob ? lob.slots : settings.slots, carOf = lob ? lob.carOf : settings.carOf;
   const wrap = document.getElementById('slots'); wrap.innerHTML = '';
   COLORS.forEach((c, i) => {
     const s = slots[i], ct = CAR_TYPES[carOf[i]] || CAR_TYPES.classic, mine = nc && nc.slot === i;
+    const who = lob ? (lob.names && lob.names[i]) : (s === 'net' || s === 'phone') && phoneForSlot(i) && phoneForSlot(i).name;
     const d = document.createElement('button');
     d.className = 'slot ' + s + (mine ? ' me' : ''); d.style.setProperty('--c', c.css);
     if (s === 'off') d.innerHTML = `<div class="st-band">${c.name}</div><div class="st-add">${nc ? 'Empty' : '+ Add a car'}</div>`;
@@ -77,7 +80,7 @@ function buildMenu() {
       <div class="st-car">${ct.icon}</div>
       <div class="st-carname">${!nc || mine ? '<span class="car-prev">&#8249;</span>' : ''}${ct.name}${!nc || mine ? '<span class="car-next">&#8250;</span>' : ''}</div>
       <div class="st-blurb">${ct.blurb}</div>
-      <div class="st-who">${mine ? 'YOU' : WHO[s]}${s === 'pad' && !lob ? ' ' + (settings.padOf[i] + 1) : ''}</div>
+      <div class="st-who">${mine ? 'YOU' : who ? who.toUpperCase() : WHO[s]}${s === 'pad' && !lob ? ' ' + (settings.padOf[i] + 1) : ''}</div>
       <div class="st-keys">${lob ? '' : s === 'keys' ? KEYSETS[i].label : s === 'pad' ? 'B to leave' : s === 'phone' || s === 'net' ? 'click to remove' : s === 'touch' ? 'touch buttons' : s === 'cpu' ? 'click to change' : ''}</div>`;
     d.onclick = e => {
       audio(); tone(660, 0.05, 'square', 0.06);

@@ -26,15 +26,16 @@ scream = netWrap('scream', scream); wail = netWrap('wail', wail); owl = netWrap(
 showCheer = netWrap('showCheer', showCheer, a => [a[0]]);
 boostSound = netWrap('boostSound', boostSound, a => [a[0].i]);
 
+function seatNames() { return COLORS.map((_, i) => { const p = phoneForSlot(i); return (p && p.name) || ''; }); }
 function netSetupMsg() {
   return {
     t: 'setup', track: curTrack.id, mode: settings.mode, target: settings.target, weapons: settings.weapons,
-    slots: settings.slots, types: cars.map(c => c.type), round: roundNo,
+    slots: settings.slots, types: cars.map(c => c.type), round: roundNo, names: seatNames(),
   };
 }
 function netSendSetup(p) { const m = netSetupMsg(); if (p) phoneSend(p, m); else for (const q of netPlayers()) phoneSend(q, m); }
 function netLobbyMsg() {
-  return { t: 'lobby', slots: settings.slots, carOf: settings.carOf, track: settings.track, mode: settings.mode, room: roomCode };
+  return { t: 'lobby', slots: settings.slots, carOf: settings.carOf, track: settings.track, mode: settings.mode, room: roomCode, names: seatNames() };
 }
 function carSnap(c) {
   const g = c.mesh.group, ring = c.mesh.ring;
@@ -82,16 +83,33 @@ function joinGame(code) {
   if (code === roomCode) { joinStatus("That's this screen's own room"); return; }
   if (!peerHost || !peerHost.open) { joinStatus('Not online yet – check the internet connection'); return; }
   joinStatus('Connecting to room ' + code + '…');
+  let name = ''; try { name = (document.getElementById('joinName').value || localStorage.getItem('doozie-name') || '').trim().slice(0, 12); localStorage.setItem('doozie-name', name); } catch (e) {}
   let cid; try { cid = sessionStorage.getItem('doozie-net-cid'); } catch (e) {}
   if (!cid) { cid = 'net-' + Math.random().toString(36).slice(2, 10); try { sessionStorage.setItem('doozie-net-cid', cid); } catch (e) {} }
   const conn = peerHost.connect('doozie-' + code, { reliable: true, serialization: 'json' });
   const failT = setTimeout(() => { if (!netClient || netClient.conn !== conn || !netClient.ok) { joinStatus("Couldn't reach room " + code + '. Is the code right, and is that game open?'); try { conn.close(); } catch (e) {} } }, 10000);
-  netClient = { conn, code, slot: -1, live: false, snap: null, lobby: null, objs: new Map(), inT: 0, ok: false, cid, lastMsg: performance.now() };
-  conn.on('open', () => { conn.send({ t: 'join', role: 'player', net: true, cid }); });
+  netClient = { conn, code, slot: -1, live: false, snap: null, lobby: null, objs: new Map(), inT: 0, ok: false, cid, name, lastMsg: performance.now() };
+  conn.on('open', () => { conn.send({ t: 'join', role: 'player', net: true, cid, name, dev: IS_TOUCH ? 'phone' : 'laptop' }); });
   conn.on('data', m => { if (netClient && netClient.conn === conn) { netClient.ok = true; netClient.lastMsg = performance.now(); clearTimeout(failT); onHostMessage(m); } });
-  conn.on('close', () => { if (netClient && netClient.conn === conn) leaveNet('The host closed the game'); });
+  conn.on('close', () => { if (netClient && netClient.conn === conn) retryJoin(); });
   conn.on('error', () => {});
 }
+function retryJoin() {
+  const nc = netClient; if (!nc) return;
+  nc.retries = (nc.retries || 0) + 1;
+  if (nc.retries > 4) { leaveNet('Lost the connection to the host'); return; }
+  toast('Reconnecting…');
+  setTimeout(() => {
+    if (netClient !== nc || !peerHost) return;
+    const c2 = peerHost.connect('doozie-' + nc.code, { reliable: true, serialization: 'json' });
+    nc.conn = c2; nc.lastMsg = performance.now();
+    c2.on('open', () => { nc.retries = 0; c2.send({ t: 'join', role: 'player', net: true, cid: nc.cid, name: nc.name || '', dev: IS_TOUCH ? 'phone' : 'laptop' }); });
+    c2.on('data', m => { if (netClient === nc && nc.conn === c2) { nc.lastMsg = performance.now(); onHostMessage(m); } });
+    c2.on('close', () => { if (netClient === nc && nc.conn === c2) retryJoin(); });
+    c2.on('error', () => {});
+  }, 1500);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && netClient) { netClient.lastMsg = performance.now(); if (!netClient.conn.open) retryJoin(); } });
 function joinStatus(t) { const el = document.getElementById('joinStatus'); if (el) el.textContent = t; }
 function leaveNet(why) {
   const nc = netClient; if (!nc) return;
@@ -138,7 +156,9 @@ function applySetup(m) {
   document.getElementById('hud').style.display = 'flex';
   document.body.classList.add('playing');
   // the HUD tags come from the host's seats
-  const keep = settings.slots; settings.slots = m.slots.slice(); buildHud(); settings.slots = keep;
+  hudNames = m.names || ['', '', '', ''];
+  // the host's own seats show without a tag here; only this player's car says YOU
+  const keep = settings.slots; settings.slots = m.slots.map(t => (t === 'touch' || t === 'keys') ? 'keys' : t); buildHud(); settings.slots = keep;
   netClient.live = true;
 }
 const nq = new T.Quaternion(), nv = new T.Vector3();
@@ -214,6 +234,7 @@ function readClientInput() {
     fire = fire || pressed(p, 2) || pressed(p, 5); boost = boost || pressed(p, 3) || pressed(p, 4);
     break;
   }
+  if (IS_TOUCH) { if (touchInput.st) st = touchInput.st; if (touchInput.thr) thr = touchInput.thr; boost = boost || touchInput.boost; fire = fire || touchInput.fire; }
   clientInput.st = st; clientInput.thr = thr; clientInput.boost = boost; clientInput.fire = fire;
 }
 let padStartPrev = false;
@@ -225,7 +246,7 @@ function netClientFrame(rdt) {
   const p0 = getPad(0), sp = !!(p0 && pressed(p0, 9));
   if (sp && !padStartPrev) netSend({ t: state === 'matchEnd' ? 'start' : 'pause' });
   padStartPrev = sp;
-  if (now - nc.lastMsg > 6000) { leaveNet('Lost the connection to the host'); return; }
+  if (now - nc.lastMsg > 6000 && !document.hidden) { nc.lastMsg = now; try { nc.conn.close(); } catch (e) {} retryJoin(); }
   const m = nc.snap;
   if (m) {
     const k = 1 - Math.exp(-rdt * 18);
@@ -268,11 +289,13 @@ function netSend(m) { if (netClient) try { netClient.conn.send(m); } catch (e) {
 // ===== the Join dialog =====
 function openJoinDialog() {
   const d = document.getElementById('joinDlg'); d.style.display = 'flex';
-  const inp = document.getElementById('joinCode'); inp.value = ''; joinStatus(roomCode ? `This screen's own room is ${roomCode}` : '');
-  setTimeout(() => inp.focus(), 50);
+  const inp = document.getElementById('joinCode'); inp.value = ''; joinStatus('');
+  const nm = document.getElementById('joinName'); try { nm.value = localStorage.getItem('doozie-name') || ''; } catch (e) {}
+  setTimeout(() => (nm.value ? inp : nm).focus(), 50);
 }
 function closeJoinDialog() { const d = document.getElementById('joinDlg'); if (d) d.style.display = 'none'; }
 document.getElementById('joinGo').onclick = () => { audio(); joinGame(document.getElementById('joinCode').value); };
+document.getElementById('joinName').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') document.getElementById('joinCode').focus(); });
 document.getElementById('joinCode').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') joinGame(e.target.value); if (e.key === 'Escape') closeJoinDialog(); });
 document.getElementById('joinCancel').onclick = () => closeJoinDialog();
 document.getElementById('btnJoin').onclick = () => { audio(); openJoinDialog(); };

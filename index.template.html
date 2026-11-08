@@ -94,6 +94,7 @@
   #joinDlg { position: fixed; inset: 0; z-index: 45; display: none; align-items: center; justify-content: center; background: rgba(5,10,18,.7); }
   .jd-box { width: 380px; max-width: 92vw; background: #13233a; border: 2px solid rgba(255,255,255,.15); border-radius: 18px; padding: 22px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
   .jd-title { font-size: 26px; font-weight: 900; } .jd-sub { font-size: 14px; opacity: .75; margin: 4px 0 14px; }
+  #joinName { display: block; width: 220px; margin: 0 auto 10px; font: inherit; font-size: 18px; font-weight: 800; text-align: center; padding: 8px; border-radius: 10px; border: 2px solid rgba(255,255,255,.25); background: rgba(0,0,0,.3); color: #fff; outline: none; user-select: text; }
   #joinCode { width: 220px; font: inherit; font-size: 40px; font-weight: 900; letter-spacing: 12px; text-align: center; text-transform: uppercase; padding: 8px; border-radius: 12px; border: 2px solid rgba(255,202,40,.6); background: rgba(0,0,0,.3); color: #ffca28; outline: none; user-select: text; }
   .jd-btns { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
   .jd-btns button { font: inherit; font-size: 18px; font-weight: 900; padding: 10px 26px; border-radius: 12px; border: 0; cursor: pointer; background: #ffca28; color: #222; }
@@ -102,6 +103,8 @@
   /* ---- phone join panel ---- */
   #phoneJoin { display: flex; gap: 10px; align-items: center; background: rgba(10,20,35,.75); border: 2px solid rgba(255,255,255,.25); border-radius: 12px; padding: 8px 12px 8px 8px; font-size: 13px; line-height: 1.35; }
   #phoneJoin:empty { display: none; }
+  .pj-share { margin-top: 4px; font: inherit; font-size: 12px; font-weight: 900; padding: 5px 10px; border-radius: 8px; border: 0; background: #ffca28; color: #222; cursor: pointer; }
+  body.netclient #btnTouch { display: none !important; }
   .pj-qr { width: 104px; height: 104px; background: #fff; border-radius: 6px; padding: 2px; }
   .pj-qr svg { width: 100%; height: 100%; display: block; }
   .pj-code { font-size: 20px; font-weight: 900; letter-spacing: 3px; color: #ffca28; }
@@ -126,16 +129,33 @@
   .touchonly { display: none; }
   body.is-touch .touchonly { display: inline-block; }
   #btnTouch { margin-top: 10px; font: inherit; font-size: 18px; font-weight: 800; padding: 10px 22px; border-radius: 12px; border: 2px solid #ffca28; background: rgba(255,202,40,.12); color: #ffca28; }
-  #rotate { display: none; }
-  @media (orientation: portrait) { body.touchplay #rotate, body.controller.pc-is-player #pc-rotate { display: flex; } }
+  #rotate, #pc-rotate { display: none !important; }
+  /* portrait: the game fills the top of the screen, a solid control panel sits underneath */
+  @media (orientation: portrait) {
+    body.touchplay #touchpad { height: 38vh; background: linear-gradient(180deg, #0f1d30, #08111d); border-top: 2px solid rgba(255,255,255,.12); }
+    body.touchplay .tp-left { flex: 1; align-items: center; justify-content: center; padding: 10px 6px calc(10px + env(safe-area-inset-bottom)); gap: 10px; }
+    body.touchplay .tp-right { flex: 1.2; align-items: center; justify-content: center; padding: 10px 6px calc(10px + env(safe-area-inset-bottom)); gap: 10px; }
+    body.touchplay .tp-steer { width: 20vw; height: 22vh; font-size: 30px; }
+    body.touchplay .tp-gas { width: 25vw; height: 17vh; font-size: 20px; }
+    body.touchplay .tp-brake { width: 18vw; height: 17vh; font-size: 13px; }
+    body.touchplay .tp-boost, body.touchplay .tp-fire { width: 21.5vw; height: 7.5vh; font-size: 13px; }
+    body.touchplay #tpPause { top: auto; bottom: calc(38vh + 10px); left: 10px; width: 40px; height: 40px; }
+    body.playing.touchplay #toast { top: auto; bottom: calc(38vh + 12px); font-size: 14px; white-space: normal; max-width: 86vw; text-align: center; }
+    body.touchplay #big { top: 18%; }
+    #pc-pad .tp-left, #pc-pad .tp-right { flex-direction: row; flex-wrap: wrap; align-content: center; justify-content: center; padding: 10px 6px; }
+    #pc-pad .tp-right { flex-direction: column; }
+    #pc-pad .tp-steer { width: 21vw; height: 34vh; font-size: 40px; }
+    #pc-pad .tp-gas { width: 26vw; height: 26vh; font-size: 22px; }
+    #pc-pad .tp-brake { width: 18vw; height: 26vh; font-size: 14px; }
+    #pc-pad .tp-boost, #pc-pad .tp-fire { width: 22vw; height: 10vh; font-size: 15px; }
+  }
   #rotate, #pc-rotate { position: fixed; inset: 0; z-index: 50; align-items: center; justify-content: center; background: rgba(13,27,42,.95); font-size: 26px; font-weight: 900; color: #ffca28; text-align: center; padding: 20px; }
   /* ---- small screens ---- */
   @media (max-height: 520px), (max-width: 700px) {
     h1 { font-size: 46px; } .tag { margin: 2px 0 8px; font-size: 14px; }
     #menu { padding: 8px 10px 12px; } .lb-sub { font-size: 12px; margin: 4px 0 0 12px; } #slots { margin-top: 8px; gap: 8px; } .slot { width: 150px; padding-bottom: 6px; } .slot .st-band { font-size: 13px; padding: 4px 0; } .slot .st-car { font-size: 30px; margin: 6px 0 2px; } .slot .st-carname { font-size: 13px; } .slot .st-who { margin-top: 6px; font-size: 10px; } .slot .st-keys, .slot .st-blurb { display: none; } .slot.off .st-add { margin: 18px 0; } .lb-picks { margin-top: 8px; gap: 8px; } .pick { width: 300px; } .pk-val { font-size: 17px; } .pk-sub { display: none; } .lb-hint { display: none; } .lb-bar { position: static; margin-top: 10px; flex-wrap: wrap; justify-content: center; } .lb-btn, #btnTouch { padding: 6px 10px; font-size: 12px; margin-top: 0; }
     #go { font-size: 20px; padding: 8px 36px; margin-top: 10px; }
-    body.is-touch #phoneJoin { display: none; }
-    #phoneJoin { top: 6px; right: 6px; padding: 4px; } .pj-qr { width: 78px; height: 78px; } .pj-txt { display: none; }
+    .lb-top { flex-direction: column; align-items: center; gap: 8px; } .lb-logo { padding: 0; text-align: center; } #phoneJoin { padding: 5px 8px; font-size: 11px; } .pj-qr { width: 70px; height: 70px; } body.is-touch .pj-qr, .pj-long { display: none; } .pj-code { font-size: 16px; }
     #hud { gap: 5px; top: 6px; } .card { min-width: 74px; padding: 3px 6px 5px; border-width: 2px; } .card .nm { font-size: 11px; } .card .pts { font-size: 18px; } .card .pips span { width: 6px; height: 6px; } .card .lbl { display: none; }
     #bigT { font-size: 40px; } #bigS { font-size: 15px; }
   }
@@ -237,6 +257,7 @@
   <div class="jd-box">
     <div class="jd-title">Join a game</div>
     <div class="jd-sub">Type the room code shown on the other screen</div>
+    <input id="joinName" maxlength="12" autocomplete="off" spellcheck="false" placeholder="Your name">
     <input id="joinCode" maxlength="4" autocomplete="off" spellcheck="false" placeholder="ABCD">
     <div class="jd-btns"><button id="joinGo">Join</button><button id="joinCancel">Cancel</button></div>
     <div id="joinStatus"></div>
