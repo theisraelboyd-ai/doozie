@@ -18,6 +18,8 @@
   .card .pips span { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.18); }
   .card .bst { height: 5px; background: rgba(255,255,255,.15); border-radius: 3px; overflow: hidden; }
   .card .bst i { display: block; height: 100%; background: #ff9800; width: 100%; }
+  .card .itm { position: absolute; right: -14px; top: -14px; min-width: 36px; height: 36px; border-radius: 50%; background: rgba(10,20,35,.9); border: 2px solid rgba(255,255,255,.5); font-size: 20px; line-height: 32px; text-align: center; }
+  .card .itm:empty { display: none; } .card .itm small { font-size: 10px; }
   .card .out { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.6); border-radius: 9px; font-weight: 900; font-size: 22px; letter-spacing: 3px; color: #ff5252; }
   .card.isout .out { display: flex; }
   .card .lbl { font-size: 11px; opacity: .7; margin: -2px 0 5px; letter-spacing: 1px; }
@@ -72,7 +74,8 @@
   .tp-steer { width: min(22vw, 140px); height: min(22vw, 140px); font-size: 40px; }
   .tp-gas { width: min(24vw, 150px); height: min(24vw, 130px); background: rgba(46,125,50,.6); }
   .tp-brake { width: min(18vw, 110px); height: min(24vw, 130px); background: rgba(198,40,40,.55); font-size: 18px; }
-  .tp-boost { width: min(30vw, 270px); height: 54px; background: rgba(239,108,0,.6); font-size: 18px; }
+  .tp-boost { width: min(14vw, 128px); height: 54px; background: rgba(239,108,0,.6); font-size: 16px; }
+  .tp-fire { width: min(15vw, 140px); height: 54px; background: rgba(171,71,188,.65); font-size: 18px; }
   .touchonly { display: none; }
   body.is-touch .touchonly { display: inline-block; }
   #btnTouch { margin-top: 10px; font: inherit; font-size: 18px; font-weight: 800; padding: 10px 22px; border-radius: 12px; border: 2px solid #ffca28; background: rgba(255,202,40,.12); color: #ffca28; }
@@ -103,7 +106,9 @@
   #pc-pad .tp-steer { width: min(21vw, 190px); height: min(60vh, 260px); font-size: 56px; }
   #pc-pad .tp-gas { width: min(23vw, 190px); height: min(42vh, 200px); font-size: 30px; }
   #pc-pad .tp-brake { width: min(14vw, 120px); height: min(42vh, 200px); }
-  #pc-pad .tp-boost { width: min(40vw, 330px); height: min(16vh, 70px); }
+  #pc-pad .tp-boost { width: min(17vw, 150px); height: min(18vh, 76px); }
+  #pc-pad .tp-fire { width: min(20vw, 175px); height: min(18vh, 76px); font-size: 24px; }
+  #pc-item { font-size: 28px; min-width: 10px; }
   #pc-pad .tp-right { justify-content: center; }
   #pc-rotate { display: none; }
 
@@ -146,6 +151,7 @@
   <div id="slots"></div>
   <div class="opts">
     <button class="opt" id="btnTrack">Track<b id="optTrack"></b></button>
+    <button class="opt" id="btnWeapons">Weapons<b id="optWeapons"></b></button>
     <button class="opt" id="btnTarget">Points to win<b id="optTarget"></b></button>
     <button class="opt" id="btnSkill">Computer skill<b id="optSkill"></b></button>
     <button class="opt" id="btnCam">Camera<b id="optCam"></b></button>
@@ -159,7 +165,7 @@
   <div class="rules"><b style="color:#ffca28">Controllers:</b> press A to join · B to leave · START to begin.<br>Click a car to switch it between Keyboard, Computer and Empty.<br>
     Stay on screen! Fall behind the camera or get shunted off the edge and you're out.
     Last car left wins the round (+2), second gets +1, first out loses 1. First to the target wins.<br>
-    Each player has a boost. Esc pauses. V switches Fancy / Simple graphics, C changes the camera.<br>
+    Drive through <b>?</b> crates to grab a weapon, press FIRE to use it. Each player has a boost. Esc pauses. V switches Fancy / Simple graphics, C changes the camera.<br>
     <b style="color:#ce93d8">Mouse rockets:</b> anyone can click on the track to fire a rocket. Click near a car and it locks on.</div>
 </div>
 <div id="pause"><h1 style="font-size:72px">PAUSED</h1><div class="tag">Esc or START to carry on · M or B for menu</div><div class="bigbtns"><button data-act="resume">Resume</button><button data-act="menu">Menu</button></div></div>

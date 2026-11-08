@@ -6,10 +6,10 @@ const COLORS = [
   { name: 'GOLD',  hex: 0xfbc02d, css: '#fbc02d' },
 ];
 const KEYSETS = [
-  { up: 'KeyW', down: 'KeyS', left: 'KeyA', right: 'KeyD', boost: 'KeyQ', label: 'W A S D · boost Q' },
-  { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', boost: 'ShiftRight', label: 'Arrows · boost Right Shift' },
-  { up: 'KeyI', down: 'KeyK', left: 'KeyJ', right: 'KeyL', boost: 'KeyU', label: 'I J K L · boost U' },
-  { up: 'KeyT', down: 'KeyG', left: 'KeyF', right: 'KeyH', boost: 'KeyR', label: 'T F G H · boost R' },
+  { up: 'KeyW', down: 'KeyS', left: 'KeyA', right: 'KeyD', boost: 'KeyQ', fire: 'KeyE', label: 'W A S D · boost Q · fire E' },
+  { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', boost: 'ShiftRight', fire: 'Slash', label: 'Arrows · boost R-Shift · fire /' },
+  { up: 'KeyI', down: 'KeyK', left: 'KeyJ', right: 'KeyL', boost: 'KeyU', fire: 'KeyO', label: 'I J K L · boost U · fire O' },
+  { up: 'KeyT', down: 'KeyG', left: 'KeyF', right: 'KeyH', boost: 'KeyR', fire: 'KeyY', label: 'T F G H · boost R · fire Y' },
 ];
 const settings = {
   slots: ['keys', 'keys', 'cpu', 'cpu'], // keys | pad | cpu | off
@@ -21,6 +21,7 @@ const settings = {
   gunner: true, // mouse rocket launcher player
   gfx: 'fancy', // fancy | simple
   cam: 'cinematic', // cinematic | classic | calm
+  weapons: true, // item crates and weapons
   track: 'harbour', // a TRACKS id, or 'random'
 };
 const SKILL_NAMES = ['Easy', 'Normal', 'Hard'];

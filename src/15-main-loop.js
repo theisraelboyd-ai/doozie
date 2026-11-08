@@ -37,6 +37,7 @@ function frame(now) {
       if (state === 'race') inp = c.human ? humanInput(c) : aiInput(c, dt);
       else if (racing) inp = { thr: 0, st: 0, boost: false };
       driveCar(c, inp, dt);
+      if (state === 'race') { if (inp.fire && !c.firePrev) useItem(c); c.firePrev = !!inp.fire; }
       if (c.y > 0 || c.vy > 0) { c.vy -= 30 * dt; c.y += c.vy * dt; if (c.y <= 0) { c.y = 0; c.vy = 0; if (c.alive) noise(0.08, 0.15, 400); } }
       const ni = nearestIdx(c, false);
       let d = ni - c.idx; if (d < -N / 2) d += N; if (d > N / 2) d -= N;
@@ -45,7 +46,7 @@ function frame(now) {
     }
   }
   if (state === 'race') collide();
-  if (state === 'race' || state === 'roundEnd') updateCreature(dt);
+  if (state === 'race' || state === 'roundEnd') { updateCreature(dt); updateWeapons(dt, wt); }
 
   // knock-out by camera
   updateCamera(rdt);

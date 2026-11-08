@@ -2,7 +2,7 @@
 const phones = new Map();   // client id -> { cid, conn, role, slot, inp, lastIn, goneAt, viewerNo, cd }
 const phoneWaiting = [];     // players who joined mid-match
 let roomCode = '', peerHost = null, phoneStateT = 0, viewerCount = 0;
-const touchInput = { st: 0, thr: 0, boost: false };
+const touchInput = { st: 0, thr: 0, boost: false, fire: false };
 const CHEERS = ['👏', '😂', '😱', '🔥', '👻', '🦶'];
 const POWER_CD = { rocket: 12, boost: 10, bigfoot: 20, ghost: 20 };
 
@@ -48,7 +48,7 @@ function onPhoneMessage(p, m) {
     if (state === 'menu' || state === 'matchEnd') seatPhone(p);
     else { if (!phoneWaiting.includes(p)) phoneWaiting.push(p); phoneSend(p, { t: 'wait' }); }
   } else if (m.t === 'in') {
-    p.inp.st = Math.max(-1, Math.min(1, Number(m.st) || 0)); p.inp.thr = Math.max(-1, Math.min(1, Number(m.thr) || 0)); p.inp.boost = !!m.boost;
+    p.inp.st = Math.max(-1, Math.min(1, Number(m.st) || 0)); p.inp.thr = Math.max(-1, Math.min(1, Number(m.thr) || 0)); p.inp.boost = !!m.boost; p.inp.fire = !!m.fire;
     p.lastIn = performance.now();
   } else if (m.t === 'start') { if (state === 'menu' || state === 'matchEnd') startMatch(); }
   else if (m.t === 'pause') { if (p.role === 'player') togglePause(); }
@@ -141,7 +141,7 @@ function toggleTouchPlayer() {
   }
   buildMenu();
 }
-makeTouchPad(document.getElementById('touchpad'), o => { touchInput.st = o.st; touchInput.thr = o.thr; touchInput.boost = o.boost; });
+makeTouchPad(document.getElementById('touchpad'), o => { touchInput.st = o.st; touchInput.thr = o.thr; touchInput.boost = o.boost; touchInput.fire = o.fire; });
 document.getElementById('btnTouch').onclick = () => { audio(); toggleTouchPlayer(); };
 document.getElementById('tpPause').onclick = () => togglePause();
 document.addEventListener('click', e => {

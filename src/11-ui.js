@@ -13,7 +13,7 @@ function buildHud() {
     d.className = 'card'; d.id = 'card' + c.i;
     d.style.borderColor = c.color.css;
     d.innerHTML = `<div class="nm" style="color:${c.color.css}">${c.color.name}${settings.slots[c.i] === 'pad' ? ' <small>PAD ' + (settings.padOf[c.i] + 1) + '</small>' : settings.slots[c.i] === 'phone' ? ' <small>PHONE</small>' : settings.slots[c.i] === 'touch' ? ' <small>YOU</small>' : c.human ? '' : ' <small>CPU</small>'}</div>
-      <div class="pts"></div><div class="pips"></div><div class="bst"><i></i></div><div class="out">OUT</div>`;
+      <div class="pts"></div><div class="pips"></div><div class="bst"><i></i></div><div class="itm"></div><div class="out">OUT</div>`;
     hud.appendChild(d);
   }
   if (settings.gunner) {
@@ -35,6 +35,8 @@ function updateHud(force) {
     else if (d.dataset.p !== String(c.points)) d.querySelector('.pips').innerHTML = pips;
     d.dataset.p = c.points;
     d.querySelector('.bst i').style.width = `${Math.round((1 - Math.max(0, c.boostCd) / 3) * 100)}%`;
+    const it = c.item ? ITEMS[c.item].icon + (c.ammo > 1 ? '<small>×' + c.ammo + '</small>' : '') : (c.shield > 0 ? '🛡️' : '');
+    if (d.dataset.it !== it) { d.dataset.it = it; d.querySelector('.itm').innerHTML = it; }
     const out = (state === 'race' || state === 'roundEnd') && !c.alive && c !== lastWinner;
     d.classList.toggle('isout', out && state === 'race');
     d.classList.toggle('warn', state === 'race' && c.alive && c.warn > 0.05);
@@ -70,6 +72,7 @@ function buildMenu() {
   document.getElementById('optGfx').textContent = settings.gfx === 'fancy' ? 'Fancy' : 'Simple';
   document.getElementById('optAuto').textContent = settings.autoGas ? 'On' : 'Off';
   document.getElementById('optCam').textContent = CAM_NAMES[settings.cam];
+  document.getElementById('optWeapons').textContent = settings.weapons ? 'On' : 'Off';
 }
 document.getElementById('btnTarget').onclick = () => { const o = [3, 5, 8, 10]; settings.target = o[(o.indexOf(settings.target) + 1) % o.length]; buildMenu(); };
 document.getElementById('btnSkill').onclick = () => { settings.skill = (settings.skill + 1) % 3; buildMenu(); };
@@ -82,6 +85,7 @@ function cycleTrack() {
   if (settings.track !== 'random') buildTrack(settings.track);
   buildMenu();
 }
+document.getElementById('btnWeapons').onclick = () => { settings.weapons = !settings.weapons; buildMenu(); };
 document.getElementById('btnTrack').onclick = () => { audio(); cycleTrack(); };
 function cycleCam() { settings.cam = CAM_STYLES[(CAM_STYLES.indexOf(settings.cam) + 1) % CAM_STYLES.length]; buildMenu(); }
 document.getElementById('btnCam').onclick = cycleCam;

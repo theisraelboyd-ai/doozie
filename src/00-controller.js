@@ -19,18 +19,18 @@ function makeTouchPad(root, onChange, opts = {}) {
       <button class="tp-btn tp-steer" data-k="right">▶</button>
     </div>
     <div class="tp-right">
-      <button class="tp-btn tp-boost" data-k="boost">BOOST</button>
+      <div class="tp-row tp-top"><button class="tp-btn tp-fire" data-k="fire">FIRE</button><button class="tp-btn tp-boost" data-k="boost">BOOST</button></div>
       <div class="tp-row">
         <button class="tp-btn tp-brake" data-k="brake">BRAKE</button>
         <button class="tp-btn tp-gas" data-k="gas">GO</button>
       </div>
     </div>`;
-  const held = { left: new Set(), right: new Set(), gas: new Set(), brake: new Set(), boost: new Set() };
-  const out = { st: 0, thr: 0, boost: false };
+  const held = { left: new Set(), right: new Set(), gas: new Set(), brake: new Set(), boost: new Set(), fire: new Set() };
+  const out = { st: 0, thr: 0, boost: false, fire: false };
   const emit = () => {
     out.st = (held.right.size ? 1 : 0) - (held.left.size ? 1 : 0);
     out.thr = (held.gas.size ? 1 : 0) - (held.brake.size ? 1 : 0);
-    out.boost = held.boost.size > 0;
+    out.boost = held.boost.size > 0; out.fire = held.fire.size > 0;
     root.querySelectorAll('.tp-btn').forEach(b => b.classList.toggle('on', held[b.dataset.k].size > 0));
     onChange(out);
   };
@@ -49,7 +49,7 @@ function runController() {
   document.title = 'DOOZIE! controller';
   document.body.className = 'controller';
   document.body.innerHTML = `
-    <div id="pc-top"><span id="pc-dot"></span><span id="pc-who">DOOZIE!</span><span id="pc-status">Connecting to room ${JOIN_CODE}…</span>
+    <div id="pc-top"><span id="pc-dot"></span><span id="pc-who">DOOZIE!</span><span id="pc-item"></span><span id="pc-status">Connecting to room ${JOIN_CODE}…</span>
       <button id="pc-start" class="pc-small">START</button><button id="pc-pause" class="pc-small">II</button></div>
     <div id="pc-choose" class="pc-panel">
       <div class="pc-q">Room <b>${JOIN_CODE}</b> – how do you want to join?</div>
@@ -94,7 +94,7 @@ function runController() {
   }
   const pad = makeTouchPad($('pc-pad'), () => sendInput(), { tap: grabScreen });
   function send(m) { try { if (conn && conn.open) { conn.send(m); return true; } } catch (e) {} return false; }
-  function sendInput() { if (role === 'player') send({ t: 'in', st: pad.st, thr: pad.thr, boost: pad.boost }); }
+  function sendInput() { if (role === 'player') send({ t: 'in', st: pad.st, thr: pad.thr, boost: pad.boost, fire: pad.fire }); }
   function sendJoin() { if (role) send({ t: 'join', role, cid }); }
   setInterval(sendInput, 100); // heartbeat so a lost packet never leaves a button stuck
 
@@ -126,6 +126,7 @@ function runController() {
     else if (m.t === 'cool') {
       cool[m.k] = Date.now() + m.s * 1000;
     } else if (m.t === 'msg') status(m.text);
+    else if (m.t === 'item') $('pc-item').textContent = m.icon ? m.icon + (m.ammo > 1 ? '×' + m.ammo : '') : '';
     else if (m.t === 'kicked') { role = null; hello = false; show('choose'); status('You were taken out of the car – choose again'); }
   }
   // power buttons count down while cooling

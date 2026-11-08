@@ -18,6 +18,8 @@
   .card .pips span { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.18); }
   .card .bst { height: 5px; background: rgba(255,255,255,.15); border-radius: 3px; overflow: hidden; }
   .card .bst i { display: block; height: 100%; background: #ff9800; width: 100%; }
+  .card .itm { position: absolute; right: -14px; top: -14px; min-width: 36px; height: 36px; border-radius: 50%; background: rgba(10,20,35,.9); border: 2px solid rgba(255,255,255,.5); font-size: 20px; line-height: 32px; text-align: center; }
+  .card .itm:empty { display: none; } .card .itm small { font-size: 10px; }
   .card .out { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.6); border-radius: 9px; font-weight: 900; font-size: 22px; letter-spacing: 3px; color: #ff5252; }
   .card.isout .out { display: flex; }
   .card .lbl { font-size: 11px; opacity: .7; margin: -2px 0 5px; letter-spacing: 1px; }
@@ -72,7 +74,8 @@
   .tp-steer { width: min(22vw, 140px); height: min(22vw, 140px); font-size: 40px; }
   .tp-gas { width: min(24vw, 150px); height: min(24vw, 130px); background: rgba(46,125,50,.6); }
   .tp-brake { width: min(18vw, 110px); height: min(24vw, 130px); background: rgba(198,40,40,.55); font-size: 18px; }
-  .tp-boost { width: min(30vw, 270px); height: 54px; background: rgba(239,108,0,.6); font-size: 18px; }
+  .tp-boost { width: min(14vw, 128px); height: 54px; background: rgba(239,108,0,.6); font-size: 16px; }
+  .tp-fire { width: min(15vw, 140px); height: 54px; background: rgba(171,71,188,.65); font-size: 18px; }
   .touchonly { display: none; }
   body.is-touch .touchonly { display: inline-block; }
   #btnTouch { margin-top: 10px; font: inherit; font-size: 18px; font-weight: 800; padding: 10px 22px; border-radius: 12px; border: 2px solid #ffca28; background: rgba(255,202,40,.12); color: #ffca28; }
@@ -103,7 +106,9 @@
   #pc-pad .tp-steer { width: min(21vw, 190px); height: min(60vh, 260px); font-size: 56px; }
   #pc-pad .tp-gas { width: min(23vw, 190px); height: min(42vh, 200px); font-size: 30px; }
   #pc-pad .tp-brake { width: min(14vw, 120px); height: min(42vh, 200px); }
-  #pc-pad .tp-boost { width: min(40vw, 330px); height: min(16vh, 70px); }
+  #pc-pad .tp-boost { width: min(17vw, 150px); height: min(18vh, 76px); }
+  #pc-pad .tp-fire { width: min(20vw, 175px); height: min(18vh, 76px); font-size: 24px; }
+  #pc-item { font-size: 28px; min-width: 10px; }
   #pc-pad .tp-right { justify-content: center; }
   #pc-rotate { display: none; }
 
@@ -146,6 +151,7 @@
   <div id="slots"></div>
   <div class="opts">
     <button class="opt" id="btnTrack">Track<b id="optTrack"></b></button>
+    <button class="opt" id="btnWeapons">Weapons<b id="optWeapons"></b></button>
     <button class="opt" id="btnTarget">Points to win<b id="optTarget"></b></button>
     <button class="opt" id="btnSkill">Computer skill<b id="optSkill"></b></button>
     <button class="opt" id="btnCam">Camera<b id="optCam"></b></button>
@@ -159,7 +165,7 @@
   <div class="rules"><b style="color:#ffca28">Controllers:</b> press A to join · B to leave · START to begin.<br>Click a car to switch it between Keyboard, Computer and Empty.<br>
     Stay on screen! Fall behind the camera or get shunted off the edge and you're out.
     Last car left wins the round (+2), second gets +1, first out loses 1. First to the target wins.<br>
-    Each player has a boost. Esc pauses. V switches Fancy / Simple graphics, C changes the camera.<br>
+    Drive through <b>?</b> crates to grab a weapon, press FIRE to use it. Each player has a boost. Esc pauses. V switches Fancy / Simple graphics, C changes the camera.<br>
     <b style="color:#ce93d8">Mouse rockets:</b> anyone can click on the track to fire a rocket. Click near a car and it locks on.</div>
 </div>
 <div id="pause"><h1 style="font-size:72px">PAUSED</h1><div class="tag">Esc or START to carry on · M or B for menu</div><div class="bigbtns"><button data-act="resume">Resume</button><button data-act="menu">Menu</button></div></div>
@@ -4162,18 +4168,18 @@ function makeTouchPad(root, onChange, opts = {}) {
       <button class="tp-btn tp-steer" data-k="right">▶</button>
     </div>
     <div class="tp-right">
-      <button class="tp-btn tp-boost" data-k="boost">BOOST</button>
+      <div class="tp-row tp-top"><button class="tp-btn tp-fire" data-k="fire">FIRE</button><button class="tp-btn tp-boost" data-k="boost">BOOST</button></div>
       <div class="tp-row">
         <button class="tp-btn tp-brake" data-k="brake">BRAKE</button>
         <button class="tp-btn tp-gas" data-k="gas">GO</button>
       </div>
     </div>`;
-  const held = { left: new Set(), right: new Set(), gas: new Set(), brake: new Set(), boost: new Set() };
-  const out = { st: 0, thr: 0, boost: false };
+  const held = { left: new Set(), right: new Set(), gas: new Set(), brake: new Set(), boost: new Set(), fire: new Set() };
+  const out = { st: 0, thr: 0, boost: false, fire: false };
   const emit = () => {
     out.st = (held.right.size ? 1 : 0) - (held.left.size ? 1 : 0);
     out.thr = (held.gas.size ? 1 : 0) - (held.brake.size ? 1 : 0);
-    out.boost = held.boost.size > 0;
+    out.boost = held.boost.size > 0; out.fire = held.fire.size > 0;
     root.querySelectorAll('.tp-btn').forEach(b => b.classList.toggle('on', held[b.dataset.k].size > 0));
     onChange(out);
   };
@@ -4192,7 +4198,7 @@ function runController() {
   document.title = 'DOOZIE! controller';
   document.body.className = 'controller';
   document.body.innerHTML = `
-    <div id="pc-top"><span id="pc-dot"></span><span id="pc-who">DOOZIE!</span><span id="pc-status">Connecting to room ${JOIN_CODE}…</span>
+    <div id="pc-top"><span id="pc-dot"></span><span id="pc-who">DOOZIE!</span><span id="pc-item"></span><span id="pc-status">Connecting to room ${JOIN_CODE}…</span>
       <button id="pc-start" class="pc-small">START</button><button id="pc-pause" class="pc-small">II</button></div>
     <div id="pc-choose" class="pc-panel">
       <div class="pc-q">Room <b>${JOIN_CODE}</b> – how do you want to join?</div>
@@ -4237,7 +4243,7 @@ function runController() {
   }
   const pad = makeTouchPad($('pc-pad'), () => sendInput(), { tap: grabScreen });
   function send(m) { try { if (conn && conn.open) { conn.send(m); return true; } } catch (e) {} return false; }
-  function sendInput() { if (role === 'player') send({ t: 'in', st: pad.st, thr: pad.thr, boost: pad.boost }); }
+  function sendInput() { if (role === 'player') send({ t: 'in', st: pad.st, thr: pad.thr, boost: pad.boost, fire: pad.fire }); }
   function sendJoin() { if (role) send({ t: 'join', role, cid }); }
   setInterval(sendInput, 100); // heartbeat so a lost packet never leaves a button stuck
 
@@ -4269,6 +4275,7 @@ function runController() {
     else if (m.t === 'cool') {
       cool[m.k] = Date.now() + m.s * 1000;
     } else if (m.t === 'msg') status(m.text);
+    else if (m.t === 'item') $('pc-item').textContent = m.icon ? m.icon + (m.ammo > 1 ? '×' + m.ammo : '') : '';
     else if (m.t === 'kicked') { role = null; hello = false; show('choose'); status('You were taken out of the car – choose again'); }
   }
   // power buttons count down while cooling
@@ -4320,10 +4327,10 @@ const COLORS = [
   { name: 'GOLD',  hex: 0xfbc02d, css: '#fbc02d' },
 ];
 const KEYSETS = [
-  { up: 'KeyW', down: 'KeyS', left: 'KeyA', right: 'KeyD', boost: 'KeyQ', label: 'W A S D · boost Q' },
-  { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', boost: 'ShiftRight', label: 'Arrows · boost Right Shift' },
-  { up: 'KeyI', down: 'KeyK', left: 'KeyJ', right: 'KeyL', boost: 'KeyU', label: 'I J K L · boost U' },
-  { up: 'KeyT', down: 'KeyG', left: 'KeyF', right: 'KeyH', boost: 'KeyR', label: 'T F G H · boost R' },
+  { up: 'KeyW', down: 'KeyS', left: 'KeyA', right: 'KeyD', boost: 'KeyQ', fire: 'KeyE', label: 'W A S D · boost Q · fire E' },
+  { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', boost: 'ShiftRight', fire: 'Slash', label: 'Arrows · boost R-Shift · fire /' },
+  { up: 'KeyI', down: 'KeyK', left: 'KeyJ', right: 'KeyL', boost: 'KeyU', fire: 'KeyO', label: 'I J K L · boost U · fire O' },
+  { up: 'KeyT', down: 'KeyG', left: 'KeyF', right: 'KeyH', boost: 'KeyR', fire: 'KeyY', label: 'T F G H · boost R · fire Y' },
 ];
 const settings = {
   slots: ['keys', 'keys', 'cpu', 'cpu'], // keys | pad | cpu | off
@@ -4335,6 +4342,7 @@ const settings = {
   gunner: true, // mouse rocket launcher player
   gfx: 'fancy', // fancy | simple
   cam: 'cinematic', // cinematic | classic | calm
+  weapons: true, // item crates and weapons
   track: 'harbour', // a TRACKS id, or 'random'
 };
 const SKILL_NAMES = ['Easy', 'Normal', 'Hard'];
@@ -4785,7 +4793,7 @@ window.addEventListener('gamepadconnected', e => { toast(`Controller ${e.gamepad
 window.addEventListener('gamepaddisconnected', e => { const s = padSlot(e.gamepad.index); if (s >= 0) toast(`<b style="color:${COLORS[s].css}">${COLORS[s].name}</b>'s controller disconnected`); });
 
 function humanInput(car) {
-  let thr = 0, st = 0, boost = false;
+  let thr = 0, st = 0, boost = false, fire = false;
   if (settings.slots[car.i] === 'pad') {
     const p = getPad(settings.padOf[car.i]);
     if (p) {
@@ -4795,23 +4803,24 @@ function humanInput(car) {
       let gas = Math.max(btn(p, 7), pressed(p, 0) ? 1 : 0), brk = Math.max(btn(p, 6), pressed(p, 1) ? 1 : 0);
       if (p.mapping !== 'standard') { const ay = p.axes[1] || 0; if (ay < -0.5) gas = Math.max(gas, 1); if (ay > 0.5) brk = Math.max(brk, 1); }
       thr = gas - brk;
-      boost = pressed(p, 2) || pressed(p, 3) || pressed(p, 5) || pressed(p, 4);
+      fire = pressed(p, 2) || pressed(p, 5);   // X or RB
+      boost = pressed(p, 3) || pressed(p, 4);  // Y or LB
     }
   } else if (settings.slots[car.i] === 'phone') {
     const p = phoneForSlot(car.i);
     // phone gone quiet (dropped signal, screen locked): the computer drives until it's back
     if (!p || !p.conn || performance.now() - p.lastIn > 1500) return aiInput(car, 1 / 60);
-    st = p.inp.st; thr = p.inp.thr; boost = p.inp.boost;
+    st = p.inp.st; thr = p.inp.thr; boost = p.inp.boost; fire = p.inp.fire;
   } else if (settings.slots[car.i] === 'touch') {
-    st = touchInput.st; thr = touchInput.thr; boost = touchInput.boost;
+    st = touchInput.st; thr = touchInput.thr; boost = touchInput.boost; fire = touchInput.fire;
   } else {
     const ks = KEYSETS[car.i];
     thr = (keys[ks.up] ? 1 : 0) - (keys[ks.down] ? 1 : 0);
     st = (keys[ks.right] ? 1 : 0) - (keys[ks.left] ? 1 : 0);
-    boost = !!keys[ks.boost];
+    boost = !!keys[ks.boost]; fire = !!keys[ks.fire];
   }
   if (settings.autoGas && thr >= 0) thr = 1;
-  return { thr, st, boost };
+  return { thr, st, boost, fire };
 }
 
 function wrapAng(a) { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; }
@@ -4849,7 +4858,7 @@ function aiInput(car, dt) {
   let boost = false;
   if (settings.skill > 0 && bend < 0.3 && Math.random() < 0.01 * settings.skill) boost = true;
   if (car.warn > 0.3) boost = true;
-  return { thr, st, boost };
+  return { thr, st, boost, fire: settings.weapons && aiWantsFire(car) };
 }
 
 // ===== src/06-audio.js =====
@@ -4939,13 +4948,13 @@ function driveCar(car, inp, dt) {
   const onVerge = Math.abs(lat) > ROAD_W;
   const skillMul = car.human ? 1 : SKILL_SPEED[settings.skill];
   const inMud = !onVerge && MUD[car.idx] > 0.5;
-  const maxv = (onVerge ? 22 : inMud ? 17 : MAXV) * skillMul;
+  const maxv = (onVerge ? 22 : inMud ? 17 : MAXV) * skillMul * (car.burn > 0 ? 0.65 : 1) * (car.ram > 0 ? 1.3 : 1);
   if (inp.thr > 0) vf += ACC * inp.thr * dt * (vf < maxv ? 1 : 0);
   else if (inp.thr < 0) vf += (vf > 0 ? -BRAKE : -ACC * 0.6) * -inp.thr * dt;
   if (vf < -12) vf = -12;
   if (vf > maxv) vf -= (vf - maxv) * 2.5 * dt;
   vf -= vf * (inp.thr === 0 ? 0.9 : 0.15) * dt;
-  vl *= Math.exp(-GRIP * dt);
+  vl *= Math.exp(-(car.slip > 0 ? GRIP * 0.12 : GRIP) * dt); // oil = almost no grip
   const steerScale = Math.max(-1, Math.min(1, vf / 7));
   car.h -= inp.st * TURN * steerScale * dt;
   if (car.spin > 0) { car.spin -= dt; car.h += 9 * dt; }
@@ -4973,7 +4982,9 @@ function collide() {
     const rv = (B.vel.x - A.vel.x) * nx + (B.vel.y - A.vel.y) * nz;
     if (rv < 0) {
       const j = -rv * 0.85;
-      A.vel.x -= nx * j; A.vel.y -= nz * j; B.vel.x += nx * j; B.vel.y += nz * j;
+      // a ramming car hits much harder and barely slows
+      const ja = j * (A.ram > 0 ? 0.3 : B.ram > 0 ? 2.6 : 1), jb = j * (B.ram > 0 ? 0.3 : A.ram > 0 ? 2.6 : 1);
+      A.vel.x -= nx * ja; A.vel.y -= nz * ja; B.vel.x += nx * jb; B.vel.y += nz * jb;
       if (-rv > 6) {
         const rs = Math.min(1, -rv / 25); rumble(A, rs, rs * 0.6, 120); rumble(B, rs, rs * 0.6, 120);
         burst((A.pos.x + B.pos.x) / 2, 1, (A.pos.z + B.pos.z) / 2, 0xffeb3b, Math.min(16, Math.round(-rv)), 8, 5, 0.4);
@@ -5055,6 +5066,7 @@ function newRound(atIdx) {
   clearCreature();
   outOrder = [];
   placeCars(atIdx);
+  resetWeapons();
   const lead = activeCars()[0];
   camTarget.copy(lead.pos); camLook.copy(lead.pos); camDist = 40; camFocus = null;
   camYaw = settings.cam === 'classic' ? Math.PI : trackYaw(atIdx + Math.round(20 / SPACING)); camPitch = settings.cam === 'calm' ? 0.95 : 0.85;
@@ -5132,7 +5144,7 @@ function buildHud() {
     d.className = 'card'; d.id = 'card' + c.i;
     d.style.borderColor = c.color.css;
     d.innerHTML = `<div class="nm" style="color:${c.color.css}">${c.color.name}${settings.slots[c.i] === 'pad' ? ' <small>PAD ' + (settings.padOf[c.i] + 1) + '</small>' : settings.slots[c.i] === 'phone' ? ' <small>PHONE</small>' : settings.slots[c.i] === 'touch' ? ' <small>YOU</small>' : c.human ? '' : ' <small>CPU</small>'}</div>
-      <div class="pts"></div><div class="pips"></div><div class="bst"><i></i></div><div class="out">OUT</div>`;
+      <div class="pts"></div><div class="pips"></div><div class="bst"><i></i></div><div class="itm"></div><div class="out">OUT</div>`;
     hud.appendChild(d);
   }
   if (settings.gunner) {
@@ -5154,6 +5166,8 @@ function updateHud(force) {
     else if (d.dataset.p !== String(c.points)) d.querySelector('.pips').innerHTML = pips;
     d.dataset.p = c.points;
     d.querySelector('.bst i').style.width = `${Math.round((1 - Math.max(0, c.boostCd) / 3) * 100)}%`;
+    const it = c.item ? ITEMS[c.item].icon + (c.ammo > 1 ? '<small>×' + c.ammo + '</small>' : '') : (c.shield > 0 ? '🛡️' : '');
+    if (d.dataset.it !== it) { d.dataset.it = it; d.querySelector('.itm').innerHTML = it; }
     const out = (state === 'race' || state === 'roundEnd') && !c.alive && c !== lastWinner;
     d.classList.toggle('isout', out && state === 'race');
     d.classList.toggle('warn', state === 'race' && c.alive && c.warn > 0.05);
@@ -5189,6 +5203,7 @@ function buildMenu() {
   document.getElementById('optGfx').textContent = settings.gfx === 'fancy' ? 'Fancy' : 'Simple';
   document.getElementById('optAuto').textContent = settings.autoGas ? 'On' : 'Off';
   document.getElementById('optCam').textContent = CAM_NAMES[settings.cam];
+  document.getElementById('optWeapons').textContent = settings.weapons ? 'On' : 'Off';
 }
 document.getElementById('btnTarget').onclick = () => { const o = [3, 5, 8, 10]; settings.target = o[(o.indexOf(settings.target) + 1) % o.length]; buildMenu(); };
 document.getElementById('btnSkill').onclick = () => { settings.skill = (settings.skill + 1) % 3; buildMenu(); };
@@ -5201,6 +5216,7 @@ function cycleTrack() {
   if (settings.track !== 'random') buildTrack(settings.track);
   buildMenu();
 }
+document.getElementById('btnWeapons').onclick = () => { settings.weapons = !settings.weapons; buildMenu(); };
 document.getElementById('btnTrack').onclick = () => { audio(); cycleTrack(); };
 function cycleCam() { settings.cam = CAM_STYLES[(CAM_STYLES.indexOf(settings.cam) + 1) % CAM_STYLES.length]; buildMenu(); }
 document.getElementById('btnCam').onclick = cycleCam;
@@ -5515,6 +5531,7 @@ function frame(now) {
       if (state === 'race') inp = c.human ? humanInput(c) : aiInput(c, dt);
       else if (racing) inp = { thr: 0, st: 0, boost: false };
       driveCar(c, inp, dt);
+      if (state === 'race') { if (inp.fire && !c.firePrev) useItem(c); c.firePrev = !!inp.fire; }
       if (c.y > 0 || c.vy > 0) { c.vy -= 30 * dt; c.y += c.vy * dt; if (c.y <= 0) { c.y = 0; c.vy = 0; if (c.alive) noise(0.08, 0.15, 400); } }
       const ni = nearestIdx(c, false);
       let d = ni - c.idx; if (d < -N / 2) d += N; if (d > N / 2) d -= N;
@@ -5523,7 +5540,7 @@ function frame(now) {
     }
   }
   if (state === 'race') collide();
-  if (state === 'race' || state === 'roundEnd') updateCreature(dt);
+  if (state === 'race' || state === 'roundEnd') { updateCreature(dt); updateWeapons(dt, wt); }
 
   // knock-out by camera
   updateCamera(rdt);
@@ -5593,7 +5610,7 @@ window.__shunt = { screen: (x, z) => { const v = new T.Vector3(x, 0.5, z).projec
 const phones = new Map();   // client id -> { cid, conn, role, slot, inp, lastIn, goneAt, viewerNo, cd }
 const phoneWaiting = [];     // players who joined mid-match
 let roomCode = '', peerHost = null, phoneStateT = 0, viewerCount = 0;
-const touchInput = { st: 0, thr: 0, boost: false };
+const touchInput = { st: 0, thr: 0, boost: false, fire: false };
 const CHEERS = ['👏', '😂', '😱', '🔥', '👻', '🦶'];
 const POWER_CD = { rocket: 12, boost: 10, bigfoot: 20, ghost: 20 };
 
@@ -5639,7 +5656,7 @@ function onPhoneMessage(p, m) {
     if (state === 'menu' || state === 'matchEnd') seatPhone(p);
     else { if (!phoneWaiting.includes(p)) phoneWaiting.push(p); phoneSend(p, { t: 'wait' }); }
   } else if (m.t === 'in') {
-    p.inp.st = Math.max(-1, Math.min(1, Number(m.st) || 0)); p.inp.thr = Math.max(-1, Math.min(1, Number(m.thr) || 0)); p.inp.boost = !!m.boost;
+    p.inp.st = Math.max(-1, Math.min(1, Number(m.st) || 0)); p.inp.thr = Math.max(-1, Math.min(1, Number(m.thr) || 0)); p.inp.boost = !!m.boost; p.inp.fire = !!m.fire;
     p.lastIn = performance.now();
   } else if (m.t === 'start') { if (state === 'menu' || state === 'matchEnd') startMatch(); }
   else if (m.t === 'pause') { if (p.role === 'player') togglePause(); }
@@ -5732,7 +5749,7 @@ function toggleTouchPlayer() {
   }
   buildMenu();
 }
-makeTouchPad(document.getElementById('touchpad'), o => { touchInput.st = o.st; touchInput.thr = o.thr; touchInput.boost = o.boost; });
+makeTouchPad(document.getElementById('touchpad'), o => { touchInput.st = o.st; touchInput.thr = o.thr; touchInput.boost = o.boost; touchInput.fire = o.fire; });
 document.getElementById('btnTouch').onclick = () => { audio(); toggleTouchPlayer(); };
 document.getElementById('tpPause').onclick = () => togglePause();
 document.addEventListener('click', e => {
@@ -5910,6 +5927,286 @@ function updateCreature(dt) {
   }
 }
 window.__creature = { spawnBigfoot, spawnGhost, get current() { return creature && creature.kind; } };
+
+// ===== src/18-weapons.js =====
+// ---------- Weapons & pickups ----------
+// Crates sit across the road at a few spots each lap. Drive through one with empty hands and you
+// get a random item (cars at the back get the nastier ones). Press FIRE to use it.
+// Everything here pushes, spins or slows cars; the camera and the edges do the knocking out.
+const ITEMS = {
+  oil:     { icon: '🛢️', name: 'Oil slick',     ammo: 1 },
+  mine:    { icon: '💣', name: 'Mines',         ammo: 2 },
+  missile: { icon: '🚀', name: 'Missile',       ammo: 1 },
+  homing:  { icon: '🎯', name: 'Homing missile', ammo: 1 },
+  gun:     { icon: '🔫', name: 'Machine gun',   ammo: 1 },
+  flame:   { icon: '🔥', name: 'Flamethrower',  ammo: 1 },
+  mortar:  { icon: '☄️', name: 'Mortar',        ammo: 3 },
+  drum:    { icon: '🧨', name: 'Drum bomb',     ammo: 1 },
+  shock:   { icon: '💥', name: 'Shockwave',     ammo: 1 },
+  shield:  { icon: '🛡️', name: 'Shield',        ammo: 1 },
+  ram:     { icon: '🐏', name: 'Ram boost',     ammo: 1 },
+};
+// weights by race position: [leader … last]
+const ROLL = {
+  front: { oil: 4, mine: 4, drum: 3, shield: 3, gun: 2, missile: 2, flame: 2, mortar: 1, shock: 1, homing: 0, ram: 1 },
+  back:  { oil: 1, mine: 1, drum: 1, shield: 2, gun: 2, missile: 3, flame: 2, mortar: 3, shock: 3, homing: 4, ram: 3 },
+};
+const CRATE_SPOTS = [0.08, 0.25, 0.42, 0.58, 0.75, 0.92];
+let crates = [], crateTrack = null;
+const shots = [];    // moving things: missiles, shells, bullets, drums
+const hazards = [];  // things on the ground: oil, mines
+const crateTex = (() => {
+  const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+  const c = cv.getContext('2d');
+  const g = c.createLinearGradient(0, 0, 128, 128); g.addColorStop(0, '#ffd54f'); g.addColorStop(1, '#ff8f00');
+  c.fillStyle = g; c.fillRect(0, 0, 128, 128); c.strokeStyle = '#5d4037'; c.lineWidth = 10; c.strokeRect(5, 5, 118, 118);
+  c.fillStyle = '#fff'; c.font = 'bold 86px Arial Black, Arial'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.lineWidth = 8; c.strokeStyle = '#5d4037'; c.strokeText('?', 64, 70); c.fillText('?', 64, 70);
+  const t = new T.CanvasTexture(cv); t.colorSpace = T.SRGBColorSpace; return t;
+})();
+const crateGeo = new T.BoxGeometry(1.8, 1.8, 1.8);
+const crateMat = new T.MeshStandardMaterial({ map: crateTex, emissive: 0xffa000, emissiveIntensity: 0.35, roughness: 0.5 });
+
+function setupCrates() {
+  for (const c of crates) scene.remove(c.m);
+  crates = [];
+  for (const f of CRATE_SPOTS) {
+    const i = Math.floor(f * N);
+    for (const lat of [-4.2, 0, 4.2]) {
+      const m = new T.Mesh(crateGeo, crateMat); m.castShadow = true;
+      const p = trackPoint(i, lat, 1.4); m.position.copy(p); scene.add(m);
+      crates.push({ m, x: p.x, z: p.z, gone: 0, ph: Math.random() * 6 });
+    }
+  }
+  crateTrack = curTrack.id;
+}
+function resetWeapons() {
+  if (crateTrack !== curTrack.id) setupCrates();
+  for (const c of crates) { c.gone = 0; c.m.visible = settings.weapons; }
+  for (const s of shots) scene.remove(s.m);
+  for (const h of hazards) scene.remove(h.m);
+  shots.length = 0; hazards.length = 0;
+  for (const c of cars) { c.item = null; c.ammo = 0; c.shield = 0; c.slip = 0; c.burn = 0; c.ram = 0; c.gunT = 0; c.flameT = 0; c.firePrev = false; if (c.shieldMesh) c.shieldMesh.visible = false; }
+}
+
+function rankOf(car) {
+  const alive = activeCars().filter(c => c.alive && !c.falling).sort((a, b) => b.prog - a.prog);
+  return { r: Math.max(0, alive.indexOf(car)), n: alive.length };
+}
+function rollItem(car) {
+  const { r, n } = rankOf(car), k = n > 1 ? r / (n - 1) : 0;
+  const keys = Object.keys(ITEMS), w = keys.map(id => ROLL.front[id] * (1 - k) + ROLL.back[id] * k + 0.01);
+  let x = Math.random() * w.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < keys.length; i++) { x -= w[i]; if (x <= 0) return keys[i]; }
+  return keys[0];
+}
+function giveItem(car, id) {
+  car.item = id; car.ammo = ITEMS[id].ammo;
+  if (car.human) tone(1040, 0.08, 'square', 0.06);
+  phoneItem(car);
+}
+
+// ----- shared effects -----
+function shielded(car) {
+  if (car.shield > 0) {
+    car.shield = 0; if (car.shieldMesh) car.shieldMesh.visible = false;
+    burst(car.pos.x, 1.2, car.pos.z, 0x80d8ff, 20, 7, 4, 0.5); tone(1200, 0.25, 'triangle', 0.08, -600);
+    return true;
+  }
+  return false;
+}
+function shove(car, nx, nz, power, up = 0, spin = 0) {
+  if (shielded(car)) return;
+  car.vel.x += nx * power; car.vel.y += nz * power;
+  if (up) { car.vy = Math.max(car.vy, up); car.y = Math.max(car.y, 0.01); }
+  if (spin) car.spin = Math.max(car.spin, spin);
+  rumble(car, Math.min(1, power / 25), 0.8, 250);
+}
+function blast(x, z, R, power, color = 0xff6f00) {
+  burst(x, 1, z, color, 22, 11, 11, 0.8); burst(x, 1, z, 0xffeb3b, 12, 8, 9, 0.5); burst(x, 1, z, 0x616161, 8, 4, 5, 1.1);
+  noise(0.45, 0.4, 500); tone(110, 0.35, 'square', 0.09, -70);
+  for (const c of cars) {
+    if (!c.active || !c.alive || c.falling) continue;
+    const dx = c.pos.x - x, dz = c.pos.z - z, d = Math.hypot(dx, dz);
+    if (d > R) continue;
+    const s = 1 - d / R, nx = d > 0.01 ? dx / d : Math.random() - 0.5, nz = d > 0.01 ? dz / d : Math.random() - 0.5;
+    shove(c, nx, nz, 8 + power * s, 5 + 8 * s, 0.25 + 0.4 * s);
+  }
+}
+function fwd(car) { return { x: Math.sin(car.h), z: Math.cos(car.h) }; }
+function aliveOthers(car) { return activeCars().filter(o => o !== car && o.alive && !o.falling); }
+// nearest rival in a cone ahead (dir = 1) or behind (dir = -1)
+function rivalInCone(car, dir, range, cosLimit) {
+  const f = fwd(car); let best = null, bd = range;
+  for (const o of aliveOthers(car)) {
+    const dx = o.pos.x - car.pos.x, dz = o.pos.z - car.pos.z, d = Math.hypot(dx, dz);
+    if (d > bd || d < 0.1) continue;
+    if ((dx * f.x + dz * f.z) / d * dir < cosLimit) continue;
+    best = o; bd = d;
+  }
+  return best;
+}
+const shotGeo = { missile: new T.ConeGeometry(0.45, 2.2, 8).rotateX(Math.PI / 2), shell: new T.SphereGeometry(0.55, 10, 8), bullet: new T.BoxGeometry(0.18, 0.18, 1.1), drum: new T.CylinderGeometry(0.9, 0.9, 1.6, 12).rotateZ(Math.PI / 2) };
+const shotMat = {
+  missile: new T.MeshStandardMaterial({ color: 0xe0e0e0, emissive: 0xff3d00, emissiveIntensity: 1.2 }),
+  homing: new T.MeshStandardMaterial({ color: 0xffcdd2, emissive: 0xff1744, emissiveIntensity: 1.6 }),
+  shell: new T.MeshStandardMaterial({ color: 0x37474f, emissive: 0xff6d00, emissiveIntensity: 0.8 }),
+  bullet: new T.MeshBasicMaterial({ color: new T.Color(3, 2.6, 1) }),
+  drum: new T.MeshStandardMaterial({ color: 0xc62828, roughness: 0.5, metalness: 0.4 }),
+};
+function addShot(kind, car, extra) {
+  const m = new T.Mesh(shotGeo[kind === 'homing' ? 'missile' : kind], shotMat[kind]); m.castShadow = true;
+  const f = fwd(car), back = kind === 'drum' ? -1 : 1;
+  m.position.set(car.pos.x + f.x * 3 * back, kind === 'drum' ? 0.9 : 1.1, car.pos.z + f.z * 3 * back);
+  scene.add(m);
+  const s = { kind, m, owner: car, t: 0, vx: f.x, vz: f.z, ...extra };
+  shots.push(s); return s;
+}
+function dropHazard(kind, car) {
+  const f = fwd(car), x = car.pos.x - f.x * 3.2, z = car.pos.z - f.z * 3.2;
+  let m;
+  if (kind === 'oil') { m = new T.Mesh(new T.CircleGeometry(3.2, 20), new T.MeshStandardMaterial({ color: 0x111111, roughness: 0.05, metalness: 0.6, transparent: true, opacity: 0.85 })); m.rotation.x = -Math.PI / 2; m.position.set(x, 0.08, z); }
+  else { m = new T.Group(); const body = new T.Mesh(new T.CylinderGeometry(0.7, 0.8, 0.35, 12), new T.MeshStandardMaterial({ color: 0x263238, metalness: 0.6, roughness: 0.4 })); m.add(body); const led = new T.Mesh(new T.SphereGeometry(0.16, 8, 6), new T.MeshBasicMaterial({ color: 0xff1744 })); led.position.y = 0.25; m.add(led); m.userData.led = led; m.position.set(x, 0.18, z); }
+  scene.add(m);
+  hazards.push({ kind, m, x, z, t: 0, owner: car, life: kind === 'oil' ? 22 : 30, armed: kind === 'oil' ? 0 : 1.0 });
+}
+
+// ----- using items -----
+function useItem(car) {
+  if (!car.item || !settings.weapons) return;
+  const id = car.item, f = fwd(car);
+  switch (id) {
+    case 'oil': dropHazard('oil', car); noise(0.3, 0.15, 900); break;
+    case 'mine': dropHazard('mine', car); tone(500, 0.08, 'square', 0.05); break;
+    case 'missile': addShot('missile', car, { speed: 70, life: 2.2 }); tone(700, 0.4, 'sawtooth', 0.06, -300); break;
+    case 'homing': addShot('homing', car, { speed: 55, life: 3.5, target: rivalInCone(car, 1, 90, 0.2) || aliveOthers(car).sort((a, b) => b.prog - a.prog)[0] }); tone(900, 0.5, 'sawtooth', 0.06, -500); break;
+    case 'gun': car.gunT = 0.9; break;
+    case 'flame': car.flameT = 1.4; break;
+    case 'mortar': {
+      const tgt = rivalInCone(car, 1, 70, 0.3);
+      const tx = tgt ? tgt.pos.x + tgt.vel.x * 0.8 : car.pos.x + f.x * 35, tz = tgt ? tgt.pos.z + tgt.vel.y * 0.8 : car.pos.z + f.z * 35;
+      addShot('shell', car, { sx: car.pos.x, sz: car.pos.z, tx, tz, dur: 1.1, life: 1.1 }); tone(300, 0.3, 'square', 0.07, 200); break;
+    }
+    case 'drum': addShot('drum', car, { speed: -6, life: 7, vx: -f.x, vz: -f.z }); tone(200, 0.2, 'square', 0.05); break;
+    case 'shock':
+      burst(car.pos.x, 1, car.pos.z, 0x80d8ff, 40, 16, 3, 0.6); noise(0.4, 0.35, 900); tone(160, 0.5, 'sine', 0.12, -100);
+      for (const o of aliveOthers(car)) { const dx = o.pos.x - car.pos.x, dz = o.pos.z - car.pos.z, d = Math.hypot(dx, dz); if (d < 16 && d > 0.1) shove(o, dx / d, dz / d, 26 * (1 - d / 20), 3, 0.2); }
+      break;
+    case 'shield':
+      car.shield = 10;
+      if (!car.shieldMesh) { car.shieldMesh = new T.Mesh(new T.SphereGeometry(2.9, 20, 14), new T.MeshBasicMaterial({ color: 0x80d8ff, transparent: true, opacity: 0.22, depthWrite: false })); scene.add(car.shieldMesh); }
+      car.shieldMesh.visible = true; tone(880, 0.3, 'triangle', 0.07, 300); break;
+    case 'ram': car.ram = 3.5; car.vel.x += f.x * 18; car.vel.y += f.z * 18; tone(150, 0.6, 'sawtooth', 0.09, 300); break;
+  }
+  car.ammo--;
+  if (car.ammo <= 0) car.item = null;
+  phoneItem(car);
+}
+
+// ----- per-frame update -----
+function updateWeapons(dt, now) {
+  if (!settings.weapons) return;
+  // crates: spin, bob, get picked up, come back after a few seconds
+  for (const c of crates) {
+    if (c.gone > 0) { c.gone -= dt; if (c.gone <= 0) c.m.visible = true; continue; }
+    c.ph += dt; c.m.rotation.y += dt * 1.6; c.m.position.y = 1.4 + Math.sin(c.ph * 2) * 0.25;
+    if (state !== 'race') continue;
+    for (const car of cars) {
+      if (!car.active || !car.alive || car.falling) continue;
+      if (Math.hypot(car.pos.x - c.x, car.pos.z - c.z) < 2.3) {
+        c.gone = 4; c.m.visible = false; burst(c.x, 1.4, c.z, 0xffb300, 12, 6, 6, 0.5);
+        if (!car.item) giveItem(car, rollItem(car));
+        break;
+      }
+    }
+  }
+  // car states
+  for (const car of cars) {
+    if (!car.active) continue;
+    if (car.shield > 0) { car.shield -= dt; if (car.shieldMesh) { car.shieldMesh.position.set(car.pos.x, car.y + 1.1, car.pos.z); car.shieldMesh.material.opacity = 0.18 + Math.sin(now * 8) * 0.06; if (car.shield <= 0 || !car.alive) car.shieldMesh.visible = false; } }
+    if (car.slip > 0) car.slip -= dt;
+    if (car.ram > 0) { car.ram -= dt; if (Math.random() < 0.6) burst(car.pos.x, 0.8, car.pos.z, 0xff5722, 1, 2, 2, 0.4); }
+    if (car.burn > 0) { car.burn -= dt; if (Math.random() < 0.5) burst(car.pos.x, 1.4, car.pos.z, Math.random() < 0.5 ? 0xff6d00 : 0x424242, 1, 1.5, 3, 0.6); }
+    if (!car.alive || car.falling) { car.gunT = car.flameT = 0; continue; }
+    const f = fwd(car);
+    if (car.gunT > 0) { // machine gun: a stream of tracer rounds
+      car.gunT -= dt; car.gunAcc = (car.gunAcc || 0) + dt;
+      while (car.gunAcc > 0.07) { car.gunAcc -= 0.07; const b = addShot('bullet', car, { speed: 95, life: 0.6 }); b.m.rotation.y = car.h; tone(1500, 0.03, 'square', 0.025); }
+    }
+    if (car.flameT > 0) { // flamethrower: a cone of fire behind the car
+      car.flameT -= dt;
+      for (let k = 0; k < 3; k++) burst(car.pos.x - f.x * (3 + Math.random() * 7), 0.9, car.pos.z - f.z * (3 + Math.random() * 7), Math.random() < 0.6 ? 0xff6d00 : 0xffd54f, 1, 3, 1, 0.35);
+      if (Math.random() < 0.3) noise(0.08, 0.08, 1500);
+      for (const o of aliveOthers(car)) {
+        const dx = o.pos.x - car.pos.x, dz = o.pos.z - car.pos.z, d = Math.hypot(dx, dz);
+        if (d < 11 && (dx * f.x + dz * f.z) / (d || 1) < -0.75) { if (o.burn <= 0 && !shielded(o)) { o.burn = 2.2; rumble(o, 0.4, 0.8, 300); } }
+      }
+    }
+  }
+  // moving shots
+  for (let k = shots.length - 1; k >= 0; k--) {
+    const s = shots[k]; s.t += dt;
+    let done = s.t > s.life, hitCar = null;
+    if (s.kind === 'shell') { // lobbed: arc to the target spot
+      const f2 = Math.min(1, s.t / s.dur);
+      s.m.position.set(s.sx + (s.tx - s.sx) * f2, 1 + Math.sin(f2 * Math.PI) * 18, s.sz + (s.tz - s.sz) * f2);
+      if (f2 >= 1) { blast(s.tx, s.tz, 9, 18); done = true; }
+    } else {
+      if (s.kind === 'homing' && s.target && s.target.alive && !s.target.falling) {
+        const dx = s.target.pos.x - s.m.position.x, dz = s.target.pos.z - s.m.position.z, d = Math.hypot(dx, dz) || 1;
+        const turn = Math.min(1, dt * 3.2); s.vx += (dx / d - s.vx) * turn; s.vz += (dz / d - s.vz) * turn;
+        const l = Math.hypot(s.vx, s.vz) || 1; s.vx /= l; s.vz /= l;
+      }
+      if (s.kind === 'drum') { s.m.rotation.x += dt * 4; s.speed *= Math.exp(-0.3 * dt); s.m.rotation.y = Math.atan2(s.vx, s.vz); }
+      const sp = Math.abs(s.speed);
+      s.m.position.x += s.vx * sp * dt; s.m.position.z += s.vz * sp * dt;
+      if (s.kind !== 'drum') s.m.rotation.y = Math.atan2(s.vx, s.vz);
+      if (s.kind !== 'bullet' && Math.random() < 0.7) burst(s.m.position.x, s.m.position.y, s.m.position.z, 0xbdbdbd, 1, 1, 0, 0.35);
+      for (const o of cars) {
+        if (!o.active || !o.alive || o.falling || (o === s.owner && s.t < 0.5)) continue;
+        if (Math.hypot(o.pos.x - s.m.position.x, o.pos.z - s.m.position.z) < (s.kind === 'drum' ? 2.4 : 2.0)) { hitCar = o; break; }
+      }
+      if (hitCar) {
+        done = true;
+        if (s.kind === 'bullet') { if (!shielded(hitCar)) { hitCar.vel.x += s.vx * 3.5; hitCar.vel.y += s.vz * 3.5; hitCar.vel.multiplyScalar(0.97); burst(s.m.position.x, 1.1, s.m.position.z, 0xffeb3b, 3, 4, 2, 0.25); } }
+        else blast(s.m.position.x, s.m.position.z, s.kind === 'drum' ? 10 : 7, s.kind === 'drum' ? 22 : 18);
+      } else if (done && s.kind === 'drum') blast(s.m.position.x, s.m.position.z, 10, 20);
+    }
+    if (done) { scene.remove(s.m); shots.splice(k, 1); }
+  }
+  // ground hazards
+  for (let k = hazards.length - 1; k >= 0; k--) {
+    const h = hazards[k]; h.t += dt;
+    let done = h.t > h.life;
+    if (h.kind === 'mine' && h.m.userData.led) h.m.userData.led.visible = h.t > h.armed && Math.sin(now * 10) > 0;
+    for (const o of cars) {
+      if (!o.active || !o.alive || o.falling || done) continue;
+      const d = Math.hypot(o.pos.x - h.x, o.pos.z - h.z);
+      if (h.kind === 'oil' && d < 3.2 && o.slip <= 0) { o.slip = 1.4; o.spin = Math.max(o.spin, 0.35); rumble(o, 0.3, 0.6, 250); }
+      if (h.kind === 'mine' && d < 2.1 && h.t > h.armed) { blast(h.x, h.z, 8, 22); done = true; }
+    }
+    if (h.kind === 'oil') h.m.material.opacity = Math.min(0.85, (h.life - h.t) / 3);
+    if (done) { scene.remove(h.m); hazards.splice(k, 1); }
+  }
+}
+
+// ----- computer drivers: when to fire -----
+function aiWantsFire(car) {
+  if (!car.item || car.gunT > 0 || car.flameT > 0) return false;
+  const id = car.item;
+  if (id === 'shield' || id === 'ram') return Math.random() < 0.01;
+  if (id === 'shock') return aliveOthers(car).some(o => Math.hypot(o.pos.x - car.pos.x, o.pos.z - car.pos.z) < 9);
+  if (id === 'oil' || id === 'mine' || id === 'drum' || id === 'flame') return !!rivalInCone(car, -1, id === 'flame' ? 10 : 22, 0.7);
+  if (id === 'homing' || id === 'mortar') return !!rivalInCone(car, 1, 70, 0.3) || Math.random() < 0.004;
+  return !!rivalInCone(car, 1, id === 'gun' ? 30 : 45, 0.94);
+}
+
+// tell a phone driver what they're holding
+function phoneItem(car) {
+  if (settings.slots[car.i] !== 'phone') return;
+  const p = phoneForSlot(car.i); if (p) phoneSend(p, { t: 'item', icon: car.item ? ITEMS[car.item].icon : '', ammo: car.ammo, name: car.item ? ITEMS[car.item].name : '' });
+}
+window.__weapons = { giveItem, useItem, ITEMS, get crates() { return crates.map(c => [Math.round(c.x), Math.round(c.z), c.m.visible, +c.gone.toFixed(1)]); }, get shots() { return shots.length; }, get hazards() { return hazards.length; } };
 
 })();
 </script>

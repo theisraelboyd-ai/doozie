@@ -9,13 +9,13 @@ function driveCar(car, inp, dt) {
   const onVerge = Math.abs(lat) > ROAD_W;
   const skillMul = car.human ? 1 : SKILL_SPEED[settings.skill];
   const inMud = !onVerge && MUD[car.idx] > 0.5;
-  const maxv = (onVerge ? 22 : inMud ? 17 : MAXV) * skillMul;
+  const maxv = (onVerge ? 22 : inMud ? 17 : MAXV) * skillMul * (car.burn > 0 ? 0.65 : 1) * (car.ram > 0 ? 1.3 : 1);
   if (inp.thr > 0) vf += ACC * inp.thr * dt * (vf < maxv ? 1 : 0);
   else if (inp.thr < 0) vf += (vf > 0 ? -BRAKE : -ACC * 0.6) * -inp.thr * dt;
   if (vf < -12) vf = -12;
   if (vf > maxv) vf -= (vf - maxv) * 2.5 * dt;
   vf -= vf * (inp.thr === 0 ? 0.9 : 0.15) * dt;
-  vl *= Math.exp(-GRIP * dt);
+  vl *= Math.exp(-(car.slip > 0 ? GRIP * 0.12 : GRIP) * dt); // oil = almost no grip
   const steerScale = Math.max(-1, Math.min(1, vf / 7));
   car.h -= inp.st * TURN * steerScale * dt;
   if (car.spin > 0) { car.spin -= dt; car.h += 9 * dt; }
@@ -43,7 +43,9 @@ function collide() {
     const rv = (B.vel.x - A.vel.x) * nx + (B.vel.y - A.vel.y) * nz;
     if (rv < 0) {
       const j = -rv * 0.85;
-      A.vel.x -= nx * j; A.vel.y -= nz * j; B.vel.x += nx * j; B.vel.y += nz * j;
+      // a ramming car hits much harder and barely slows
+      const ja = j * (A.ram > 0 ? 0.3 : B.ram > 0 ? 2.6 : 1), jb = j * (B.ram > 0 ? 0.3 : A.ram > 0 ? 2.6 : 1);
+      A.vel.x -= nx * ja; A.vel.y -= nz * ja; B.vel.x += nx * jb; B.vel.y += nz * jb;
       if (-rv > 6) {
         const rs = Math.min(1, -rv / 25); rumble(A, rs, rs * 0.6, 120); rumble(B, rs, rs * 0.6, 120);
         burst((A.pos.x + B.pos.x) / 2, 1, (A.pos.z + B.pos.z) / 2, 0xffeb3b, Math.min(16, Math.round(-rv)), 8, 5, 0.4);

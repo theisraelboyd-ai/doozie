@@ -52,6 +52,7 @@ function newRound(atIdx) {
   clearCreature();
   outOrder = [];
   placeCars(atIdx);
+  resetWeapons();
   const lead = activeCars()[0];
   camTarget.copy(lead.pos); camLook.copy(lead.pos); camDist = 40; camFocus = null;
   camYaw = settings.cam === 'classic' ? Math.PI : trackYaw(atIdx + Math.round(20 / SPACING)); camPitch = settings.cam === 'calm' ? 0.95 : 0.85;

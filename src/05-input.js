@@ -66,7 +66,7 @@ window.addEventListener('gamepadconnected', e => { toast(`Controller ${e.gamepad
 window.addEventListener('gamepaddisconnected', e => { const s = padSlot(e.gamepad.index); if (s >= 0) toast(`<b style="color:${COLORS[s].css}">${COLORS[s].name}</b>'s controller disconnected`); });
 
 function humanInput(car) {
-  let thr = 0, st = 0, boost = false;
+  let thr = 0, st = 0, boost = false, fire = false;
   if (settings.slots[car.i] === 'pad') {
     const p = getPad(settings.padOf[car.i]);
     if (p) {
@@ -76,23 +76,24 @@ function humanInput(car) {
       let gas = Math.max(btn(p, 7), pressed(p, 0) ? 1 : 0), brk = Math.max(btn(p, 6), pressed(p, 1) ? 1 : 0);
       if (p.mapping !== 'standard') { const ay = p.axes[1] || 0; if (ay < -0.5) gas = Math.max(gas, 1); if (ay > 0.5) brk = Math.max(brk, 1); }
       thr = gas - brk;
-      boost = pressed(p, 2) || pressed(p, 3) || pressed(p, 5) || pressed(p, 4);
+      fire = pressed(p, 2) || pressed(p, 5);   // X or RB
+      boost = pressed(p, 3) || pressed(p, 4);  // Y or LB
     }
   } else if (settings.slots[car.i] === 'phone') {
     const p = phoneForSlot(car.i);
     // phone gone quiet (dropped signal, screen locked): the computer drives until it's back
     if (!p || !p.conn || performance.now() - p.lastIn > 1500) return aiInput(car, 1 / 60);
-    st = p.inp.st; thr = p.inp.thr; boost = p.inp.boost;
+    st = p.inp.st; thr = p.inp.thr; boost = p.inp.boost; fire = p.inp.fire;
   } else if (settings.slots[car.i] === 'touch') {
-    st = touchInput.st; thr = touchInput.thr; boost = touchInput.boost;
+    st = touchInput.st; thr = touchInput.thr; boost = touchInput.boost; fire = touchInput.fire;
   } else {
     const ks = KEYSETS[car.i];
     thr = (keys[ks.up] ? 1 : 0) - (keys[ks.down] ? 1 : 0);
     st = (keys[ks.right] ? 1 : 0) - (keys[ks.left] ? 1 : 0);
-    boost = !!keys[ks.boost];
+    boost = !!keys[ks.boost]; fire = !!keys[ks.fire];
   }
   if (settings.autoGas && thr >= 0) thr = 1;
-  return { thr, st, boost };
+  return { thr, st, boost, fire };
 }
 
 function wrapAng(a) { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; }
@@ -130,5 +131,5 @@ function aiInput(car, dt) {
   let boost = false;
   if (settings.skill > 0 && bend < 0.3 && Math.random() < 0.01 * settings.skill) boost = true;
   if (car.warn > 0.3) boost = true;
-  return { thr, st, boost };
+  return { thr, st, boost, fire: settings.weapons && aiWantsFire(car) };
 }
