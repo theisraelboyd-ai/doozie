@@ -81,6 +81,7 @@ function buildMenu() {
   document.getElementById('optSkill').textContent = SKILL_NAMES[settings.skill];
   document.getElementById('optWater').textContent = settings.water === 'deadly' ? 'Fall = out' : 'Bouncy';
   document.getElementById('optMode').textContent = MODE_NAMES[settings.mode];
+  document.getElementById('optSound').textContent = SOUND_NAMES[settings.sound];
   document.getElementById('modeTag').innerHTML = MODE_TAGS[settings.mode];
   document.getElementById('optTrack').textContent = settings.track === 'random' ? 'Random' : (TRACKS.find(t => t.id === settings.track) || TRACKS[0]).name;
   document.getElementById('optGun').textContent = settings.gunner ? 'On' : 'Off';
@@ -103,6 +104,7 @@ function cycleTrack() {
 }
 document.getElementById('btnCreatures').onclick = () => { const o = ['off', 'own', 'anywhere']; settings.creatures = o[(o.indexOf(settings.creatures) + 1) % 3]; buildMenu(); };
 document.getElementById('btnWeapons').onclick = () => { settings.weapons = !settings.weapons; buildMenu(); };
+document.getElementById('btnSound').onclick = () => { audio(); settings.sound = SOUND_ORDER[(SOUND_ORDER.indexOf(settings.sound) + 1) % 3]; applySoundSetting(); try { localStorage.setItem('doozie-sound', settings.sound); } catch (e) {} tone(660, 0.05, 'square', 0.06); buildMenu(); };
 document.getElementById('btnMode').onclick = () => { audio(); tone(660, 0.05, 'square', 0.06); settings.mode = MODE_ORDER[(MODE_ORDER.indexOf(settings.mode) + 1) % MODE_ORDER.length]; buildMenu(); };
 document.getElementById('btnTrack').onclick = () => { audio(); cycleTrack(); };
 function cycleCam() { settings.cam = CAM_STYLES[(CAM_STYLES.indexOf(settings.cam) + 1) % CAM_STYLES.length]; buildMenu(); }
@@ -116,7 +118,7 @@ function togglePause() {
   else if (state !== 'menu' && state !== 'matchEnd') { prevState = state; state = 'paused'; document.getElementById('pause').style.display = 'flex'; }
 }
 function toMenu() {
-  clearCreature();
+  clearCreature(); stopEngines();
   state = 'menu'; bigMsg('', '');
   document.getElementById('menu').style.display = 'flex';
   document.getElementById('hud').style.display = 'none';

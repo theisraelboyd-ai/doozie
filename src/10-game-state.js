@@ -115,6 +115,7 @@ function endRound(modeRanking) {
     return `<span style="color:${c.color.css}">${c.color.name} ${d > 0 ? '+' + d : d < 0 ? d : '0'}</span>`;
   }).join(' &nbsp; ');
   bigMsg(`<span style="color:${winner.color.css}">${winner.color.name}</span> wins the round!`, sub);
+  cheer(1);
   updateHud(true);
 }
 
@@ -126,4 +127,5 @@ function endMatch(champ) {
     order.map((c, k) => `<span style="color:${c.color.css}">${k + 1}. ${c.color.name} ${c.points}</span>`).join(' &nbsp; ') +
     '<br><small>ENTER or A to play again · M or B for menu</small><div class="bigbtns"><button data-act="again">Play again</button><button data-act="menu">Menu</button></div>');
   [523, 659, 784, 1046, 784, 1046].forEach((f, k) => setTimeout(() => tone(f, 0.22, 'triangle', 0.12), k * 160));
+  cheer(1.6);
 }

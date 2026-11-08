@@ -20,6 +20,7 @@ const settings = {
   skill: 0, // 0 easy, 1 normal, 2 hard
   water: 'deadly', // deadly | bouncy
   gunner: true, // mouse rocket launcher player
+  sound: 'all', // all | sfx | off
   mode: 'knockout', // knockout | teams | laps | flag
   gfx: 'fancy', // fancy | simple | low
   cam: 'cinematic', // cinematic | classic | calm
@@ -54,3 +55,5 @@ const CAR_TYPES = {
   van: { name: 'Van', icon: '🚐', blurb: 'heavy · steady', top: 0.95, acc: 0.92, grip: 1.05, turn: 0.92, mass: 1.4 },
   random: { name: 'Random', icon: '🎲', blurb: 'surprise me' },
 };
+const SOUND_ORDER = ['all', 'sfx', 'off'], SOUND_NAMES = { all: 'Music + effects', sfx: 'Effects only', off: 'Off' };
+try { const s = localStorage.getItem('doozie-sound'); if (SOUND_ORDER.includes(s)) settings.sound = s; } catch (e) {}

@@ -3,7 +3,7 @@ let last = performance.now(), wt = 0;
 function frame(now) {
   requestAnimationFrame(frame);
   let rdt = Math.max(0, Math.min(0.05, (now - last) / 1000)); last = now; wt += rdt;
-  pollPads(); fpsTick(rdt);
+  pollPads(); fpsTick(rdt); soundTick(rdt);
   phonesTick(rdt);
   if (toastT > 0) { toastT -= rdt; if (toastT <= 0) document.getElementById('toast').style.opacity = 0; }
   if (state === 'paused' || state === 'menu') {

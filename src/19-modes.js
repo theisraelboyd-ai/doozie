@@ -173,6 +173,7 @@ function endTeamRound() {
   survivor.alive = true;
   burst(survivor.pos.x, 2, survivor.pos.z, 0xffffff, 30, 10, 14, 1.4);
   [523, 659, 784, 1046].forEach((f, k) => setTimeout(() => tone(f, 0.18, 'square', 0.09), k * 110));
+  cheer(1);
   bigMsg(`<span style="color:${TEAMS[w].css}">${TEAMS[w].name}</span> wins the round!`,
     `<span style="color:${TEAMS[0].css}">HOT ${teamPts[0]}</span> &nbsp; <span style="color:${TEAMS[1].css}">COOL ${teamPts[1]}</span>`);
   updateHud(true);
@@ -184,5 +185,6 @@ function endTeamMatch(champ) {
     `${names} · ${teamPts[w]} to ${teamPts[1 - w]}` +
     '<br><small>ENTER or A to play again · M or B for menu</small><div class="bigbtns"><button data-act="again">Play again</button><button data-act="menu">Menu</button></div>');
   [523, 659, 784, 1046, 784, 1046].forEach((f, k) => setTimeout(() => tone(f, 0.22, 'triangle', 0.12), k * 160));
+  cheer(1.6);
 }
 window.__modes = { flag, get teamPts() { return teamPts; }, lapOf };

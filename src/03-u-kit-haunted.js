@@ -228,8 +228,8 @@ KITS.haunted = function (def) {
 function spookyNode(pan) {
   const g = actx.createGain(); g.gain.value = 0;
   let out = g;
-  if (actx.createStereoPanner) { const p = actx.createStereoPanner(); p.pan.value = pan; g.connect(p); p.connect(actx.destination); }
-  else g.connect(actx.destination);
+  if (actx.createStereoPanner) { const p = actx.createStereoPanner(); p.pan.value = pan; g.connect(p); p.connect(sfxBus); }
+  else g.connect(sfxBus);
   return out;
 }
 function scream(vol = 0.07) {

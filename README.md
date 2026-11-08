@@ -95,6 +95,15 @@ Click the car name on a player's slot (or press **LB/RB** on a controller in the
 | 🚐 Van | Heavy and steady |
 | 🎲 Random | A different body each match |
 
+## Sound
+
+Everything is synthesised in the browser, with no audio files.
+
+- **Sound** button on the menu: Music + effects, Effects only, or Off (remembered on that computer).
+- Every car has its own engine note: it rises through fake gear changes with speed and pans left or right by where the car is on screen. Monster growls low, Buggy buzzes high.
+- Tyre screech when sliding, a whoosh on boost, a crowd cheer at the end of each round.
+- Music is written by the game: a loop per track mood (bright for the Harbour, folky for the Woods, minor and creepy for Haunted Hollow). It gets faster and adds a lead tune when it's tense: two cars left, the final lap, or a flag holder close to winning.
+
 ## Performance
 
 - **Graphics** (button or **V**): *Fancy* (shadows, bloom, depth of field, real lantern lights), *Simple* (no post effects or shadows), *Low* (lower resolution, no fog banks) for weak laptops and phones.

@@ -23,7 +23,7 @@ function driveCar(car, inp, dt) {
   if (inp.boost && car.boostCd <= 0) {
     vf += 20; car.boostCd = 3;
     burst(car.pos.x - fx * 2, 0.8, car.pos.z - fz * 2, 0xff9800, 12, 6, 3, 0.5);
-    if (car.human) tone(180, 0.35, 'sawtooth', 0.07, 400);
+    boostSound(car);
     rumble(car, 0.2, 0.5, 150);
   }
   const nfx = Math.sin(car.h), nfz = Math.cos(car.h), nrx = -Math.cos(car.h), nrz = Math.sin(car.h);
