@@ -1,0 +1,97 @@
+// ---------- UI ----------
+const elBig = document.getElementById('big'), elBigT = document.getElementById('bigT'), elBigS = document.getElementById('bigS');
+function bigMsg(t, s) { elBigT.innerHTML = t; elBigS.innerHTML = s || ''; elBig.style.opacity = t ? 1 : 0; }
+let toastT = 0;
+function toast(h) { const el = document.getElementById('toast'); el.innerHTML = h; el.style.opacity = 1; toastT = 1.6; }
+function flashMsg(t, dur) { toast(t); toastT = dur; }
+
+function buildHud() {
+  const hud = document.getElementById('hud');
+  hud.innerHTML = '';
+  for (const c of activeCars()) {
+    const d = document.createElement('div');
+    d.className = 'card'; d.id = 'card' + c.i;
+    d.style.borderColor = c.color.css;
+    d.innerHTML = `<div class="nm" style="color:${c.color.css}">${c.color.name}${settings.slots[c.i] === 'pad' ? ' <small>PAD ' + (settings.padOf[c.i] + 1) + '</small>' : c.human ? '' : ' <small>CPU</small>'}</div>
+      <div class="pts"></div><div class="pips"></div><div class="bst"><i></i></div><div class="out">OUT</div>`;
+    hud.appendChild(d);
+  }
+  if (settings.gunner) {
+    const d = document.createElement('div');
+    d.className = 'card gun'; d.id = 'cardGun'; d.style.borderColor = '#ab47bc';
+    d.innerHTML = `<div class="nm" style="color:#ce93d8">ROCKETS <small>MOUSE</small></div><div class="pts">0</div><div class="lbl">hits</div><div class="bst"><i style="background:#ce93d8"></i></div>`;
+    hud.appendChild(d);
+  }
+  updateHud(true);
+}
+let hudT = 0;
+function updateHud(force) {
+  for (const c of activeCars()) {
+    const d = document.getElementById('card' + c.i); if (!d) continue;
+    d.querySelector('.pts').textContent = c.points;
+    let pips = '';
+    for (let k = 0; k < settings.target; k++) pips += `<span class="${k < c.points ? 'on' : ''}" style="${k < c.points ? 'background:' + c.color.css : ''}"></span>`;
+    if (force) d.querySelector('.pips').innerHTML = pips;
+    else if (d.dataset.p !== String(c.points)) d.querySelector('.pips').innerHTML = pips;
+    d.dataset.p = c.points;
+    d.querySelector('.bst i').style.width = `${Math.round((1 - Math.max(0, c.boostCd) / 3) * 100)}%`;
+    const out = (state === 'race' || state === 'roundEnd') && !c.alive && c !== lastWinner;
+    d.classList.toggle('isout', out && state === 'race');
+    d.classList.toggle('warn', state === 'race' && c.alive && c.warn > 0.05);
+  }
+  const gd = document.getElementById('cardGun');
+  if (gd) { gd.querySelector('.pts').textContent = gun.hits; gd.querySelector('.bst i').style.width = `${Math.round((1 - Math.max(0, gun.cd) / GUN_CD) * 100)}%`; }
+}
+
+// Menu
+function buildMenu() {
+  const wrap = document.getElementById('slots'); wrap.innerHTML = '';
+  COLORS.forEach((c, i) => {
+    const s = settings.slots[i];
+    const d = document.createElement('button');
+    d.className = 'slot ' + s; d.style.borderColor = c.css;
+    d.innerHTML = `<div class="sw" style="background:${c.css}"></div><div class="nm">${c.name}</div>
+      <div class="ty">${s === 'keys' ? 'KEYBOARD' : s === 'pad' ? 'CONTROLLER ' + (settings.padOf[i] + 1) : s === 'cpu' ? 'COMPUTER' : 'EMPTY'}</div>
+      <div class="ks">${s === 'keys' ? KEYSETS[i].label : s === 'pad' ? 'B to leave' : s === 'cpu' ? 'drives itself' : 'click to add'}</div>`;
+    d.onclick = () => { audio(); if (s === 'pad') settings.padOf[i] = null; settings.slots[i] = s === 'keys' ? 'cpu' : s === 'cpu' ? 'off' : s === 'pad' ? 'cpu' : 'keys'; tone(660, 0.05, 'square', 0.06); buildMenu(); };
+    wrap.appendChild(d);
+  });
+  document.getElementById('optTarget').textContent = settings.target;
+  document.getElementById('optSkill').textContent = SKILL_NAMES[settings.skill];
+  document.getElementById('optWater').textContent = settings.water === 'deadly' ? 'Splash = out' : 'Bouncy edges';
+  document.getElementById('optGun').textContent = settings.gunner ? 'On' : 'Off';
+  document.getElementById('optGfx').textContent = settings.gfx === 'fancy' ? 'Fancy' : 'Simple';
+  document.getElementById('optAuto').textContent = settings.autoGas ? 'On' : 'Off';
+}
+document.getElementById('btnTarget').onclick = () => { const o = [3, 5, 8, 10]; settings.target = o[(o.indexOf(settings.target) + 1) % o.length]; buildMenu(); };
+document.getElementById('btnSkill').onclick = () => { settings.skill = (settings.skill + 1) % 3; buildMenu(); };
+document.getElementById('btnWater').onclick = () => { settings.water = settings.water === 'deadly' ? 'bouncy' : 'deadly'; buildMenu(); };
+document.getElementById('btnGfx').onclick = () => { settings.gfx = settings.gfx === 'fancy' ? 'simple' : 'fancy'; applyGfx(); buildMenu(); };
+document.getElementById('btnGun').onclick = () => { settings.gunner = !settings.gunner; buildMenu(); };
+document.getElementById('btnAuto').onclick = () => { settings.autoGas = !settings.autoGas; buildMenu(); };
+document.getElementById('go').onclick = () => startMatch();
+buildMenu();
+
+function togglePause() {
+  if (state === 'paused') { state = prevState; document.getElementById('pause').style.display = 'none'; }
+  else if (state !== 'menu' && state !== 'matchEnd') { prevState = state; state = 'paused'; document.getElementById('pause').style.display = 'flex'; }
+}
+function toMenu() {
+  state = 'menu'; bigMsg('', '');
+  document.getElementById('menu').style.display = 'flex';
+  document.getElementById('hud').style.display = 'none';
+  document.body.classList.remove('playing');
+  document.getElementById('pause').style.display = 'none';
+}
+
+function onKey(code) {
+  if (code === 'KeyG') { settings.gfx = settings.gfx === 'fancy' ? 'simple' : 'fancy'; applyGfx(); buildMenu(); toast(`Graphics: <b>${settings.gfx === 'fancy' ? 'Fancy' : 'Simple'}</b>`); return; }
+  if (state === 'menu') { if (code === 'Enter' || code === 'Space') startMatch(); return; }
+  if (state === 'matchEnd') {
+    if (code === 'Enter') { document.getElementById('menu').style.display = 'none'; startMatch(); }
+    if (code === 'KeyM') toMenu();
+    return;
+  }
+  if (code === 'Escape' || code === 'KeyP') { togglePause(); return; }
+  if (state === 'paused' && code === 'KeyM') toMenu();
+}

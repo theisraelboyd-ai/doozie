@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DOOZIE!</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1b2a; font-family: 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif; color: #fff; user-select: none; }
+  #c { display: block; width: 100vw; height: 100vh; }
+  .layer { position: fixed; inset: 0; pointer-events: none; }
+  #hud { position: fixed; top: 12px; left: 0; right: 0; display: none; justify-content: center; gap: 12px; pointer-events: none; }
+  .card { position: relative; min-width: 150px; background: rgba(10, 20, 35, .78); border: 3px solid; border-radius: 12px; padding: 6px 12px 8px; text-align: center; transition: transform .15s; }
+  .card .nm { font-weight: 800; letter-spacing: 1px; font-size: 15px; }
+  .card .nm small { font-size: 10px; opacity: .7; }
+  .card .pts { font-size: 30px; font-weight: 900; line-height: 1.05; }
+  .card .pips { display: flex; gap: 3px; justify-content: center; margin: 2px 0 5px; flex-wrap: wrap; max-width: 150px; }
+  .card .pips span { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.18); }
+  .card .bst { height: 5px; background: rgba(255,255,255,.15); border-radius: 3px; overflow: hidden; }
+  .card .bst i { display: block; height: 100%; background: #ff9800; width: 100%; }
+  .card .out { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.6); border-radius: 9px; font-weight: 900; font-size: 22px; letter-spacing: 3px; color: #ff5252; }
+  .card.isout .out { display: flex; }
+  .card .lbl { font-size: 11px; opacity: .7; margin: -2px 0 5px; letter-spacing: 1px; }
+  body.aiming #c { cursor: crosshair; }
+  .card.warn { transform: scale(1.08); animation: shake .15s infinite; }
+  @keyframes shake { 0%,100% { translate: 0 0; } 50% { translate: 2px 0; } }
+  #big { position: fixed; left: 0; right: 0; top: 34%; text-align: center; transition: opacity .25s; opacity: 0; pointer-events: none; }
+  #bigT { font-size: clamp(36px, 7vw, 84px); font-weight: 900; text-shadow: 0 4px 0 #000, 0 0 24px rgba(0,0,0,.6); -webkit-text-stroke: 2px #000; }
+  #bigS { margin-top: 10px; font-size: 22px; font-weight: 800; text-shadow: 0 2px 4px #000; }
+  #toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 20; white-space: nowrap; background: rgba(10,20,35,.88); border-radius: 999px; padding: 8px 22px; font-size: 22px; font-weight: 800; transition: opacity .3s; opacity: 0; pointer-events: none; }
+  body.playing #toast { top: auto; bottom: 60px; }
+  #help { position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 13px; opacity: .75; text-shadow: 0 1px 3px #000; pointer-events: none; }
+  #menu, #pause { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(13,27,42,.55), rgba(13,27,42,.92)); }
+  #pause { display: none; }
+  h1 { margin: 0; font-size: clamp(56px, 10vw, 120px); font-weight: 900; letter-spacing: 4px; color: #ffca28; text-shadow: 0 6px 0 #c62828, 0 10px 20px rgba(0,0,0,.5); transform: rotate(-3deg); }
+  .tag { margin: 6px 0 22px; font-size: 20px; font-weight: 700; opacity: .9; }
+  #slots { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .slot { width: 190px; padding: 14px 10px; background: rgba(255,255,255,.08); border: 3px solid; border-radius: 14px; color: #fff; font: inherit; cursor: pointer; transition: transform .1s, background .1s; }
+  .slot:hover { transform: translateY(-3px); background: rgba(255,255,255,.16); }
+  .slot.off { opacity: .45; }
+  .slot .sw { width: 54px; height: 30px; border-radius: 8px; margin: 0 auto 8px; box-shadow: inset 0 -6px 0 rgba(0,0,0,.25); }
+  .slot .nm { font-weight: 900; font-size: 18px; }
+  .slot .ty { font-weight: 800; font-size: 13px; margin-top: 4px; letter-spacing: 1px; color: #ffca28; }
+  .slot .ks { font-size: 12px; margin-top: 6px; opacity: .85; min-height: 30px; }
+  .opts { display: flex; gap: 12px; margin: 22px 0 10px; flex-wrap: wrap; justify-content: center; }
+  .opt { background: rgba(255,255,255,.1); border: 2px solid rgba(255,255,255,.3); border-radius: 10px; color: #fff; font: inherit; padding: 8px 14px; cursor: pointer; font-size: 14px; }
+  .opt b { color: #ffca28; margin-left: 6px; }
+  #go { margin-top: 14px; font: inherit; font-size: 26px; font-weight: 900; letter-spacing: 2px; padding: 12px 46px; border-radius: 14px; border: 0; background: #ffca28; color: #222; cursor: pointer; box-shadow: 0 6px 0 #c49000; }
+  #go:hover { transform: translateY(-2px); }
+  .rules { margin-top: 18px; max-width: 760px; text-align: center; font-size: 14px; opacity: .85; line-height: 1.5; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud"></div>
+<div id="big"><div id="bigT"></div><div id="bigS"></div></div>
+<div id="toast"></div>
+<div id="menu">
+  <h1>DOOZIE!</h1>
+  <div class="tag">Last car on screen wins</div>
+  <div id="slots"></div>
+  <div class="opts">
+    <button class="opt" id="btnTarget">Points to win<b id="optTarget"></b></button>
+    <button class="opt" id="btnSkill">Computer skill<b id="optSkill"></b></button>
+    <button class="opt" id="btnAuto">Auto-accelerate<b id="optAuto"></b></button>
+    <button class="opt" id="btnGfx">Graphics<b id="optGfx"></b></button>
+    <button class="opt" id="btnGun">Mouse rockets<b id="optGun"></b></button>
+    <button class="opt" id="btnWater">Harbour edges<b id="optWater"></b></button>
+  </div>
+  <button id="go">START (Enter / ☰ Start)</button>
+  <div class="rules"><b style="color:#ffca28">Controllers:</b> press A to join · B to leave · START to begin.<br>Click a car to switch it between Keyboard, Computer and Empty.<br>
+    Stay on screen! Fall behind the camera or get shunted into the harbour and you're out.
+    Last car left wins the round (+2), second gets +1, first out loses 1. First to the target wins.<br>
+    Each player has a boost. Esc pauses. G switches Fancy / Simple graphics.<br>
+    <b style="color:#ce93d8">Mouse rockets:</b> anyone can click on the track to fire a rocket. Click near a car and it locks on.</div>
+</div>
+<div id="pause"><h1 style="font-size:72px">PAUSED</h1><div class="tag">Esc or START to carry on · M or B for menu</div></div>
+<script>/*THREE*/</script>
+<script>/*GAME*/</script>
+</body>
+</html>

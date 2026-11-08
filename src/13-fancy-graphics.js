@@ -1,0 +1,40 @@
+// ---------- Fancy graphics ----------
+composer = new T.EffectComposer(renderer);
+composer.addPass(new T.RenderPass(scene, camera));
+const bokeh = new T.BokehPass(scene, camera, { focus: 60, aperture: 0.0008, maxblur: 0.006 });
+composer.addPass(bokeh);
+const bloom = new T.UnrealBloomPass(new T.Vector2(window.innerWidth, window.innerHeight), 0.6, 0.45, 1.25);
+composer.addPass(bloom);
+composer.addPass(new T.OutputPass());
+let shadowSize = 0;
+function applyGfx() {
+  const fancy = settings.gfx === 'fancy';
+  renderer.toneMapping = fancy ? T.ACESFilmicToneMapping : T.NoToneMapping;
+  renderer.toneMappingExposure = fancy ? 0.95 : 1;
+  scene.environment = fancy ? envTex : null;
+  sun.castShadow = fancy;
+  sun.intensity = fancy ? 2.4 : 1.4;
+  hemi.intensity = fancy ? 0.35 : 1.6;
+  scene.fog.color.setHex(fancy ? 0xbfdcf0 : 0x9fd3f0); scene.background.setHex(fancy ? 0xbfdcf0 : 0x9fd3f0);
+  renderer.setPixelRatio(fancy ? Math.min(window.devicePixelRatio || 1, 1.25) : 1);
+  resize();
+}
+function draw() {
+  if (settings.gfx === 'fancy') {
+    const d = camera.position.distanceTo(camTarget);
+    const S = Math.round((camDist * 0.95 + 25) / 10) * 10;
+    if (S !== shadowSize) {
+      shadowSize = S; const sc = sun.shadow.camera;
+      sc.left = -S; sc.right = S; sc.top = S; sc.bottom = -S; sc.updateProjectionMatrix();
+    }
+    sun.target.position.copy(camTarget); sun.position.copy(camTarget).add(SUN_OFF);
+    const swoop = !!camFocus || state === 'menu';
+    bokeh.uniforms['focus'].value = d;
+    bokeh.uniforms['aperture'].value = swoop ? 0.00022 : 0.00006;
+    bokeh.uniforms['maxblur'].value = swoop ? 0.01 : 0.004;
+    composer.render();
+  } else {
+    sun.position.copy(camTarget).add(SUN_OFF); sun.target.position.copy(camTarget);
+    renderer.render(scene, camera);
+  }
+}
