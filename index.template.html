@@ -20,6 +20,9 @@
   .card .bst i { display: block; height: 100%; background: #ff9800; width: 100%; }
   .card .itm { position: absolute; right: -14px; top: -14px; min-width: 36px; height: 36px; border-radius: 50%; background: rgba(10,20,35,.9); border: 2px solid rgba(255,255,255,.5); font-size: 20px; line-height: 32px; text-align: center; }
   .card .itm:empty { display: none; } .card .itm small { font-size: 10px; }
+  .card .md { font-size: 12px; font-weight: 800; letter-spacing: .5px; min-height: 0; }
+  .card .md:empty { display: none; }
+  .card.flag { box-shadow: 0 0 0 3px #fff, 0 0 22px rgba(255,255,255,.6); }
   .card .out { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.6); border-radius: 9px; font-weight: 900; font-size: 22px; letter-spacing: 3px; color: #ff5252; }
   .card.isout .out { display: flex; }
   .card .lbl { font-size: 11px; opacity: .7; margin: -2px 0 5px; letter-spacing: 1px; }
@@ -147,9 +150,10 @@
 <div id="menu">
   <div id="phoneJoin"></div>
   <h1>DOOZIE!</h1>
-  <div class="tag">Last car on screen wins</div>
+  <div class="tag" id="modeTag">Last car on screen wins</div>
   <div id="slots"></div>
   <div class="opts">
+    <button class="opt" id="btnMode">Mode<b id="optMode"></b></button>
     <button class="opt" id="btnTrack">Track<b id="optTrack"></b></button>
     <button class="opt" id="btnCreatures">Creatures<b id="optCreatures"></b></button>
     <button class="opt" id="btnWeapons">Weapons<b id="optWeapons"></b></button>

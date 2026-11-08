@@ -71,6 +71,17 @@ node build.mjs
 
 This writes `docs/index.html`, a single file with no outside dependencies. It can be opened straight from disk or served by GitHub Pages (Settings → Pages → Deploy from branch → `main` / `docs`).
 
+## Game modes
+
+Pick with the **Mode** button on the menu.
+
+| Mode | How it works |
+|---|---|
+| Knockout | The classic. Stay on screen; last car left wins the round (+2), second +1, first out −1. |
+| Teams | Red & Gold (Team Hot) vs Blue & Green (Team Cool). Last team with a car on screen wins the round. Missiles and mines don't lock on to your teammate (explosions still hurt everyone). |
+| Lap Race | First to finish 3 laps. Fall off or get left behind and you come back at the back of the pack a moment later, blinking and see-through. |
+| Hold the Flag | Grab the chequered flag and keep it for 20 seconds. Ram the holder to steal it; a spin-out or a hit drops it on the road. |
+
 ## Performance
 
 - **Graphics** (button or **V**): *Fancy* (shadows, bloom, depth of field, real lantern lights), *Simple* (no post effects or shadows), *Low* (lower resolution, no fog banks) for weak laptops and phones.

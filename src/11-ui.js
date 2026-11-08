@@ -12,8 +12,9 @@ function buildHud() {
     const d = document.createElement('div');
     d.className = 'card'; d.id = 'card' + c.i;
     d.style.borderColor = c.color.css;
+    if (settings.mode === 'teams') d.style.background = TEAMS[teamOf(c)].bg;
     d.innerHTML = `<div class="nm" style="color:${c.color.css}">${c.color.name}${settings.slots[c.i] === 'pad' ? ' <small>PAD ' + (settings.padOf[c.i] + 1) + '</small>' : settings.slots[c.i] === 'phone' ? ' <small>PHONE</small>' : settings.slots[c.i] === 'touch' ? ' <small>YOU</small>' : c.human ? '' : ' <small>CPU</small>'}</div>
-      <div class="pts"></div><div class="pips"></div><div class="bst"><i></i></div><div class="itm"></div><div class="out">OUT</div>`;
+      <div class="pts"></div><div class="pips"></div><div class="md"></div><div class="bst"><i></i></div><div class="itm"></div><div class="out">OUT</div>`;
     hud.appendChild(d);
   }
   if (settings.gunner) {
@@ -38,7 +39,10 @@ function updateHud(force) {
     const it = c.item ? ITEMS[c.item].icon + (c.ammo > 1 ? '<small>×' + c.ammo + '</small>' : '') : (c.shield > 0 ? '🛡️' : '');
     if (d.dataset.it !== it) { d.dataset.it = it; d.querySelector('.itm').innerHTML = it; }
     const out = (state === 'race' || state === 'roundEnd') && !c.alive && c !== lastWinner;
-    d.classList.toggle('isout', out && state === 'race');
+    d.classList.toggle('isout', out && state === 'race' && !respawnMode());
+    const md = modeLine(c);
+    if (d.dataset.md !== md) { d.dataset.md = md; d.querySelector('.md').innerHTML = md; }
+    d.classList.toggle('flag', flag.holder === c);
     d.classList.toggle('warn', state === 'race' && c.alive && c.warn > 0.05);
   }
   const gd = document.getElementById('cardGun');
@@ -67,6 +71,8 @@ function buildMenu() {
   document.getElementById('optTarget').textContent = settings.target;
   document.getElementById('optSkill').textContent = SKILL_NAMES[settings.skill];
   document.getElementById('optWater').textContent = settings.water === 'deadly' ? 'Fall = out' : 'Bouncy';
+  document.getElementById('optMode').textContent = MODE_NAMES[settings.mode];
+  document.getElementById('modeTag').innerHTML = MODE_TAGS[settings.mode];
   document.getElementById('optTrack').textContent = settings.track === 'random' ? 'Random' : (TRACKS.find(t => t.id === settings.track) || TRACKS[0]).name;
   document.getElementById('optGun').textContent = settings.gunner ? 'On' : 'Off';
   document.getElementById('optGfx').textContent = GFX_NAMES[settings.gfx];
@@ -88,6 +94,7 @@ function cycleTrack() {
 }
 document.getElementById('btnCreatures').onclick = () => { const o = ['off', 'own', 'anywhere']; settings.creatures = o[(o.indexOf(settings.creatures) + 1) % 3]; buildMenu(); };
 document.getElementById('btnWeapons').onclick = () => { settings.weapons = !settings.weapons; buildMenu(); };
+document.getElementById('btnMode').onclick = () => { audio(); tone(660, 0.05, 'square', 0.06); settings.mode = MODE_ORDER[(MODE_ORDER.indexOf(settings.mode) + 1) % MODE_ORDER.length]; buildMenu(); };
 document.getElementById('btnTrack').onclick = () => { audio(); cycleTrack(); };
 function cycleCam() { settings.cam = CAM_STYLES[(CAM_STYLES.indexOf(settings.cam) + 1) % CAM_STYLES.length]; buildMenu(); }
 document.getElementById('btnCam').onclick = cycleCam;

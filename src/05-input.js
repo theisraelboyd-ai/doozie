@@ -109,12 +109,14 @@ function aiInput(car, dt) {
   // aggression: steer toward a nearby rival
   if (settings.skill > 0) {
     for (const o of cars) {
-      if (o === car || !o.alive || o.falling) continue;
+      if (o === car || !o.alive || o.falling || sameTeam(o, car)) continue;
       const dx = o.pos.x - car.pos.x, dz = o.pos.z - car.pos.z, d = Math.hypot(dx, dz);
       const fwd = (dx * Math.sin(car.h) + dz * Math.cos(car.h)) / (d || 1);
       if (d < 9 && fwd > 0.5 && (o.human || settings.skill === 2)) { tx = tx * 0.5 + o.pos.x * 0.5; tz = tz * 0.5 + o.pos.z * 0.5; break; }
     }
   }
+  const mt = modeAiTarget(car);
+  if (mt) { tx = mt.x; tz = mt.z; }
   const want = Math.atan2(tx - car.pos.x, tz - car.pos.z);
   const diff = wrapAng(want - car.h);
   let st = Math.max(-1, Math.min(1, -diff * 2.4));

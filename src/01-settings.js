@@ -19,6 +19,7 @@ const settings = {
   skill: 0, // 0 easy, 1 normal, 2 hard
   water: 'deadly', // deadly | bouncy
   gunner: true, // mouse rocket launcher player
+  mode: 'knockout', // knockout | teams | laps | flag
   gfx: 'fancy', // fancy | simple | low
   cam: 'cinematic', // cinematic | classic | calm
   weapons: true, // item crates and weapons
@@ -34,3 +35,11 @@ const CREATURE_NAMES_UI = { off: 'Off', own: 'Own track', anywhere: 'Anywhere' }
 
 const GFX_ORDER = ['low', 'simple', 'fancy'], GFX_NAMES = { low: 'Low', simple: 'Simple', fancy: 'Fancy' };
 function nextGfx() { settings.gfx = GFX_ORDER[(GFX_ORDER.indexOf(settings.gfx) + 1) % 3]; }
+const MODE_ORDER = ['knockout', 'teams', 'laps', 'flag'];
+const MODE_NAMES = { knockout: 'Knockout', teams: 'Teams', laps: 'Lap Race', flag: 'Hold the Flag' };
+const MODE_TAGS = {
+  knockout: 'Last car on screen wins',
+  teams: 'Red &amp; Gold vs Blue &amp; Green · last team on screen wins',
+  laps: 'First to finish 3 laps · fall behind and you restart at the back',
+  flag: 'Grab the flag and hold on · ram the holder to steal it',
+};

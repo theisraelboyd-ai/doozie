@@ -35,7 +35,7 @@ function collide() {
   const R = 1.75;
   for (let a = 0; a < cars.length; a++) for (let b = a + 1; b < cars.length; b++) {
     const A = cars[a], B = cars[b];
-    if (!A.alive || !B.alive || A.falling || B.falling) continue;
+    if (!A.alive || !B.alive || A.falling || B.falling || A.ghostT > 0 || B.ghostT > 0) continue;
     const dx = B.pos.x - A.pos.x, dz = B.pos.z - A.pos.z, d = Math.hypot(dx, dz);
     if (d >= R * 2 || d === 0) continue;
     const nx = dx / d, nz = dz / d, over = R * 2 - d;
@@ -46,6 +46,7 @@ function collide() {
       // a ramming car hits much harder and barely slows
       const ja = j * (A.ram > 0 ? 0.3 : B.ram > 0 ? 2.6 : 1), jb = j * (B.ram > 0 ? 0.3 : A.ram > 0 ? 2.6 : 1);
       A.vel.x -= nx * ja; A.vel.y -= nz * ja; B.vel.x += nx * jb; B.vel.y += nz * jb;
+      if (-rv > 5) flagBump(A, B);
       if (-rv > 6) {
         const rs = Math.min(1, -rv / 25); rumble(A, rs, rs * 0.6, 120); rumble(B, rs, rs * 0.6, 120);
         burst((A.pos.x + B.pos.x) / 2, 1, (A.pos.z + B.pos.z) / 2, 0xffeb3b, Math.min(16, Math.round(-rv)), 8, 5, 0.4);

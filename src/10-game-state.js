@@ -36,6 +36,8 @@ function startMatch() {
     c.active = s !== 'off'; c.human = s === 'keys' || s === 'pad' || s === 'phone' || s === 'touch'; c.points = 0; c.alive = false;
   });
   if (activeCars().length < 2) { flashMsg('Need at least 2 cars', 1.5); return; }
+  if (settings.mode === 'teams' && new Set(activeCars().map(teamOf)).size < 2) { flashMsg('Teams needs a car on each side (Red/Gold vs Blue/Green)', 2.5); return; }
+  teamPts = [0, 0];
   // pick the track (Random chooses a different one each match)
   const want = settings.track === 'random' ? TRACKS[Math.floor(Math.random() * TRACKS.length)].id : settings.track;
   if (!curTrack || curTrack.id !== want) buildTrack(want);
@@ -53,6 +55,7 @@ function newRound(atIdx) {
   outOrder = [];
   placeCars(atIdx);
   resetWeapons();
+  modeNewRound(atIdx);
   const lead = activeCars()[0];
   camTarget.copy(lead.pos); camLook.copy(lead.pos); camDist = 40; camFocus = null;
   camYaw = settings.cam === 'classic' ? Math.PI : trackYaw(atIdx + Math.round(20 / SPACING)); camPitch = settings.cam === 'calm' ? 0.95 : 0.85;
@@ -61,6 +64,7 @@ function newRound(atIdx) {
 }
 
 function knockOut(car, why) {
+  if (respawnMode()) { if (state === 'race') respawnCar(car, why); return; }
   if (outOrder.includes(car)) return;
   outOrder.push(car);
   car.alive = false;
@@ -80,14 +84,16 @@ function knockOut(car, why) {
   }
   if (remaining >= 1) { slowT = 0.6; }
   toast(`<b style="color:${car.color.css}">${car.color.name}</b> ${why}!`);
-  if (remaining <= 1) endRound();
+  if (settings.mode === 'teams' ? new Set(activeCars().filter(c => c.alive && !c.falling).map(teamOf)).size <= 1 : remaining <= 1) endRound();
 }
 
-function endRound() {
+function endRound(modeRanking) {
   if (state !== 'race') return;
+  if (settings.mode === 'teams') return endTeamRound();
   const act = activeCars();
-  let winner = act.find(c => c.alive && !c.falling) || outOrder[outOrder.length - 1];
-  const ranking = [winner, ...outOrder.filter(c => c !== winner).reverse()];
+  let winner = modeRanking ? modeRanking[0] : act.find(c => c.alive && !c.falling) || outOrder[outOrder.length - 1];
+  const ranking = modeRanking || [winner, ...outOrder.filter(c => c !== winner).reverse()];
+  if (respawnMode()) for (const c of act) { c.respawnT = 0; c.ghostT = 0; }
   const n = ranking.length;
   const deltas = new Map();
   ranking.forEach((c, r) => {
@@ -111,6 +117,7 @@ function endRound() {
 }
 
 function endMatch(champ) {
+  if (settings.mode === 'teams') return endTeamMatch(champ);
   state = 'matchEnd'; camFocus = champ;
   const order = activeCars().slice().sort((a, b) => b.points - a.points);
   bigMsg(`<span style="color:${champ.color.css}">${champ.color.name}</span> is the CHAMPION!`,

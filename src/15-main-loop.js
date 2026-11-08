@@ -20,7 +20,7 @@ function frame(now) {
     const before = Math.ceil(stateT / 0.8);
     stateT -= rdt;
     const after = Math.ceil(stateT / 0.8);
-    if (after !== before && after > 0) { bigMsg(String(after), roundNo === 1 ? 'Stay on screen. Last car left scores!' : ''); tone(440, 0.15, 'square', 0.1); }
+    if (after !== before && after > 0) { bigMsg(String(after), roundNo === 1 ? MODE_TAGS[settings.mode] : ''); tone(440, 0.15, 'square', 0.1); }
     if (stateT <= 0) { state = 'race'; bigMsg('GO!', ''); tone(880, 0.3, 'square', 0.12); setTimeout(() => { if (state === 'race') bigMsg('', ''); }, 700); }
   }
 
@@ -46,6 +46,7 @@ function frame(now) {
     }
   }
   if (state === 'race') collide();
+  modesTick(dt, rdt);
   if (state === 'race' || state === 'roundEnd') { ambientCreatures(dt); updateCreature(dt); updateWeapons(dt, wt); }
 
   // knock-out by camera

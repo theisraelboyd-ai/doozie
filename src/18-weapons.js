@@ -103,7 +103,7 @@ function blast(x, z, R, power, color = 0xff6f00) {
   }
 }
 function fwd(car) { return { x: Math.sin(car.h), z: Math.cos(car.h) }; }
-function aliveOthers(car) { return activeCars().filter(o => o !== car && o.alive && !o.falling); }
+function aliveOthers(car) { return activeCars().filter(o => o !== car && o.alive && !o.falling && !(o.ghostT > 0) && !sameTeam(o, car)); }
 // nearest rival in a cone ahead (dir = 1) or behind (dir = -1)
 function rivalInCone(car, dir, range, cosLimit) {
   const f = fwd(car); let best = null, bd = range;
